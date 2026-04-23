@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { API_BASE_URL } from '../config/api';
 
 const occasions = [
   'Honeymoon 💑', 'Anniversary 🥂', 'Birthday 🎂', 'Family Vacation 👨‍👩‍👧‍👦',
@@ -40,7 +41,7 @@ const CustomTripModal = ({ isOpen, onClose }) => {
         form.notes ? `📝 Notes: ${form.notes}` : '',
       ].filter(Boolean).join('\n');
 
-      const response = await fetch('http://localhost:5001/api/contact', {
+      const response = await fetch(`${API_BASE_URL}/api/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

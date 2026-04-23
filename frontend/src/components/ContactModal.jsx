@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { API_BASE_URL } from "../config/api";
 
 const ContactModal = ({ isOpen, onClose, source = "Website Modal" }) => {
   const [form, setForm] = useState({
@@ -61,7 +62,7 @@ const ContactModal = ({ isOpen, onClose, source = "Website Modal" }) => {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('http://localhost:5001/api/contact', {
+      const response = await fetch(`${API_BASE_URL}/api/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, interest: `Source: ${source}` }),

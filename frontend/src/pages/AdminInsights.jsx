@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 
 const ADMIN_ID = 'zurii_admin';
 const ADMIN_PASSWORD = 'zurii@2026';
@@ -45,7 +46,7 @@ const AdminInsights = () => {
     const fetchContacts = async () => {
       setLoading(true);
       try {
-        const response = await fetch('http://localhost:5001/api/contact');
+        const response = await fetch(`${API_BASE_URL}/api/contact`);
         const data = await response.json();
         if (data.success) {
           setContacts(data.data);
