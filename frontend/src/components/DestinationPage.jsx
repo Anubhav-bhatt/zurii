@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { domesticDestinations, internationalDestinations, internationalFallback, topbarCategories, tripDetails } from "../data";
+import GetQuoteModal from "./GetQuoteModal";
 
 const DestinationPage = () => {
   const { name } = useParams();
   const navigate = useNavigate();
+  const [quoteTrip, setQuoteTrip] = useState(null);
 
   // Try domestic match first
   const domestic = domesticDestinations.find(
@@ -121,6 +124,15 @@ const DestinationPage = () => {
                         <span className="font-bold text-violet-600">{trip.price}</span>
                         {trip.duration && <span className="text-xs text-gray-400">{trip.duration}</span>}
                       </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setQuoteTrip(trip);
+                        }}
+                        className="mt-3 w-full py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-bold rounded-full hover:brightness-110 active:scale-[0.97] transition-all shadow-md shadow-emerald-500/20"
+                      >
+                        💰 Get Quote
+                      </button>
                       <p className="text-violet-500 text-sm font-semibold mt-3">View Details →</p>
                     </div>
                   </div>
@@ -129,6 +141,8 @@ const DestinationPage = () => {
             </div>
           )}
         </div>
+
+        <GetQuoteModal isOpen={!!quoteTrip} onClose={() => setQuoteTrip(null)} tripName={quoteTrip?.title || ""} />
       </div>
     );
   }
@@ -192,6 +206,15 @@ const DestinationPage = () => {
                         <span className="font-bold text-violet-600">{trip.price}</span>
                         {trip.duration && <span className="text-xs text-gray-400">{trip.duration}</span>}
                       </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setQuoteTrip(trip);
+                        }}
+                        className="mt-3 w-full py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-bold rounded-full hover:brightness-110 active:scale-[0.97] transition-all shadow-md shadow-emerald-500/20"
+                      >
+                        💰 Get Quote
+                      </button>
                       <p className="text-violet-500 text-sm font-semibold mt-3">View Details →</p>
                     </div>
                   </div>
@@ -200,6 +223,8 @@ const DestinationPage = () => {
             </div>
           )}
         </div>
+
+        <GetQuoteModal isOpen={!!quoteTrip} onClose={() => setQuoteTrip(null)} tripName={quoteTrip?.title || ""} />
       </div>
     );
   }
@@ -257,6 +282,15 @@ const DestinationPage = () => {
                         <span className="font-bold text-violet-600">{trip.price}</span>
                         <span className="text-xs text-gray-400">{trip.duration}</span>
                       </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setQuoteTrip(trip);
+                        }}
+                        className="mt-3 w-full py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-bold rounded-full hover:brightness-110 active:scale-[0.97] transition-all shadow-md shadow-emerald-500/20"
+                      >
+                        💰 Get Quote
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -271,6 +305,8 @@ const DestinationPage = () => {
             </div>
           )}
         </div>
+
+        <GetQuoteModal isOpen={!!quoteTrip} onClose={() => setQuoteTrip(null)} tripName={quoteTrip?.title || ""} />
       </div>
     );
   }
@@ -302,11 +338,22 @@ const DestinationPage = () => {
                     <span className="font-bold text-violet-600">{trip.price}</span>
                     <span className="text-xs text-gray-400">{trip.duration}</span>
                   </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setQuoteTrip(trip);
+                    }}
+                    className="mt-3 w-full py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-bold rounded-full hover:brightness-110 active:scale-[0.97] transition-all shadow-md shadow-emerald-500/20"
+                  >
+                    💰 Get Quote
+                  </button>
                 </div>
               </div>
             ))}
           </div>
         </div>
+
+        <GetQuoteModal isOpen={!!quoteTrip} onClose={() => setQuoteTrip(null)} tripName={quoteTrip?.title || ""} />
       </div>
     );
   }

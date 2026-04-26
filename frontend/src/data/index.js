@@ -5,7 +5,7 @@ const tokyoImg = 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w
 const swissImg = 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800';
 const japanImg = 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800';
 const dubaiImg = 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800';
-const keralaImg = 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800';
+const keralaImg = 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=800';
 
 // ── International Fallback (used when API has no data) ──
 export const internationalFallback = [
@@ -49,7 +49,7 @@ export const carouselTrips = [
     id: 'bali',
     title: 'Bali, Indonesia',
     subtitle: 'Tropical Paradise',
-    price: '₹1,09,999',
+    price: '₹59,700',
     duration: '7 Days',
     rating: '4.9',
     image: baliImg,
@@ -163,9 +163,9 @@ export const bestSellerTrips = [
     rating: '4.8',
     reviews: 389,
     duration: '6 Days',
-    originalPrice: '₹1,10,000',
-    price: '₹84,999',
-    save: '₹25,001',
+    originalPrice: '₹55,000',
+    price: '₹45,999',
+    save: '₹9,001',
     image: baliImg,
     badge: 'Recommended',
   },
@@ -247,8 +247,8 @@ export const tripDetails = {
     duration: '7 Days / 6 Nights',
     groupSize: '12-18 people',
     difficulty: 'Easy',
-    price: '₹1,09,999',
-    originalPrice: '₹1,34,999',
+    price: '₹59,700',
+    originalPrice: '₹79,999',
     overview: 'Discover the enchanting island of Bali with its lush rice terraces, ancient temples, pristine beaches, and vibrant nightlife. This carefully curated 7-day journey takes you through the spiritual heart of Ubud, the stunning cliffs of Uluwatu, and the party-ready shores of Seminyak. From sunrise treks at Mount Batur to sunset dinners overlooking the Indian Ocean — every moment is designed to captivate.',
     itinerary: [
       { day: 1, title: 'Arrival & Seminyak Beach', description: 'Airport pickup and transfer to your luxury beach resort. Evening free to explore Seminyak\'s vibrant beach clubs. Welcome dinner at a beachfront restaurant with traditional Balinese dance performance.' },
@@ -279,12 +279,12 @@ export const tripDetails = {
       'Tips for guides & drivers',
     ],
     batches: [
-      { id: 1, date: 'Apr 12 – Apr 18, 2026', slots: 6, price: '₹1,09,999', status: 'available' },
+      { id: 1, date: 'Apr 12 – Apr 18, 2026', slots: 6, price: '₹59,700', status: 'available' },
       { id: 2, date: 'May 3 – May 9, 2026', slots: 3, price: '₹99,999', status: 'filling' },
       { id: 3, date: 'Jun 14 – Jun 20, 2026', slots: 12, price: '₹1,19,999', status: 'available' },
-      { id: 4, date: 'Jul 5 – Jul 11, 2026', slots: 0, price: '₹1,09,999', status: 'soldout' },
+      { id: 4, date: 'Jul 5 – Jul 11, 2026', slots: 0, price: '₹59,700', status: 'soldout' },
     ],
-    gallery: [baliImg, santoriniImg, tokyoImg, swissImg],
+    gallery: ['https://images.unsplash.com/photo-1573790387438-4da905039392?w=800', 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=800', 'https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=800', 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=800'],
   },
   'paris': {
     heroImage: parisImg,
@@ -329,7 +329,7 @@ export const tripDetails = {
       { id: 2, date: 'May 20 – May 24, 2026', slots: 10, price: '₹1,52,999', status: 'available' },
       { id: 3, date: 'Jun 10 – Jun 14, 2026', slots: 8, price: '₹1,69,999', status: 'available' },
     ],
-    gallery: [parisImg, santoriniImg, swissImg, baliImg],
+    gallery: ['https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800', 'https://images.unsplash.com/photo-1431274172761-fca41d930114?w=800', 'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=800', 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800'],
   },
   'santorini': {
     heroImage: santoriniImg,
@@ -374,7 +374,7 @@ export const tripDetails = {
       { id: 2, date: 'Jun 8 – Jun 13, 2026', slots: 8, price: '₹1,99,999', status: 'available' },
       { id: 3, date: 'Sep 15 – Sep 20, 2026', slots: 10, price: '₹1,79,999', status: 'available' },
     ],
-    gallery: [santoriniImg, parisImg, baliImg, dubaiImg],
+    gallery: ['https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?w=800', 'https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800', 'https://images.unsplash.com/photo-1504214208698-ea1916a2195a?w=800', 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800'],
   },
   'tokyo': {
     heroImage: tokyoImg,
@@ -422,7 +422,7 @@ export const tripDetails = {
       { id: 2, date: 'Apr 15 – Apr 22, 2026', slots: 5, price: '₹1,44,999', status: 'filling' },
       { id: 3, date: 'Oct 10 – Oct 17, 2026', slots: 14, price: '₹1,34,999', status: 'available' },
     ],
-    gallery: [tokyoImg, japanImg, baliImg, swissImg],
+    gallery: ['https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800', 'https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=800', 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800', 'https://images.unsplash.com/photo-1526481280693-3bfa7568e0f3?w=800'],
   },
   'swiss-alps': {
     heroImage: swissImg,
@@ -468,7 +468,7 @@ export const tripDetails = {
       { id: 2, date: 'Jul 15 – Jul 20, 2026', slots: 8, price: '₹2,29,999', status: 'available' },
       { id: 3, date: 'Sep 5 – Sep 10, 2026', slots: 10, price: '₹1,99,999', status: 'available' },
     ],
-    gallery: [swissImg, parisImg, santoriniImg, tokyoImg],
+    gallery: ['https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800', 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800', 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800', 'https://images.unsplash.com/photo-1585409677983-0f6c41ca9c3b?w=800'],
   },
   'japan-cherry': {
     heroImage: japanImg,
@@ -515,7 +515,7 @@ export const tripDetails = {
       { id: 2, date: 'Apr 1 – Apr 7, 2026', slots: 4, price: '₹1,59,999', status: 'filling' },
       { id: 3, date: 'Apr 10 – Apr 16, 2026', slots: 10, price: '₹1,39,999', status: 'available' },
     ],
-    gallery: [japanImg, tokyoImg, baliImg, keralaImg],
+    gallery: ['https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800', 'https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?w=800', 'https://images.unsplash.com/photo-1583309219338-a582f1f9ca6b?w=800', 'https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=800'],
   },
   'dubai-luxury': {
     heroImage: dubaiImg,
@@ -560,7 +560,7 @@ export const tripDetails = {
       { id: 2, date: 'May 15 – May 19, 2026', slots: 3, price: '₹79,999', status: 'filling' },
       { id: 3, date: 'Nov 1 – Nov 5, 2026', slots: 12, price: '₹94,999', status: 'available' },
     ],
-    gallery: [dubaiImg, baliImg, parisImg, santoriniImg],
+    gallery: ['https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800', 'https://images.unsplash.com/photo-1518684079-3c830dcef090?w=800', 'https://images.unsplash.com/photo-1512632578888-169bbbc64f33?w=800', 'https://images.unsplash.com/photo-1546587348-d12660c30c50?w=800'],
   },
   'kerala-backwaters': {
     heroImage: keralaImg,
@@ -603,7 +603,7 @@ export const tripDetails = {
       { id: 2, date: 'May 10 – May 13, 2026', slots: 2, price: '₹29,999', status: 'filling' },
       { id: 3, date: 'Sep 20 – Sep 23, 2026', slots: 8, price: '₹34,999', status: 'available' },
     ],
-    gallery: [keralaImg, baliImg, dubaiImg, japanImg],
+    gallery: ['https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=800', 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800', 'https://images.unsplash.com/photo-1590050752117-238cb8903b2a?w=800', 'https://images.unsplash.com/photo-1504681869696-d977211a5f4c?w=800'],
   },
   'santorini-sunsets': {
     heroImage: santoriniImg,
@@ -648,7 +648,7 @@ export const tripDetails = {
       { id: 2, date: 'Jun 12 – Jun 17, 2026', slots: 8, price: '₹2,09,999', status: 'available' },
       { id: 3, date: 'Sep 18 – Sep 23, 2026', slots: 10, price: '₹1,89,999', status: 'available' },
     ],
-    gallery: [santoriniImg, parisImg, swissImg, dubaiImg],
+    gallery: ['https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800', 'https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?w=800', 'https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800', 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=800'],
   },
   'bali-adventure': {
     heroImage: baliImg,
@@ -660,8 +660,8 @@ export const tripDetails = {
     duration: '6 Days / 5 Nights',
     groupSize: '12-20 people',
     difficulty: 'Moderate',
-    price: '₹84,999',
-    originalPrice: '₹1,10,000',
+    price: '₹45,999',
+    originalPrice: '₹55,000',
     overview: 'This Bali adventure trip is designed for thrill-seekers who also love to unwind. Combine adrenaline-pumping activities like white water rafting, ATV rides, and cliff jumping with serene temple visits, rice terrace walks, and beachside relaxation. The perfect balance of adventure and chill.',
     itinerary: [
       { day: 1, title: 'Arrival & Beach', description: 'Airport pickup. Transfer to Seminyak resort. Evening beach sunset. Welcome seafood dinner.' },
@@ -690,11 +690,11 @@ export const tripDetails = {
       'Tips',
     ],
     batches: [
-      { id: 1, date: 'Apr 10 – Apr 15, 2026', slots: 6, price: '₹84,999', status: 'available' },
+      { id: 1, date: 'Apr 10 – Apr 15, 2026', slots: 6, price: '₹45,999', status: 'available' },
       { id: 2, date: 'May 20 – May 25, 2026', slots: 2, price: '₹79,999', status: 'filling' },
       { id: 3, date: 'Jul 5 – Jul 10, 2026', slots: 14, price: '₹89,999', status: 'available' },
     ],
-    gallery: [baliImg, tokyoImg, keralaImg, dubaiImg],
+    gallery: ['https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800', 'https://images.unsplash.com/photo-1573790387438-4da905039392?w=800', 'https://images.unsplash.com/photo-1539367628448-4bc5c9d171c8?w=800', 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=800'],
   },
   'paris-romance': {
     heroImage: parisImg,
@@ -739,7 +739,7 @@ export const tripDetails = {
       { id: 2, date: 'Jun 1 – Jun 5, 2026', slots: 8, price: '₹1,69,999', status: 'available' },
       { id: 3, date: 'Sep 10 – Sep 14, 2026', slots: 6, price: '₹1,49,999', status: 'available' },
     ],
-    gallery: [parisImg, santoriniImg, swissImg, baliImg],
+    gallery: ['https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800', 'https://images.unsplash.com/photo-1431274172761-fca41d930114?w=800', 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800', 'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=800'],
   },
   'ladakh-circuit': {
     heroImage: 'https://images.unsplash.com/photo-1581793745862-99fde7fa73d2',
@@ -942,7 +942,7 @@ export const tripDetails = {
     gallery: ['https://images.unsplash.com/photo-1626621341517-bbf3d9990a23', 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800', 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800'],
   },
   'rishikesh-adventure': {
-    heroImage: 'https://images.unsplash.com/photo-1592639296346-560c37a0f711',
+    heroImage: 'https://plus.unsplash.com/premium_photo-1697730398251-40cd8dc57e0b?w=800',
     title: 'Rishikesh Adventure Quest',
     subtitle: 'Rafting & Yoga',
     tagline: 'Find your peace and thrill in the holy city',
@@ -962,10 +962,10 @@ export const tripDetails = {
     inclusions: ['Camping', 'All Meals', '16km Rafting'],
     exclusions: ['Bungee Jumping', 'Transport to Rishikesh'],
     batches: [{ id: 1, date: 'May 15 – May 17, 2026', slots: 20, price: '₹5,999', status: 'available' }],
-    gallery: ['https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5', 'https://images.unsplash.com/photo-1592639296346-560c37a0f711?w=800', 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?w=800'],
+    gallery: ['https://plus.unsplash.com/premium_photo-1697730398251-40cd8dc57e0b?w=800', 'https://images.unsplash.com/photo-1592639296346-560c37a0f711?w=800', 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?w=800'],
   },
   'jaisalmer-desert-safari': {
-    heroImage: 'https://images.unsplash.com/photo-1477587458883-47145ed94245',
+    heroImage: 'https://plus.unsplash.com/premium_photo-1661962428918-6a57ab674e23?w=800',
     title: 'Jaisalmer Desert Safari',
     subtitle: 'Golden City Experience',
     tagline: 'Stay in the heart of Thar Desert',
@@ -985,7 +985,7 @@ export const tripDetails = {
     inclusions: ['Boutique Haveli & Tent', 'Desert Activities', 'Private Guide'],
     exclusions: ['Lunches', 'Monuments fees'],
     batches: [{ id: 1, date: 'Oct 20 – Oct 22, 2026', slots: 10, price: '₹12,499', status: 'available' }],
-    gallery: ['https://images.unsplash.com/photo-1477587458883-47145ed94245', 'https://images.unsplash.com/photo-1595658658481-d53d3f999875?w=800', 'https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
+    gallery: ['https://plus.unsplash.com/premium_photo-1661962428918-6a57ab674e23?w=800', 'https://images.unsplash.com/photo-1574267432553-4b4628081c31?w=800', 'https://images.unsplash.com/photo-1587474260584-136574528ed5?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
   },
   'kasol-kheerganga': {
     heroImage: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23',
@@ -1027,7 +1027,7 @@ export const tripDetails = {
     gallery: ['https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800', 'https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?w=800', 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800', 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800'],
   },
   'pushkar-cultural': {
-    heroImage: 'https://images.unsplash.com/photo-1477587458883-47145ed94245',
+    heroImage: 'https://images.unsplash.com/photo-1583261429112-e0e7fe037a49?w=800',
     title: 'Pushkar Cultural Soul',
     subtitle: 'Holy Lake & Temples',
     rating: '4.7',
@@ -1039,10 +1039,10 @@ export const tripDetails = {
       { day: 1, title: 'Pushkar Lake & Arti', description: 'Arrival. Witness the evening Aarti at Pushkar Ghat.' },
       { day: 2, title: 'Temple Trail & Savitri Mata', description: 'Visit the Brahma Temple and take the ropeway to Savitri Mata temple for panoramic views.' }
     ],
-    gallery: ['https://images.unsplash.com/photo-1477587458883-47145ed94245?w=800', 'https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?w=800', 'https://images.unsplash.com/photo-1595658658481-d53d3f999875?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1583261429112-e0e7fe037a49?w=800', 'https://images.unsplash.com/photo-1590075865003-e48277faa558?w=800', 'https://images.unsplash.com/photo-1548013146-72479768bada?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
   },
   'udaipur-lakes-palaces': {
-    heroImage: 'https://images.unsplash.com/photo-1595658658481-d53d3f999875',
+    heroImage: 'https://images.unsplash.com/photo-1565967511849-76a60a516170?w=800',
     title: 'Udaipur: City of Lakes',
     subtitle: 'Royal Rajasthan',
     rating: '4.9',
@@ -1054,7 +1054,7 @@ export const tripDetails = {
       { day: 1, title: 'City Palace & Crystal Gallery', description: 'Explore the grand architecture of the Mewar Dynasty.' },
       { day: 2, title: 'Lake Pichola & Jagmandir', description: 'Exclusive boat ride and lunch at Jagmandir island palace.' }
     ],
-    gallery: ['https://images.unsplash.com/photo-1595658658481-d53d3f999875?w=800', 'https://images.unsplash.com/photo-1477587458883-47145ed94245?w=800', 'https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=800', 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1565967511849-76a60a516170?w=800', 'https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=800', 'https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800', 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800'],
   },
 
   // ── Thailand ──
@@ -1310,13 +1310,13 @@ export const tripDetails = {
     ],
     gallery: [
       'https://images.unsplash.com/photo-1525596662741-e94ff9f26de1?w=800',
-      'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800',
-      'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800',
-      'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800',
+      'https://images.unsplash.com/photo-1518391846015-55a9cc003b25?w=800',
+      'https://images.unsplash.com/photo-1565018054866-968e244671af?w=800',
+      'https://images.unsplash.com/photo-1516815231560-8f41ec531527?w=800',
     ],
   },
   'singapore-family': {
-    heroImage: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1565018054866-968e244671af?w=800',
     title: 'Singapore Family Fun',
     subtitle: 'Kid-Friendly Adventure',
     tagline: 'Adventure for every age — from 5 to 85!',
@@ -1355,10 +1355,10 @@ export const tripDetails = {
       { id: 3, date: 'Dec 26 – Dec 29, 2026', slots: 4, price: '₹62,999', status: 'filling' },
     ],
     gallery: [
-      'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800',
+      'https://images.unsplash.com/photo-1565018054866-968e244671af?w=800',
+      'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=800',
       'https://images.unsplash.com/photo-1525596662741-e94ff9f26de1?w=800',
-      'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800',
-      'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800',
+      'https://images.unsplash.com/photo-1518391846015-55a9cc003b25?w=800',
     ],
   },
 
@@ -1544,10 +1544,10 @@ export const tripDetails = {
       { id: 1, date: 'May 15 – May 20, 2026', slots: 8, price: '₹18,999', status: 'available' },
       { id: 2, date: 'Aug 5 – Aug 10, 2026', slots: 10, price: '₹17,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800', 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800', 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800', 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800', 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=800', 'https://images.unsplash.com/photo-1590050752117-238cb8903b2a?w=800', 'https://images.unsplash.com/photo-1504681869696-d977211a5f4c?w=800'],
   },
   'tea-trails': {
-    heroImage: 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1590050752117-238cb8903b2a?w=800',
     title: 'Tea Trails & Backwater Tales',
     subtitle: 'Kerala Classic',
     tagline: 'Spice gardens of Munnar to luxury houseboats of Alleppey',
@@ -1556,8 +1556,8 @@ export const tripDetails = {
     duration: '7 Days / 6 Nights',
     groupSize: '10-16 people',
     difficulty: 'Easy',
-    price: '₹22,999',
-    originalPrice: '₹30,000',
+    price: '₹24,999',
+    originalPrice: '₹32,000',
     overview: 'The definitive Kerala journey — from the emerald tea estates of Munnar to the tranquil backwaters of Alleppey, with a dose of culture in Kochi and spiritual vibrance in Thekkady. This 7-day package is Kerala at its most quintessential.',
     itinerary: [
       { day: 1, title: 'Arrival in Kochi', description: 'Fort Kochi heritage walk. Chinese fishermen. Dutch Palace. Kathakali show in the evening.' },
@@ -1571,10 +1571,10 @@ export const tripDetails = {
     inclusions: ['6 nights (Kochi 1N, Munnar 2N, Thekkady 1N, Houseboat 1N, Kovalam 1N)', 'Daily breakfast & 3 dinners', 'Tea factory visit', 'Periyar wildlife boat', 'Luxury houseboat all meals', 'All AC transfers', 'Guide'],
     exclusions: ['Airfare', 'Lunches', 'Entry fees at monuments', 'Travel insurance'],
     batches: [
-      { id: 1, date: 'Apr 25 – May 1, 2026', slots: 5, price: '₹22,999', status: 'filling' },
-      { id: 2, date: 'Sep 10 – Sep 16, 2026', slots: 12, price: '₹21,999', status: 'available' },
+      { id: 1, date: 'Apr 25 – May 1, 2026', slots: 5, price: '₹24,999', status: 'filling' },
+      { id: 2, date: 'Sep 10 – Sep 16, 2026', slots: 12, price: '₹23,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800', 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800', 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800', 'https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1590050752117-238cb8903b2a?w=800', 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800', 'https://images.unsplash.com/photo-1504681869696-d977211a5f4c?w=800', 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=800'],
   },
 
   // ── Andaman ──
@@ -1604,7 +1604,7 @@ export const tripDetails = {
       { id: 1, date: 'Apr 20 – Apr 24, 2026', slots: 6, price: '₹24,999', status: 'available' },
       { id: 2, date: 'Nov 5 – Nov 9, 2026', slots: 10, price: '₹26,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800', 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800', 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=800', 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800', 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=800', 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800', 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800'],
   },
   'andaman-heritage': {
     heroImage: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800',
@@ -1633,7 +1633,7 @@ export const tripDetails = {
       { id: 1, date: 'May 10 – May 15, 2026', slots: 8, price: '₹29,999', status: 'available' },
       { id: 2, date: 'Oct 15 – Oct 20, 2026', slots: 12, price: '₹28,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800', 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=800', 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800', 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800', 'https://images.unsplash.com/photo-1558862107-d49ef2a04d72?w=800', 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800', 'https://images.unsplash.com/photo-1588416936097-41850ab3d86d?w=800'],
   },
 
   // ── Kashmir ──
@@ -1665,7 +1665,7 @@ export const tripDetails = {
       { id: 1, date: 'May 1 – May 7, 2026', slots: 10, price: '₹29,999', status: 'available' },
       { id: 2, date: 'Jun 10 – Jun 16, 2026', slots: 8, price: '₹32,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800', 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1566837945700-30057527ade0?w=800', 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800', 'https://images.unsplash.com/photo-1566837945700-30057527ade0?w=800', 'https://images.unsplash.com/photo-1585409677983-0f6c41ca9c3b?w=800', 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=800'],
   },
 
   // ── Ladakh ──
@@ -1760,7 +1760,7 @@ export const tripDetails = {
       { id: 1, date: 'Apr 10 – Apr 15, 2026', slots: 6, price: '₹24,999', status: 'available' },
       { id: 2, date: 'Oct 5 – Oct 10, 2026', slots: 10, price: '₹26,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800', 'https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?w=800', 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1587922546307-776227941871?w=800', 'https://images.unsplash.com/photo-1609920658906-8223bd289001?w=800', 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800'],
   },
   'sikkim-north': {
     heroImage: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800',
@@ -1790,12 +1790,12 @@ export const tripDetails = {
       { id: 1, date: 'May 20 – May 26, 2026', slots: 4, price: '₹29,999', status: 'filling' },
       { id: 2, date: 'Sep 15 – Sep 21, 2026', slots: 8, price: '₹28,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?w=800', 'https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1600618528240-fb9fc964b853?w=800', 'https://images.unsplash.com/photo-1586611292717-f828b167408c?w=800', 'https://images.unsplash.com/photo-1569288052389-dac9b01c9c05?w=800'],
   },
 
   // ── Bhutan ──
   'bhutan-clouds': {
-    heroImage: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1553856622-d1b352e9a211?w=800',
     title: 'Bhutan: Kingdom of Clouds',
     subtitle: '8-Day Bhutan Circuit',
     tagline: 'Dzongs, valleys & the land of Gross National Happiness',
@@ -1804,8 +1804,8 @@ export const tripDetails = {
     duration: '8 Days / 7 Nights',
     groupSize: '8-16 people',
     difficulty: 'Easy-Moderate',
-    price: '₹74,999',
-    originalPrice: '₹95,000',
+    price: '₹45,000',
+    originalPrice: '₹60,000',
     overview: 'Bhutan is unlike anywhere else on Earth — a kingdom that measures success in happiness rather than GDP, where ancient Dzong fortresses guard misty river valleys, and where a visit to a "Fertility Temple" is a cultural must. This 8-day comprehensive circuit covers Phuentsholing, Thimphu, the stunning Punakha Dzong, Paro, and the offbeat Phobjikha Valley.',
     itinerary: [
       { day: 1, title: 'Arrival at Phuentsholing', description: 'Cross the border from India. Check into hotel. Evening walk at the Bhutan Gate.' },
@@ -1820,13 +1820,13 @@ export const tripDetails = {
     inclusions: ['7 nights in 3-star hotels', 'Daily breakfast & dinner', 'Bhutan Sustainable Development Fee (SDF)', 'All transfers in AC vehicle', 'Licensed Bhutanese guide', 'All monument entries', 'Tiger\'s Nest hike guide'],
     exclusions: ['Flights to Paro (if flying)', 'Lunches', 'Personal expenses', 'Travel insurance', 'Alcohol'],
     batches: [
-      { id: 1, date: 'Apr 15 – Apr 22, 2026', slots: 6, price: '₹74,999', status: 'filling' },
-      { id: 2, date: 'Oct 10 – Oct 17, 2026', slots: 12, price: '₹72,999', status: 'available' },
+      { id: 1, date: 'Apr 15 – Apr 22, 2026', slots: 6, price: '₹45,000', status: 'filling' },
+      { id: 2, date: 'Oct 10 – Oct 17, 2026', slots: 12, price: '₹43,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800', 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800', 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1553856622-d1b352e9a211?w=800', 'https://images.unsplash.com/photo-1571401835393-8c5f35328320?w=800', 'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=800', 'https://images.unsplash.com/photo-1609920658906-8223bd289001?w=800'],
   },
   'bhutan-happiness': {
-    heroImage: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1571401835393-8c5f35328320?w=800',
     title: "Himalayan Happiness & Tiger's Nest",
     subtitle: 'Bhutan Spiritual Highlights',
     tagline: "Paro Taktsang hike, Kharbandi Gompa & local handicraft nights",
@@ -1851,7 +1851,7 @@ export const tripDetails = {
       { id: 1, date: 'May 5 – May 9, 2026', slots: 5, price: '₹54,999', status: 'available' },
       { id: 2, date: 'Sep 20 – Sep 24, 2026', slots: 10, price: '₹52,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800', 'https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800', 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1571401835393-8c5f35328320?w=800', 'https://images.unsplash.com/photo-1553856622-d1b352e9a211?w=800', 'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=800', 'https://images.unsplash.com/photo-1587922546307-776227941871?w=800'],
   },
 
   // ── Spiti Valley ──
@@ -1883,7 +1883,7 @@ export const tripDetails = {
       { id: 1, date: 'Jun 25 – Jul 1, 2026', slots: 6, price: '₹19,999', status: 'available' },
       { id: 2, date: 'Aug 10 – Aug 16, 2026', slots: 10, price: '₹21,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800', 'https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?w=800', 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800', 'https://images.unsplash.com/photo-1597074866923-dc0589150358?w=800', 'https://images.unsplash.com/photo-1614082242765-7c98ca0f3df3?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
   },
   'spiti-gateway': {
     heroImage: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800',
@@ -1913,7 +1913,7 @@ export const tripDetails = {
       { id: 1, date: 'Jun 20 – Jun 26, 2026', slots: 5, price: '₹21,999', status: 'available' },
       { id: 2, date: 'Aug 5 – Aug 11, 2026', slots: 8, price: '₹23,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800', 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800', 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800', 'https://images.unsplash.com/photo-1540202404-a2f29016b523?w=800', 'https://images.unsplash.com/photo-1597074866923-dc0589150358?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
   },
 
   // ── Sri Lanka ──
@@ -1946,7 +1946,7 @@ export const tripDetails = {
       { id: 2, date: 'Aug 10 – Aug 16, 2026', slots: 6, price: '₹42,999', status: 'filling' },
       { id: 3, date: 'Dec 15 – Dec 21, 2026', slots: 12, price: '₹47,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800', 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800', 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800', 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800', 'https://images.unsplash.com/photo-1588416936097-41850ab3d86d?w=800', 'https://images.unsplash.com/photo-1439066615861-d1af74d74000?w=800', 'https://images.unsplash.com/photo-1494233892892-84542a694e72?w=800'],
   },
 
   // ── Family Packages ──
@@ -2056,7 +2056,7 @@ export const tripDetails = {
     ],
   },
   'udaipur-mountabu-family': {
-    heroImage: 'https://images.unsplash.com/photo-1595658658481-d53d3f999875?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=800',
     title: 'Udaipur & Mount Abu Family Tour',
     subtitle: 'City of Lakes & Rajasthan\'s Only Hill Station',
     tagline: 'Royal palaces, marble temples & serene Nakki Lake sunsets',
@@ -2102,10 +2102,10 @@ export const tripDetails = {
       { id: 3, date: 'Oct 1 – Oct 5, 2026', slots: 10, price: '₹60,000', status: 'available' },
     ],
     gallery: [
-      'https://images.unsplash.com/photo-1595658658481-d53d3f999875?w=800',
-      'https://images.unsplash.com/photo-1477587458883-47145ed94245?w=800',
       'https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=800',
-      'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800',
+      'https://images.unsplash.com/photo-1477587458883-47145ed94245?w=800',
+      'https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800',
+      'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800',
     ],
   },
   'mussoorie-nainital-rishikesh-family': {
@@ -2170,7 +2170,7 @@ export const domesticDestinations = [
       { name: "Keralan Heights & Hidden Falls", id: "kerala-heights", detail: "A 6-day offbeat adventure focusing on the misty meadows of Vagamon and the cliffs of Varkala. Highlights include sunrise jeep off-roading, a guided forest trail to a hidden waterfall, and a sunset mangrove boat ride." },
       { name: "Tea Trails & Backwater Tales", id: "tea-trails", detail: "A comprehensive journey from the spice gardens of Munnar to the luxury houseboats of Alleppey. This package features tea tasting sessions, traditional Kathakali shows, and a heritage walk through the colonial streets of Fort Kochi." }
     ],
-    thumbnail: "https://images.unsplash.com/photo-1593693397690-362cb9666fc2"
+    thumbnail: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944"
   },
   {
     state: "Andaman",
@@ -2221,7 +2221,7 @@ export const domesticDestinations = [
       { name: "Bhutan: Kingdom of Clouds (8 Days)", id: "bhutan-clouds", detail: "A comprehensive 7-night/8-day circuit covering Phuentsholing, Thimphu, Punakha, Paro, and the offbeat Phobjikha Valley. Includes visits to the Simply Bhutan Museum, Chimi Lhakhang \"Fertility Temple,\" and the longest suspension bridge in the country." },
       { name: "Himalayan Happiness & Tiger's Nest Hike", id: "bhutan-happiness", detail: "A curated adventure focusing on Bhutan's spiritual heart. Highlights include a moderate hike to Paro Taktsang, sunset views from Kharbandi Gompa, and an exploration of Paro's vibrant local handicraft markets and nightlife." }
     ],
-    thumbnail: "https://images.unsplash.com/photo-1537996194471-e657df975ab4"
+    thumbnail: "https://images.unsplash.com/photo-1553856622-d1b352e9a211"
   },
   {
     state: "Spiti Valley",
@@ -2250,7 +2250,7 @@ export const domesticDestinations = [
       { name: "Rishikesh & Mussoorie Family Trip", id: "rishikesh-mussoorie-family", detail: "A 4-day family getaway from Delhi covering the spiritual vibes of Rishikesh with Ganga Aarti and the hill station charm of Mussoorie with Kempty Falls, Mall Road, and Gun Hill." },
       { name: "Mussoorie, Nainital & Rishikesh Family Tour", id: "mussoorie-nainital-rishikesh-family", detail: "An epic 6-day triple hill station tour covering Rishikesh's spiritual vibes, Mussoorie's colonial charm, and Nainital's enchanting lakes — all in one seamless journey from Delhi." }
     ],
-    thumbnail: "https://images.unsplash.com/photo-1592639296346-560c37a0f711"
+    thumbnail: "https://images.unsplash.com/photo-1590523277543-a94d2e4eb00b"
   },
   {
     state: "Himachal Pradesh",
@@ -2268,7 +2268,7 @@ export const domesticDestinations = [
     tours: [
       { name: "Udaipur & Mount Abu Family Tour", id: "udaipur-mountabu-family", detail: "A 5-day family tour combining the Venice of the East (Udaipur) with Rajasthan's only hill station (Mount Abu). Stay at Revaas Lake Boutique Hotel and Hotel Royal Palace with daily breakfast & dinner." }
     ],
-    thumbnail: "https://images.unsplash.com/photo-1595658658481-d53d3f999875"
+    thumbnail: "https://images.unsplash.com/photo-1477587458883-47145ed94245?w=800"
   }
 ];
 
@@ -2337,9 +2337,9 @@ export const internationalDestinations = [
   },
   {
     country: "Singapore",
-    about: "Singapore is the world's most impeccably planned city-state — a tropical garden city that blends Michelin-starred hawker stalls with futuristic Supertrees, colonial history with cutting-edge architecture, and diverse cultures (Chinese, Malay, Indian, Western) in a single square kilometre. Spotlessly safe, endlessly exciting, and surprisingly affordable for families, couples, and solo adventurers alike.",
+    about: "Singapore is the world's most impeccably planned city-state — a tropical garden city offering adventure for every age, from 5 to 85! Blending Michelin-starred hawker stalls with futuristic Supertrees and colonial history, it's spotlessly safe, endlessly exciting, and perfectly suited for families, couples, and solo adventurers alike.",
     cities: ["Marina Bay", "Sentosa Island", "Orchard Road", "Jewel Changi"],
-    thumbnail: "https://images.unsplash.com/photo-1525596662741-e94ff9f26de1",
+    thumbnail: "https://images.unsplash.com/photo-1518391846015-55a9cc003b25",
     tours: [
       { name: "Singapore Highlights", id: "singapore-highlights" },
       { name: "Singapore Family Fun", id: "singapore-family" },
@@ -2468,24 +2468,54 @@ export const testimonials = [
     name: "Yash Jain",
     city: "Delhi",
     rating: 5,
-    text: "Zurii is out of this world! Best Bali experience ever!",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yash"
+    text: "Zurii made our Bali honeymoon absolutely magical! From the sunrise at Mount Batur to the Uluwatu sunset — every moment was curated to perfection. The team even arranged a surprise dinner on the beach. We'll be coming back for our anniversary!",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yash",
+    trip: "Bali, Indonesia"
   },
   {
     id: 2,
     name: "Anubhav Bhatt",
     city: "Gurgaon",
     rating: 5,
-    text: "Made lifelong friends on my Spiti trip.",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Anubhav"
+    text: "The Spiti Valley expedition was a life-changing experience. The landscapes were surreal — Chandratal Lake under a blanket of stars is something I'll never forget. Made lifelong friends on this trip. Zurii's planning was flawless.",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Anubhav",
+    trip: "Spiti Valley"
   },
   {
     id: 3,
     name: "Sanya Arora",
     city: "Mumbai",
     rating: 5,
-    text: "Everything was perfect. 10/10!",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sanya"
+    text: "Took my parents on the Kashmir Family Grandeur tour. Everything from the shikara ride on Dal Lake to the Gondola in Gulmarg was perfect. Mom said it was the best trip of her life! 10/10 would recommend Zurii to every family.",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sanya",
+    trip: "Kashmir"
+  },
+  {
+    id: 4,
+    name: "Rohit Sharma",
+    city: "Bangalore",
+    rating: 5,
+    text: "The Kerala backwaters houseboat experience was beyond anything I imagined. Waking up to the sound of water, fresh Kerala meals onboard, and the tea plantation visit in Munnar — it was the perfect digital detox our family needed.",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rohit",
+    trip: "Kerala Backwaters"
+  },
+  {
+    id: 5,
+    name: "Priya Kapoor",
+    city: "Pune",
+    rating: 5,
+    text: "Singapore with two kids under 10 sounded daunting, but Zurii made it effortless. Universal Studios, the Night Safari, and Gardens by the Bay — the kids are STILL talking about it. The family-friendly itinerary was spot-on.",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Priya",
+    trip: "Singapore Family Fun"
+  },
+  {
+    id: 6,
+    name: "Arjun Mehta",
+    city: "Chandigarh",
+    rating: 5,
+    text: "Ladakh was on my bucket list for years. The Pangong Lake sunrise, Khardung La pass, and the serenity of Nubra Valley — Zurii handled everything including permits and oxygen. A truly once-in-a-lifetime adventure.",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Arjun",
+    trip: "Ladakh Explorer"
   }
 ];
 
@@ -2522,7 +2552,7 @@ export const guides = [
     id: 3,
     title: 'Udaipur & Mount Abu: A Royal Rajasthan Family Guide',
     subtitle: 'Explore the Venice of the East and Rajasthan\'s only hill station — from City Palace to Dilwara Temples, here is everything you need to know.',
-    image: 'https://images.unsplash.com/photo-1595658658481-d53d3f999875?w=800',
+    image: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800',
     date: 'Apr 05, 2026',
     time: '7 min read',
     slug: 'udaipur-mountabu-guide',
@@ -2548,7 +2578,7 @@ export const guides = [
     id: 5,
     title: 'Nainital: The Lake District of India',
     subtitle: 'A complete guide to Nainital\'s enchanting lakes, scenic viewpoints, and family-friendly attractions in the Kumaon hills.',
-    image: 'https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?w=800',
+    image: 'https://images.unsplash.com/photo-1571536802807-30451e3955d8?w=800',
     date: 'Mar 20, 2026',
     time: '5 min read',
     slug: 'nainital-lake-guide',
@@ -2561,7 +2591,7 @@ export const guides = [
     id: 6,
     title: 'How to Plan a Budget Hill Station Trip from Delhi',
     subtitle: 'Smart strategies to explore Mussoorie, Rishikesh, Nainital, and more without breaking the bank — perfect for young families.',
-    image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800',
+    image: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800',
     date: 'Mar 15, 2026',
     time: '6 min read',
     slug: 'budget-hill-station-trip',

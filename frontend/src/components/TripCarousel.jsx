@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { carouselTrips as trips } from "../data";
+import GetQuoteModal from "./GetQuoteModal";
 
 const CARD_WIDTH = 300;
 const GAP = 24;
@@ -10,6 +11,7 @@ const TripCarousel = () => {
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const trackRef = useRef(null);
   const navigate = useNavigate();
+  const [quoteTrip, setQuoteTrip] = useState(null);
 
   // Auto play — cycles through all cards continuously
   useEffect(() => {
@@ -95,6 +97,16 @@ const TripCarousel = () => {
                       </span>
                       ⭐ {trip.rating}
                     </div>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setQuoteTrip(trip);
+                      }}
+                      className="mt-3 w-full py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-bold rounded-full hover:brightness-110 active:scale-[0.97] transition-all shadow-md shadow-emerald-500/20"
+                    >
+                      💰 Get Quote
+                    </button>
                   </div>
 
                 </div>
@@ -119,6 +131,12 @@ const TripCarousel = () => {
         ))}
       </div>
 
+      {/* Get Quote Modal */}
+      <GetQuoteModal
+        isOpen={!!quoteTrip}
+        onClose={() => setQuoteTrip(null)}
+        tripName={quoteTrip?.title || ""}
+      />
     </section>
   );
 };

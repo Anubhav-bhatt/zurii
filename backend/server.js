@@ -14,6 +14,11 @@ app.use(cors({
 }));
 app.use(express.json());
 
+if (!process.env.DATABASE_URL) {
+  console.error('ERROR: DATABASE_URL is not set. Please create a .env file in the backend/ directory with your PostgreSQL connection string.');
+  console.error('Example: DATABASE_URL=postgres://user:password@localhost:5432/zurii_db');
+  process.exit(1);
+}
 const config = require('pg-connection-string').parse(process.env.DATABASE_URL);
 config.ssl = { rejectUnauthorized: false };
 const pool = new Pool(config);

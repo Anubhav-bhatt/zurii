@@ -36,14 +36,12 @@ const Footer = () => {
               {/* Column 1: Brand */}
               <div className="lg:col-span-1">
                 <div className="flex items-center gap-2.5 mb-5">
-                  <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
-                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                    </svg>
-                  </div>
-                  <span className="text-xl font-black tracking-tight bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent select-none">
-                    zurii
-                  </span>
+                  <img
+                    src="/zurii-logo.png"
+                    alt="Zurii Travels"
+                    className="h-16 w-auto object-contain rounded-lg"
+                    style={{ filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.15))' }}
+                  />
                 </div>
                 <p className="text-sm text-gray-400 leading-relaxed mb-6">
                   Your trusted travel partner crafting unforgettable journeys. From weekend getaways to grand international tours — we make every trip extraordinary.

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getTripById } from "../data";
+import GetQuoteModal from "./GetQuoteModal";
 
 const statusStyle = {
   available: "bg-emerald-100 text-emerald-700",
@@ -65,6 +66,7 @@ const TripDetailPage = () => {
   const navigate = useNavigate();
   const trip = getTripById(id);
   const [lightboxIndex, setLightboxIndex] = useState(null);
+  const [showQuoteModal, setShowQuoteModal] = useState(false);
 
   if (!trip) {
     return (
@@ -123,6 +125,13 @@ const TripDetailPage = () => {
             )}
             <span className="text-4xl font-black text-violet-600">{trip.price}</span>
             <span className="text-gray-500 text-sm mt-1">per person</span>
+
+            <button
+              onClick={() => setShowQuoteModal(true)}
+              className="mt-4 w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-sm rounded-xl hover:brightness-110 active:scale-[0.97] transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
+            >
+              💰 Get Quote
+            </button>
           </div>
         </div>
 
@@ -230,6 +239,13 @@ const TripDetailPage = () => {
         onClose={() => setLightboxIndex(null)}
         onPrev={() => setLightboxIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length)}
         onNext={() => setLightboxIndex((prev) => (prev + 1) % galleryImages.length)}
+      />
+
+      {/* Get Quote Modal */}
+      <GetQuoteModal
+        isOpen={showQuoteModal}
+        onClose={() => setShowQuoteModal(false)}
+        tripName={trip.title}
       />
     </div>
   );

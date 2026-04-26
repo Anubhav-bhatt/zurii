@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { categories, internationalDestinations, domesticDestinations, tripDetails, topbarCategories } from "../data";
+import GetQuoteModal from "./GetQuoteModal";
 
 const pageConfig = {
   international: {
@@ -76,6 +78,7 @@ const budgetTrips = Object.entries(tripDetails)
 const ExplorePage = () => {
   const { slug: paramSlug } = useParams();
   const navigate = useNavigate();
+  const [quoteTrip, setQuoteTrip] = useState(null);
 
   // /international route has no slug param
   const slug = paramSlug || "international";
@@ -156,12 +159,14 @@ const ExplorePage = () => {
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Trip Packages</h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {relatedTrips.map((trip) => (
-                  <TripCard key={trip.id} trip={trip} navigate={navigate} />
+                  <TripCard key={trip.id} trip={trip} navigate={navigate} onGetQuote={setQuoteTrip} />
                 ))}
               </div>
             </div>
           )}
         </div>
+
+        <GetQuoteModal isOpen={!!quoteTrip} onClose={() => setQuoteTrip(null)} tripName={quoteTrip?.title || ""} />
       </div>
     );
   }
@@ -221,7 +226,7 @@ const ExplorePage = () => {
                   return europeanKeywords.some((k) => loc.includes(k));
                 })
                 .map(([id, trip]) => (
-                  <TripCard key={id} trip={{ id, ...trip }} navigate={navigate} />
+                  <TripCard key={id} trip={{ id, ...trip }} navigate={navigate} onGetQuote={setQuoteTrip} />
                 ))}
             </div>
           </div>
@@ -234,7 +239,7 @@ const ExplorePage = () => {
             {budgetTrips.length > 0 ? (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {budgetTrips.map((trip) => (
-                  <TripCard key={trip.id} trip={trip} navigate={navigate} />
+                  <TripCard key={trip.id} trip={trip} navigate={navigate} onGetQuote={setQuoteTrip} />
                 ))}
               </div>
             ) : (
@@ -285,7 +290,7 @@ const ExplorePage = () => {
               {trips.length > 0 ? (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {trips.map((trip) => (
-                    <TripCard key={trip.id} trip={trip} navigate={navigate} />
+                    <TripCard key={trip.id} trip={trip} navigate={navigate} onGetQuote={setQuoteTrip} />
                   ))}
                 </div>
               ) : (
@@ -295,12 +300,14 @@ const ExplorePage = () => {
           );
         })()}
       </div>
+
+      <GetQuoteModal isOpen={!!quoteTrip} onClose={() => setQuoteTrip(null)} tripName={quoteTrip?.title || ""} />
     </div>
   );
 };
 
 // Reusable trip card
-const TripCard = ({ trip, navigate }) => (
+const TripCard = ({ trip, navigate, onGetQuote }) => (
   <div onClick={() => navigate(`/trip/${trip.id}`)} className="group bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg cursor-pointer transition">
     {trip.heroImage && <img src={trip.heroImage} alt={trip.title} className="h-44 w-full object-cover group-hover:scale-105 transition duration-500" />}
     <div className="p-5">
@@ -310,6 +317,15 @@ const TripCard = ({ trip, navigate }) => (
         <span className="font-bold text-violet-600">{trip.price}</span>
         {trip.duration && <span className="text-xs text-gray-400">{trip.duration}</span>}
       </div>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onGetQuote && onGetQuote(trip);
+        }}
+        className="mt-3 w-full py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-bold rounded-full hover:brightness-110 active:scale-[0.97] transition-all shadow-md shadow-emerald-500/20"
+      >
+        💰 Get Quote
+      </button>
     </div>
   </div>
 );

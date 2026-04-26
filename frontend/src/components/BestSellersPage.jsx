@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { bestSellerTrips, badgeColors } from "../data";
+import GetQuoteModal from "./GetQuoteModal";
 
 const BestSellersPage = () => {
   const navigate = useNavigate();
+  const [quoteTrip, setQuoteTrip] = useState(null);
   return (
     <section className="py-20 px-6 max-w-7xl mx-auto min-h-screen">
       <div className="text-center mb-12">
@@ -31,14 +34,30 @@ const BestSellersPage = () => {
               <div className="text-xs text-gray-400 mb-4">{trip.duration}</div>
               <button
                 onClick={() => navigate(`/trip/${trip.id}`)}
-                className="mt-auto px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-full font-bold text-sm transition"
+                className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-full font-bold text-sm transition"
               >
                 View Details
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setQuoteTrip(trip);
+                }}
+                className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-full font-bold text-sm hover:brightness-110 active:scale-[0.97] transition-all shadow-md shadow-emerald-500/20"
+              >
+                💰 Get Quote
               </button>
             </div>
           </div>
         ))}
       </div>
+
+      {/* Get Quote Modal */}
+      <GetQuoteModal
+        isOpen={!!quoteTrip}
+        onClose={() => setQuoteTrip(null)}
+        tripName={quoteTrip?.title || ""}
+      />
     </section>
   );
 };
