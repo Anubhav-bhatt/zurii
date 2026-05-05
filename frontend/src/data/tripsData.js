@@ -22,18 +22,65 @@ export const domesticDestinations = [
 
 export const internationalDestinations = [
   {
-    region: "Europe",
+    region: "South East Asia",
     countries: [
-      {
-        country: "France",
-        cities: ["Paris", "Nice"]
-      },
-      {
-        country: "Italy",
-        cities: ["Rome", "Venice"]
-      }
+      { country: "Philippines", cities: ["Manila", "Palawan", "Cebu"] },
+      { country: "Thailand", cities: ["Bangkok", "Phuket", "Chiang Mai"] },
+      { country: "Bali", cities: ["Ubud", "Seminyak", "Nusa Penida"] },
+      { country: "Vietnam", cities: ["Hanoi", "Ho Chi Minh City", "Da Nang"] },
     ]
-  }
+  },
+  {
+    region: "East Asia",
+    countries: [
+      { country: "Japan", cities: ["Tokyo", "Kyoto", "Osaka"] },
+      { country: "South Korea", cities: ["Seoul", "Busan", "Jeju Island"] },
+    ]
+  },
+  {
+    region: "Western Europe",
+    countries: [
+      { country: "Italy", cities: ["Milan", "Rome", "Florence", "Venice"] },
+      { country: "France", cities: ["Paris", "Nice"] },
+      { country: "Switzerland", cities: ["Zurich", "Lucerne", "Interlaken", "Zermatt"] },
+      { country: "Netherlands", cities: ["Amsterdam"] },
+      { country: "Germany", cities: ["Berlin", "Munich", "Hamburg", "Frankfurt"] },
+      { country: "Belgium", cities: ["Brussels"] },
+      { country: "Luxembourg", cities: ["Luxembourg City"] },
+      { country: "Greece", cities: ["Mykonos", "Santorini", "Athens"] },
+    ]
+  },
+  {
+    region: "Eastern Europe & Caucasus",
+    countries: [
+      { country: "Georgia", cities: ["Tbilisi", "Batumi", "Kazbegi"] },
+      { country: "Russia", cities: ["Moscow", "St. Petersburg", "Sochi"] },
+      { country: "Iceland", cities: ["Reykjavik", "Vik", "Akureyri"] },
+    ]
+  },
+  {
+    region: "South Asia",
+    countries: [
+      { country: "Sri Lanka", cities: ["Colombo", "Kandy", "Ella", "Galle"] },
+      { country: "Bhutan", cities: ["Thimphu", "Paro", "Punakha"] },
+    ]
+  },
+  {
+    region: "Central Asia",
+    countries: [
+      { country: "Kazakhstan", cities: ["Almaty", "Nur-Sultan", "Charyn Canyon"] },
+      { country: "Mongolia", cities: ["Ulaanbaatar", "Gobi Desert", "Khuvsgul Lake"] },
+    ]
+  },
+  {
+    region: "Middle East",
+    countries: [
+      { country: "Dubai", cities: ["Dubai City", "Abu Dhabi", "Palm Jumeirah"] },
+      { country: "Egypt", cities: ["Cairo", "Luxor", "Aswan", "Hurghada"] },
+      { country: "Turkey", cities: ["Istanbul", "Cappadocia", "Antalya", "Bodrum"] },
+      { country: "Oman", cities: ["Muscat", "Salalah", "Nizwa", "Wahiba Sands"] },
+    ]
+  },
 ];
 
 export const categories = [

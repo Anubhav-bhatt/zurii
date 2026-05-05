@@ -6,7 +6,6 @@ import {
   domesticDestinations as staticDomesticData,
   internationalFallback,
   bestSellerTrips as staticBestSellers,
-  topbarCategories,
   getAllTrips
 } from '../data';
 
@@ -14,8 +13,7 @@ const menuItems = [
   { label: 'International Tours', icon: '🌍', path: '/explore/international' },
   { label: 'Domestic Tours', icon: '🇮🇳', path: '/explore/domestic' },
   { label: 'Adventure', icon: '🏔️', path: '/explore/adventure' },
-  { label: 'Beach', icon: '🏖️', path: '/explore/beach' },
-  { label: 'Heritage', icon: '🏛️', path: '/explore/heritage' }
+  { label: 'Beach', icon: '🏖️', path: '/explore/beach' }
 ];
 
 const Topbar = () => {
@@ -31,10 +29,11 @@ const Topbar = () => {
   const [domesticOpen, setDomesticOpen] = useState(false);
   const [internationalOpen, setInternationalOpen] = useState(false);
   const [bestSellersOpen, setBestSellersOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileExpanded, setMobileExpanded] = useState(null);
 
   const internationalDestinations = internationalFallback;
   const [activeIntlRegion, setActiveIntlRegion] = useState(internationalFallback[0]);
-  const categories = topbarCategories;
   const bestSellerTrips = staticBestSellers;
   const [selectedDomestic, setSelectedDomestic] = useState(staticDomesticData[0]);
 
@@ -88,7 +87,7 @@ const Topbar = () => {
 
   return (
     <>
-      <nav className="fixed top-5 left-1/2 -translate-x-1/2 w-[96%] max-w-6xl z-50">
+      <nav className="fixed top-2 left-1/2 -translate-x-1/2 w-[98%] md:w-[96%] max-w-6xl z-50">
         <div
           className="bg-white/70 backdrop-blur-2xl border border-gray-200/50 rounded-[20px] px-5 py-2.5"
           style={{ boxShadow: '0 4px 30px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)' }}
@@ -99,7 +98,7 @@ const Topbar = () => {
               <img
                 src="/zurii-logo.png"
                 alt="Zurii Travels"
-                className="h-10 w-auto object-contain"
+                className="h-8 md:h-10 w-auto object-contain"
               />
             </div>
 
@@ -124,42 +123,25 @@ const Topbar = () => {
 
                 {exploreOpen && (
                   <div className="absolute top-full left-0 mt-0 pt-3 w-[440px] z-50 animate-in fade-in zoom-in-95 duration-150">
-                    <div className="bg-white border border-gray-100 rounded-[20px] p-5 shadow-xl shadow-gray-200/60 flex flex-col gap-4">
-                      <div className="grid grid-cols-2 gap-6">
-                        <div className="flex flex-col gap-2">
-                          <p className="text-[9px] font-black text-violet-500 uppercase tracking-[0.18em] pb-1.5 border-b border-violet-50">Quick Links</p>
-                          {menuItems.map((item, idx) => (
-                            <button
-                              key={idx}
-                              onClick={() => {
-                                setExploreOpen(false);
-                                if (item.path.startsWith('#')) {
-                                  const target = document.getElementById(item.path.substring(1));
-                                  if (target) target.scrollIntoView({ behavior: 'smooth' });
-                                  else navigate('/');
-                                } else { navigate(item.path); }
-                              }}
-                              className="flex items-center gap-2 py-1 text-[11.5px] text-gray-500 font-semibold hover:text-violet-600 hover:translate-x-1 transition-all text-left"
-                            >
-                              <span className="text-[13px] w-4">{item.icon}</span>
-                              <span>{item.label}</span>
-                            </button>
-                          ))}
-                        </div>
-                        <div className="flex flex-col gap-2">
-                          <p className="text-[9px] font-black text-indigo-500 uppercase tracking-[0.18em] pb-1.5 border-b border-indigo-50">Travel Styles</p>
-                          {categories.length > 0 ? categories.map((cat, idx) => (
-                            <button
-                              key={idx}
-                              onClick={() => { setExploreOpen(false); navigate(`/explore/${cat.name.toLowerCase()}`); }}
-                              className="flex items-center gap-2 py-1 text-[11.5px] text-gray-500 font-semibold hover:text-indigo-600 hover:translate-x-1 transition-all text-left"
-                            >
-                              <span className="text-[13px] w-4">🌏</span>
-                              <span>{cat.name}</span>
-                            </button>
-                          )) : <p className="text-[11px] text-gray-300 italic">Loading...</p>}
-                        </div>
-                      </div>
+                    <div className="bg-white border border-gray-100 rounded-[20px] p-5 shadow-xl shadow-gray-200/60 flex flex-col gap-2">
+                      <p className="text-[9px] font-black text-violet-500 uppercase tracking-[0.18em] pb-1.5 border-b border-violet-50">Quick Links</p>
+                      {menuItems.map((item, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            setExploreOpen(false);
+                            if (item.path.startsWith('#')) {
+                              const target = document.getElementById(item.path.substring(1));
+                              if (target) target.scrollIntoView({ behavior: 'smooth' });
+                              else navigate('/');
+                            } else { navigate(item.path); }
+                          }}
+                          className="flex items-center gap-2 py-1 text-[11.5px] text-gray-500 font-semibold hover:text-violet-600 hover:translate-x-1 transition-all text-left"
+                        >
+                          <span className="text-[13px] w-4">{item.icon}</span>
+                          <span>{item.label}</span>
+                        </button>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -451,10 +433,10 @@ const Topbar = () => {
               </div>
 
               {/* Right Section */}
-              <div className="flex items-center gap-3 flex-1 justify-end">
-                <div ref={searchBarRef} className="relative">
+              <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end">
+                <div ref={searchBarRef} className="flex-shrink-0">
                   {/* Search Input */}
-                  <div className={`relative transition-all duration-300 ${searchFocused ? 'w-[300px]' : 'w-[200px]'}`}>
+                  <div className={`relative transition-all duration-300 ${searchFocused ? 'w-[180px] sm:w-[260px] lg:w-[300px]' : 'w-[140px] sm:w-[200px]'}`}>
                     <input
                       type="text"
                       placeholder={searchFocused ? 'Search destinations, trips...' : 'Search trips...'}
@@ -510,7 +492,7 @@ const Topbar = () => {
 
                   {/* Search Dropdown */}
                   {searchFocused && (
-                    <div className="absolute top-full right-0 mt-2 w-[340px] bg-white border border-gray-100 rounded-[18px] shadow-2xl shadow-black/10 z-[100] overflow-hidden"
+                    <div className="absolute top-full right-0 mt-2 w-[340px] max-w-[calc(100vw-24px)] bg-white border border-gray-100 rounded-[18px] shadow-2xl shadow-black/10 z-[100] overflow-hidden"
                          style={{ animation: 'fadeSlideIn 0.2s ease-out' }}>
                       
                       {isLoading ? (
@@ -537,8 +519,8 @@ const Topbar = () => {
                                 }`}
                               >
                                 <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br from-violet-100 to-indigo-100 shadow-sm">
-                                  {trip.hero_image ? (
-                                    <img src={trip.hero_image} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                  {(trip.heroImage || trip.image) ? (
+                                    <img src={trip.heroImage || trip.image} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                   ) : (
                                     <div className="w-full h-full flex items-center justify-center">
                                       <span className="text-lg">🌍</span>
@@ -615,7 +597,7 @@ const Topbar = () => {
 
                 <button
                   onClick={() => setCustomTripOpen(true)}
-                  className="relative flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-[10px] shadow-md shadow-amber-500/25 hover:shadow-lg hover:shadow-amber-500/35 hover:brightness-110 active:scale-[0.97] transition-all duration-200 overflow-hidden group whitespace-nowrap"
+                  className="hidden lg:flex relative items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-[10px] shadow-md shadow-amber-500/25 hover:shadow-lg hover:shadow-amber-500/35 hover:brightness-110 active:scale-[0.97] transition-all duration-200 overflow-hidden group whitespace-nowrap"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                   <span>✨</span>
@@ -625,7 +607,7 @@ const Topbar = () => {
                 <button
                   id="get-in-touch-btn"
                   onClick={() => setContactOpen(true)}
-                  className="relative flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-bold rounded-[10px] shadow-md shadow-violet-500/25 hover:shadow-lg hover:shadow-violet-500/35 hover:brightness-110 active:scale-[0.97] transition-all duration-200 overflow-hidden group whitespace-nowrap"
+                  className="hidden lg:flex relative items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-bold rounded-[10px] shadow-md shadow-violet-500/25 hover:shadow-lg hover:shadow-violet-500/35 hover:brightness-110 active:scale-[0.97] transition-all duration-200 overflow-hidden group whitespace-nowrap"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                   <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -635,10 +617,108 @@ const Topbar = () => {
                 </button>
 
 
-              </div>
+              {/* Mobile Menu Toggle */}
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                className="lg:hidden p-1.5 text-gray-600 hover:text-violet-600 bg-gray-50 hover:bg-violet-50 rounded-lg transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
             </div>
           </div>
-        </nav>
+        </div>
+      </nav>
+
+        {/* Mobile Menu Overlay */}
+        <div className={`fixed inset-0 bg-white z-[100] transition-transform duration-300 ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'} lg:hidden overflow-y-auto`}>
+          <div className="p-5 flex flex-col h-full">
+            <div className="flex items-center justify-between mb-8">
+              <img src="/zurii-logo.png" alt="Zurii Travels" className="h-8 w-auto object-contain" />
+              <button onClick={() => setMobileMenuOpen(false)} className="p-2 text-gray-500 bg-gray-50 rounded-full hover:bg-gray-100">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto pb-8">
+              <div className="flex flex-col gap-4">
+                <button 
+                  onClick={() => { setMobileExpanded(mobileExpanded === 'domestic' ? null : 'domestic'); }} 
+                  className="flex items-center justify-between text-lg font-bold text-gray-800 py-2 border-b border-gray-100"
+                >
+                  Domestic Tours
+                  <svg className={`w-4 h-4 transition-transform ${mobileExpanded === 'domestic' ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                {mobileExpanded === 'domestic' && (
+                  <div className="flex flex-col gap-3 pl-4 border-l-2 border-violet-100 ml-2 py-2">
+                    {staticDomesticData.map((dest, idx) => (
+                      <button key={idx} onClick={() => { setMobileMenuOpen(false); navigate(`/destination/${dest.state}`); }} className="text-left text-sm font-semibold text-gray-600 hover:text-violet-600">
+                        {dest.state}
+                      </button>
+                    ))}
+                    <button onClick={() => { setMobileMenuOpen(false); navigate('/all-domestic-destinations'); }} className="text-left text-sm font-bold text-violet-600 mt-2">
+                      View All Domestic &rarr;
+                    </button>
+                  </div>
+                )}
+
+                <button 
+                  onClick={() => { setMobileExpanded(mobileExpanded === 'international' ? null : 'international'); }} 
+                  className="flex items-center justify-between text-lg font-bold text-gray-800 py-2 border-b border-gray-100"
+                >
+                  International Tours
+                  <svg className={`w-4 h-4 transition-transform ${mobileExpanded === 'international' ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                {mobileExpanded === 'international' && (
+                  <div className="flex flex-col gap-3 pl-4 border-l-2 border-indigo-100 ml-2 py-2">
+                    {internationalDestinations.map((area, idx) => (
+                      <div key={idx} className="flex flex-col gap-2">
+                        <p className="text-xs font-black text-indigo-400 uppercase tracking-wider mt-1">{area.region}</p>
+                        {area.countries.slice(0, 3).map((country, cIdx) => (
+                          <button key={cIdx} onClick={() => { setMobileMenuOpen(false); navigate(`/destination/${country.country}`); }} className="text-left text-sm font-semibold text-gray-600 hover:text-indigo-600">
+                            {country.country}
+                          </button>
+                        ))}
+                      </div>
+                    ))}
+                    <button onClick={() => { setMobileMenuOpen(false); navigate('/international'); }} className="text-left text-sm font-bold text-indigo-600 mt-2">
+                      View All International &rarr;
+                    </button>
+                  </div>
+                )}
+
+                <button 
+                  onClick={() => { setMobileMenuOpen(false); navigate('/best-sellers'); }} 
+                  className="flex items-center justify-between text-lg font-bold text-gray-800 py-2 border-b border-gray-100"
+                >
+                  Best Sellers
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-auto flex flex-col gap-3 pt-4 border-t border-gray-100">
+              <button
+                onClick={() => { setMobileMenuOpen(false); setCustomTripOpen(true); }}
+                className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 active:scale-95 transition-all"
+              >
+                <span>✨</span> Custom Trip
+              </button>
+              <button
+                id="get-in-touch-btn-mobile"
+                onClick={() => { setMobileMenuOpen(false); setContactOpen(true); }}
+                className="w-full py-3.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-violet-500/25 active:scale-95 transition-all"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+                Get in Touch
+              </button>
+            </div>
+          </div>
+        </div>
 
         <ContactModal
           isOpen={contactOpen}

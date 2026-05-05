@@ -7,7 +7,7 @@ const CARD_WIDTH = 300;
 const GAP = 24;
 
 const TripCarousel = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(Math.floor(trips.length / 2));
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const trackRef = useRef(null);
   const navigate = useNavigate();

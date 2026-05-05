@@ -48,7 +48,7 @@ const HeroBanner = () => {
   return (
     <section className="pt-24 pb-0 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto bg-white rounded-3xl overflow-hidden shadow-xl shadow-black/5 border border-gray-100/50">
-        <div ref={sectionRef} className="relative w-full h-[85vh] overflow-hidden rounded-3xl">
+        <div ref={sectionRef} className="relative w-full h-[70vh] sm:h-[85vh] overflow-hidden rounded-3xl">
 
           {/* Image Slides */}
           {slides.map((slide, index) => (
@@ -85,7 +85,7 @@ const HeroBanner = () => {
             </div>
 
             {/* Main Heading */}
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white leading-[1.1] tracking-tight max-w-4xl">
+            <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white leading-[1.1] tracking-tight max-w-4xl">
               Where every trip ends
               <br />
               <span className="bg-gradient-to-r from-amber-300 via-orange-300 to-rose-300 bg-clip-text text-transparent">
@@ -103,16 +103,16 @@ const HeroBanner = () => {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-violet-600/20 blur-[120px] rounded-full z-0 pointer-events-none animate-pulse" />
 
             {/* CTA Buttons */}
-            <div className="flex items-center gap-3 mt-8">
+            <div className="flex flex-col sm:flex-row items-center gap-3 mt-8 w-full sm:w-auto px-4 sm:px-0">
               <button 
                 onClick={() => navigate(`/trip/${slides[current].id}`)}
-                className="px-6 py-3 bg-gradient-to-r from-violet-500 to-indigo-600 text-white text-sm font-semibold rounded-[14px] shadow-xl shadow-violet-500/30 hover:shadow-violet-500/50 hover:brightness-110 active:scale-[0.97] transition-all duration-200"
+                className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-violet-500 to-indigo-600 text-white text-sm font-semibold rounded-[14px] shadow-xl shadow-violet-500/30 hover:shadow-violet-500/50 hover:brightness-110 active:scale-[0.97] transition-all duration-200"
               >
                 Explore This Trip
               </button>
               <button 
                 onClick={() => navigate('/all-domestic-destinations')}
-                className="px-6 py-3 bg-white/15 backdrop-blur-md border border-white/25 text-white text-sm font-semibold rounded-[14px] hover:bg-white/25 transition-all duration-200"
+                className="w-full sm:w-auto px-6 py-3 bg-white/15 backdrop-blur-md border border-white/25 text-white text-sm font-semibold rounded-[14px] hover:bg-white/25 transition-all duration-200"
               >
                 View All Destinations
               </button>

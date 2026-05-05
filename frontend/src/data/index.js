@@ -10,37 +10,65 @@ const keralaImg = 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?
 // ── International Fallback (used when API has no data) ──
 export const internationalFallback = [
   {
-    region: 'Europe',
+    region: 'South East Asia',
     countries: [
-      { country: 'France', cities: ['Paris', 'Nice', 'Lyon'], thumbnail: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800' },
-      { country: 'Greece', cities: ['Santorini', 'Mykonos', 'Athens'], thumbnail: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800' },
-      { country: 'Switzerland', cities: ['Zurich', 'Lucerne', 'Interlaken'], thumbnail: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800' },
-    ]
-  },
-  {
-    region: 'Asia',
-    countries: [
-      { country: 'Japan', cities: ['Tokyo', 'Kyoto', 'Osaka'], thumbnail: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800' },
-      { country: 'Indonesia', cities: ['Bali', 'Ubud', 'Seminyak'], thumbnail: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800' },
-      { country: 'UAE', cities: ['Dubai', 'Abu Dhabi'], thumbnail: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800' },
+      { country: 'Philippines', cities: ['Manila', 'Palawan', 'Cebu'], thumbnail: 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=800' },
       { country: 'Thailand', cities: ['Bangkok', 'Phuket', 'Chiang Mai'], thumbnail: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800' },
+      { country: 'Bali', cities: ['Ubud', 'Seminyak', 'Nusa Penida'], thumbnail: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800' },
       { country: 'Vietnam', cities: ['Hanoi', 'Ho Chi Minh City', 'Da Nang'], thumbnail: 'https://images.unsplash.com/photo-1528127269322-539801943592?w=800' },
     ]
   },
   {
-    region: 'Americas',
+    region: 'East Asia',
     countries: [
-      { country: 'USA', cities: ['New York', 'San Francisco', 'Las Vegas'], thumbnail: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800' },
-      { country: 'Brazil', cities: ['Rio de Janeiro', 'São Paulo'], thumbnail: 'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=800' },
+      { country: 'Japan', cities: ['Tokyo', 'Kyoto', 'Osaka'], thumbnail: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800' },
+      { country: 'South Korea', cities: ['Seoul', 'Busan', 'Jeju Island'], thumbnail: 'https://images.unsplash.com/photo-1538669715315-155098f0fb1d?w=800' },
     ]
   },
   {
-    region: 'Oceania',
+    region: 'Western Europe',
     countries: [
-      { country: 'Australia', cities: ['Sydney', 'Melbourne'], thumbnail: 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=800' },
-      { country: 'New Zealand', cities: ['Auckland', 'Queenstown'], thumbnail: 'https://images.unsplash.com/photo-1507699622108-4be3abd695ad?w=800' },
+      { country: 'Italy', cities: ['Milan', 'Rome', 'Florence', 'Venice'], thumbnail: 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=800' },
+      { country: 'France', cities: ['Paris', 'Nice'], thumbnail: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800' },
+      { country: 'Switzerland', cities: ['Zurich', 'Lucerne', 'Interlaken', 'Zermatt'], thumbnail: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800' },
+      { country: 'Netherlands', cities: ['Amsterdam'], thumbnail: 'https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=800' },
+      { country: 'Germany', cities: ['Berlin', 'Munich', 'Hamburg', 'Frankfurt'], thumbnail: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800' },
+      { country: 'Belgium', cities: ['Brussels'], thumbnail: 'https://images.unsplash.com/photo-1592853625511-ad0edcc69c07?w=800' },
+      { country: 'Luxembourg', cities: ['Luxembourg City'], thumbnail: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800' },
+      { country: 'Greece', cities: ['Mykonos', 'Santorini', 'Athens'], thumbnail: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800' },
     ]
-  }
+  },
+  {
+    region: 'Eastern Europe & Caucasus',
+    countries: [
+      { country: 'Georgia', cities: ['Tbilisi', 'Batumi', 'Kazbegi'], thumbnail: 'https://images.unsplash.com/photo-1565008576549-57569a49371d?w=800' },
+      { country: 'Russia', cities: ['Moscow', 'St. Petersburg', 'Sochi'], thumbnail: 'https://images.unsplash.com/photo-1513326738677-b964603b136d?w=800' },
+      { country: 'Iceland', cities: ['Reykjavik', 'Vik', 'Akureyri'], thumbnail: 'https://images.unsplash.com/photo-1476610182048-b716b8518aae?w=800' },
+    ]
+  },
+  {
+    region: 'South Asia',
+    countries: [
+      { country: 'Sri Lanka', cities: ['Colombo', 'Kandy', 'Ella', 'Galle'], thumbnail: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800' },
+      { country: 'Bhutan', cities: ['Thimphu', 'Paro', 'Punakha'], thumbnail: 'https://images.unsplash.com/photo-1553856622-d1b352e9a211?w=800' },
+    ]
+  },
+  {
+    region: 'Central Asia',
+    countries: [
+      { country: 'Kazakhstan', cities: ['Almaty', 'Nur-Sultan', 'Charyn Canyon'], thumbnail: 'https://images.unsplash.com/photo-1605101100278-5d1deb2b6498?w=800' },
+      { country: 'Mongolia', cities: ['Ulaanbaatar', 'Gobi Desert', 'Khuvsgul Lake'], thumbnail: 'https://images.unsplash.com/photo-1614531341773-3bff8b7cb3fc?w=800' },
+    ]
+  },
+  {
+    region: 'Middle East',
+    countries: [
+      { country: 'Dubai', cities: ['Dubai City', 'Abu Dhabi', 'Palm Jumeirah'], thumbnail: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800' },
+      { country: 'Egypt', cities: ['Cairo', 'Luxor', 'Aswan', 'Hurghada'], thumbnail: 'https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=800' },
+      { country: 'Turkey', cities: ['Istanbul', 'Cappadocia', 'Antalya', 'Bodrum'], thumbnail: 'https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=800' },
+      { country: 'Oman', cities: ['Muscat', 'Salalah', 'Nizwa', 'Wahiba Sands'], thumbnail: 'https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=800' },
+    ]
+  },
 ];
 
 // ── Carousel Trips ──
@@ -192,7 +220,7 @@ export const bestSellerTrips = [
     originalPrice: '₹65,000',
     price: '₹48,999',
     save: '₹16,001',
-    image: 'https://images.unsplash.com/photo-1581793745862-99fde7fa73d2',
+    image: 'https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?w=800',
     badge: 'Adventure',
   },
   {
@@ -205,7 +233,7 @@ export const bestSellerTrips = [
     originalPrice: '₹25,000',
     price: '₹18,999',
     save: '₹6,001',
-    image: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23',
+    image: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800',
     badge: 'Spiritual',
   },
   {
@@ -218,7 +246,7 @@ export const bestSellerTrips = [
     originalPrice: '₹15,000',
     price: '₹11,999',
     save: '₹3,001',
-    image: 'https://images.unsplash.com/photo-1561361513-2d000a50f0dc',
+    image: 'https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=800',
     badge: 'Cultural',
   },
 ];
@@ -603,7 +631,7 @@ export const tripDetails = {
       { id: 2, date: 'May 10 – May 13, 2026', slots: 2, price: '₹29,999', status: 'filling' },
       { id: 3, date: 'Sep 20 – Sep 23, 2026', slots: 8, price: '₹34,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=800', 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800', 'https://images.unsplash.com/photo-1590050752117-238cb8903b2a?w=800', 'https://images.unsplash.com/photo-1504681869696-d977211a5f4c?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=800', 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800', 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800', 'https://images.unsplash.com/photo-1504681869696-d977211a5f4c?w=800'],
   },
   'santorini-sunsets': {
     heroImage: santoriniImg,
@@ -742,7 +770,7 @@ export const tripDetails = {
     gallery: ['https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800', 'https://images.unsplash.com/photo-1431274172761-fca41d930114?w=800', 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800', 'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=800'],
   },
   'ladakh-circuit': {
-    heroImage: 'https://images.unsplash.com/photo-1581793745862-99fde7fa73d2',
+    heroImage: 'https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?w=800',
     title: 'Ladakh Ultimate Circuit',
     subtitle: 'High Altitude Adventure',
     tagline: 'Route: Leh – Nubra – Pangong – Hanle – Umling La',
@@ -785,10 +813,10 @@ export const tripDetails = {
       { id: 2, date: 'Jul 10 – Jul 18, 2026', slots: 8, price: '₹52,999', status: 'available' },
       { id: 3, date: 'Aug 5 – Aug 13, 2026', slots: 12, price: '₹48,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1544085311-11a028465b03', 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4', 'https://images.unsplash.com/photo-1544085311-11a028465b03'],
+    gallery: ['https://images.unsplash.com/photo-1544085311-11a028465b03?w=800', 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
   },
   'kedarnath-spiritual': {
-    heroImage: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23',
+    heroImage: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800',
     title: 'Kedarnath Spiritual Trek',
     subtitle: 'Divine Himalayan Journey',
     tagline: 'A soul-stirring trek to the holiest of shrines',
@@ -825,10 +853,10 @@ export const tripDetails = {
       { id: 2, date: 'May 25 – May 30, 2026', slots: 5, price: '₹19,999', status: 'filling' },
       { id: 3, date: 'Sep 15 – Sep 20, 2026', slots: 20, price: '₹17,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1626621341517-bbf3d9990a23', 'https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5', 'https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3'],
+    gallery: ['https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800', 'https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?w=800'],
   },
   'varanasi-heritage': {
-    heroImage: 'https://images.unsplash.com/photo-1561361513-2d000a50f0dc',
+    heroImage: 'https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=800',
     title: 'Varanasi Heritage Walk',
     subtitle: 'The Eternal City',
     tagline: 'Experience the world\'s oldest living city',
@@ -861,10 +889,10 @@ export const tripDetails = {
       { id: 1, date: 'Nov 12 – Nov 14, 2026', slots: 10, price: '₹11,999', status: 'available' },
       { id: 2, date: 'Dec 4 – Dec 6, 2026', slots: 5, price: '₹12,499', status: 'filling' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1561361513-2d000a50f0dc', 'https://images.unsplash.com/photo-1571536802807-30451e3955d8', 'https://images.unsplash.com/photo-1571536802807-30451e3955d8'],
+    gallery: ['https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=800', 'https://images.unsplash.com/photo-1571536802807-30451e3955d8?w=800', 'https://images.unsplash.com/photo-1571536802807-30451e3955d8?w=800'],
   },
   'spiti-valley': {
-    heroImage: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b',
+    heroImage: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800',
     title: 'Spiti Valley Expedition',
     subtitle: 'Middle Land Adventure',
     tagline: 'A journey through the high-altitude cold desert',
@@ -889,10 +917,10 @@ export const tripDetails = {
     inclusions: ['Homestays/Camps', 'Breakfast & Dinner', 'Force Traveller/Sumo', 'Permits', 'Guide'],
     exclusions: ['Lunches', 'Alcohol', 'Personal Gear'],
     batches: [{ id: 1, date: 'Jul 1 – Jul 8, 2026', slots: 6, price: '₹22,999', status: 'available' }],
-    gallery: ['https://images.unsplash.com/photo-1464822759023-fed622ff2c3b', 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23', 'https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800', 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
   },
   'kashmir-paradise': {
-    heroImage: 'https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5',
+    heroImage: 'https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800',
     title: 'Kashmir Paradise Tour',
     subtitle: 'Heaven on Earth',
     tagline: 'Experience the magic of shikaras and snow',
@@ -915,10 +943,10 @@ export const tripDetails = {
     inclusions: ['4-star Hotels & Houseboat', 'Private Vehicle', 'Breakfast & Dinner', 'Local Guide'],
     exclusions: ['Flights', 'Gondola Tickets', 'Lunch'],
     batches: [{ id: 1, date: 'May 5 – May 10, 2026', slots: 10, price: '₹24,999', status: 'available' }],
-    gallery: ['https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5', 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23', 'https://images.unsplash.com/photo-1566837945700-30057527ade0?w=800', 'https://images.unsplash.com/photo-1587474260584-136574528ed5?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800', 'https://images.unsplash.com/photo-1566837945700-30057527ade0?w=800', 'https://images.unsplash.com/photo-1587474260584-136574528ed5?w=800', 'https://images.unsplash.com/photo-1551882547-ff40c63fe2b0?w=800'],
   },
   'manali-weekend': {
-    heroImage: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23',
+    heroImage: 'https://images.unsplash.com/photo-1512470876302-972faa2aa9a4?w=800',
     title: 'Manali Weekend Escape',
     subtitle: 'Himalayan Retreat',
     tagline: 'Best for a quick mountain getaway',
@@ -939,7 +967,7 @@ export const tripDetails = {
     inclusions: ['Hotels', 'Breakfast', 'Transport'],
     exclusions: ['Volvo tickets', 'Rohtang Pass permits'],
     batches: [{ id: 1, date: 'May 1 – May 4, 2026', slots: 15, price: '₹8,999', status: 'available' }],
-    gallery: ['https://images.unsplash.com/photo-1626621341517-bbf3d9990a23', 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800', 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1512470876302-972faa2aa9a4?w=800', 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800', 'https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800', 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800'],
   },
   'rishikesh-adventure': {
     heroImage: 'https://plus.unsplash.com/premium_photo-1697730398251-40cd8dc57e0b?w=800',
@@ -988,7 +1016,7 @@ export const tripDetails = {
     gallery: ['https://plus.unsplash.com/premium_photo-1661962428918-6a57ab674e23?w=800', 'https://images.unsplash.com/photo-1574267432553-4b4628081c31?w=800', 'https://images.unsplash.com/photo-1587474260584-136574528ed5?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
   },
   'kasol-kheerganga': {
-    heroImage: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23',
+    heroImage: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800',
     title: 'Kasol & Kheerganga Trek',
     subtitle: 'Parvati Valley Magic',
     tagline: 'The ultimate hippie trail and hot springs trek',
@@ -1005,10 +1033,10 @@ export const tripDetails = {
     ],
     inclusions: ['Camping', 'Guided Trek', 'Hot Springs access', 'Meals (Veg)'],
     batches: [{ date: 'May 5 – May 8, 2026', price: '₹7,999', status: 'available' }],
-    gallery: ['https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800', 'https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800', 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800', 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800', 'https://images.unsplash.com/photo-1502126324834-38f8e02d7160?w=800'],
   },
   'munnar-tea-gardens': {
-    heroImage: 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2',
+    heroImage: 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800',
     title: 'Munnar Tea Garden Retreat',
     subtitle: 'Highlands & Spices',
     tagline: 'Wander through emerald tea estates and spice forests',
@@ -1462,6 +1490,63 @@ export const tripDetails = {
   },
 
   // ── Europe ──
+  // ── Italy ──
+  'italy-rome-florence-venice': {
+    heroImage: 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=800',
+    title: 'Italy: Rome, Florence & Venice',
+    subtitle: 'The Grand Italian Journey',
+    tagline: 'Colosseum, Uffizi Gallery, gondolas & the best pizza on Earth',
+    rating: '4.9',
+    reviews: 520,
+    duration: '8 Days / 7 Nights',
+    groupSize: '10-18 people',
+    difficulty: 'Easy',
+    price: '₹1,14,999',
+    originalPrice: '₹1,44,999',
+    overview: 'Italy is where civilisation, art, and cuisine reached their peak — and this 8-day journey visits its three greatest cities. Rome, the Eternal City, where 2,500 years of history overlap in every street; Florence, the cradle of the Renaissance where Michelangelo\'s David stands in marble perfection and the Uffizi Gallery holds the world\'s greatest collection of Renaissance art; and Venice, the floating city of gondolas, golden mosaics, and carnival masks rising improbably from a lagoon. Buon viaggio.',
+    itinerary: [
+      { day: 1, title: 'Arrival in Rome', description: 'Transfer to hotel near the historic centre. Evening passeggiata through Trastevere — cobbled lanes, ivy-clad buildings and the world\'s best street food. Welcome dinner of cacio e pepe and tiramisu.' },
+      { day: 2, title: 'Ancient Rome', description: 'Skip-the-line Colosseum, the Roman Forum, and Palatine Hill. Afternoon at the Capitoline Museums — the world\'s oldest national museums. Trevi Fountain at sunset. Gelato on the Spanish Steps.' },
+      { day: 3, title: 'Vatican City', description: 'Vatican Museums and the Sistine Chapel (Michelangelo\'s ceiling — the greatest work of art ever made). St Peter\'s Basilica and Piazza. Optional: climb the dome for panoramic Rome views. Evening at Campo de\' Fiori market.' },
+      { day: 4, title: 'Travel to Florence', description: 'High-speed Frecciarossa train to Florence (1h 30min). Check-in near the Duomo. Afternoon walking tour of the historic centre — Piazza della Signoria, Palazzo Vecchio, Ponte Vecchio. Florentine bistecca dinner.' },
+      { day: 5, title: 'Florence: Renaissance Masterpieces', description: 'Uffizi Gallery — Botticelli\'s Birth of Venus, Leonardo, Raphael, Caravaggio. Galleria dell\'Accademia — Michelangelo\'s David (the most famous sculpture in the world). Cathedral of Santa Maria del Fiore and Brunelleschi\'s Dome. Evening Oltrarno neighbourhood for artisan workshops and wine bars.' },
+      { day: 6, title: 'Tuscany Day Trip', description: 'Half-day Tuscan countryside drive through cypress-lined roads and vineyard estates. Wine and olive oil tasting at a Chianti winery. Medieval hill towns of San Gimignano and Siena. Return to Florence.' },
+      { day: 7, title: 'Travel to Venice', description: 'Train to Venice Santa Lucia. Water taxi to hotel. Afternoon: St Mark\'s Square and Basilica. Doge\'s Palace. Gondola ride through the Grand Canal at sunset. Venetian seafood dinner.' },
+      { day: 8, title: 'Venice & Departure', description: 'Morning at the Rialto Market — the world\'s most photogenic fish and vegetable market. Murano glass-blowing demonstration. Afternoon departure from Venice Marco Polo Airport.' },
+    ],
+    inclusions: [
+      '7 nights in 4-star city-centre hotels (Rome 3N, Florence 3N, Venice 1N)',
+      'Daily breakfast & 3 dinners',
+      'Rome–Florence & Florence–Venice high-speed trains',
+      'Skip-the-line Colosseum + Roman Forum',
+      'Vatican Museums + Sistine Chapel',
+      'Uffizi Gallery + Galleria dell\'Accademia (David)',
+      'Tuscany Chianti winery visit',
+      'Venice gondola ride',
+      'Murano glass-blowing demo',
+      'All transfers & English-speaking guide',
+    ],
+    exclusions: [
+      'International flights',
+      'Schengen visa',
+      'Lunches',
+      'Personal shopping',
+      'Optional dome climb (Rome/Florence)',
+      'Travel insurance',
+    ],
+    batches: [
+      { id: 1, date: 'May 20 – May 27, 2026', slots: 6, price: '₹1,14,999', status: 'filling' },
+      { id: 2, date: 'Sep 15 – Sep 22, 2026', slots: 10, price: '₹1,19,999', status: 'available' },
+      { id: 3, date: 'Oct 10 – Oct 17, 2026', slots: 12, price: '₹1,09,999', status: 'available' },
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=800',
+      'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800',
+      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
+      'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800',
+    ],
+  },
+
   'europe-grand-tour': {
     heroImage: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800',
     title: 'Europe Grand Tour',
@@ -1518,7 +1603,7 @@ export const tripDetails = {
   },
   // ── Kerala ──
   'kerala-heights': {
-    heroImage: 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=800',
     title: 'Keralan Heights & Hidden Falls',
     subtitle: 'Offbeat Kerala Adventure',
     tagline: 'Misty meadows, hidden waterfalls & sunset mangroves',
@@ -1544,10 +1629,10 @@ export const tripDetails = {
       { id: 1, date: 'May 15 – May 20, 2026', slots: 8, price: '₹18,999', status: 'available' },
       { id: 2, date: 'Aug 5 – Aug 10, 2026', slots: 10, price: '₹17,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800', 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=800', 'https://images.unsplash.com/photo-1590050752117-238cb8903b2a?w=800', 'https://images.unsplash.com/photo-1504681869696-d977211a5f4c?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800', 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=800', 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800', 'https://images.unsplash.com/photo-1504681869696-d977211a5f4c?w=800'],
   },
   'tea-trails': {
-    heroImage: 'https://images.unsplash.com/photo-1590050752117-238cb8903b2a?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=800',
     title: 'Tea Trails & Backwater Tales',
     subtitle: 'Kerala Classic',
     tagline: 'Spice gardens of Munnar to luxury houseboats of Alleppey',
@@ -1574,7 +1659,7 @@ export const tripDetails = {
       { id: 1, date: 'Apr 25 – May 1, 2026', slots: 5, price: '₹24,999', status: 'filling' },
       { id: 2, date: 'Sep 10 – Sep 16, 2026', slots: 12, price: '₹23,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1590050752117-238cb8903b2a?w=800', 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800', 'https://images.unsplash.com/photo-1504681869696-d977211a5f4c?w=800', 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=800', 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800', 'https://images.unsplash.com/photo-1504681869696-d977211a5f4c?w=800', 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800'],
   },
 
   // ── Andaman ──
@@ -1607,7 +1692,7 @@ export const tripDetails = {
     gallery: ['https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800', 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=800', 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800', 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800'],
   },
   'andaman-heritage': {
-    heroImage: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800',
     title: 'Andaman Heritage & Sunset Soul',
     subtitle: 'History Meets Tranquility',
     tagline: 'Cellular Jail, scuba diving & magical Chidiya Tapu sunsets',
@@ -1638,7 +1723,7 @@ export const tripDetails = {
 
   // ── Kashmir ──
   'kashmir-family': {
-    heroImage: 'https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=800',
     title: 'Kashmir Family Grandeur',
     subtitle: 'Heaven on Earth — Family Edition',
     tagline: 'Houseboats, Gondola rides & snowy Gulmarg meadows',
@@ -1670,7 +1755,7 @@ export const tripDetails = {
 
   // ── Ladakh ──
   'leh-explorer': {
-    heroImage: 'https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800',
     title: 'Leh & High Altitudes Explorer',
     subtitle: 'Spiritual Ladakh',
     tagline: 'Shanti Stupa, Nubra Valley & ancient monasteries',
@@ -1734,7 +1819,7 @@ export const tripDetails = {
 
   // ── Sikkim ──
   'sikkim-silk': {
-    heroImage: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1539367628448-4bc5c9d171c8?w=800',
     title: 'Sikkim Silk Route & High Passes',
     subtitle: 'East Sikkim Adventure',
     tagline: 'Tsomgo Lake, Nathula Pass & the ancient Silk Route',
@@ -1763,7 +1848,7 @@ export const tripDetails = {
     gallery: ['https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1587922546307-776227941871?w=800', 'https://images.unsplash.com/photo-1609920658906-8223bd289001?w=800', 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800'],
   },
   'sikkim-north': {
-    heroImage: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1527838832700-4e316174be4f?w=800',
     title: 'North Sikkim Wilderness & Wonders',
     subtitle: 'Gurudongmar & Zero Point',
     tagline: 'Sunrise at one of the world\'s highest lakes',
@@ -1856,7 +1941,7 @@ export const tripDetails = {
 
   // ── Spiti Valley ──
   'spiti-circuit': {
-    heroImage: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800',
     title: 'Spiti Circuit: Manali to Chandratal',
     subtitle: '6 Nights / 7 Days',
     tagline: "World's highest post office, fossils & moonlight camping at Chandratal",
@@ -1886,7 +1971,7 @@ export const tripDetails = {
     gallery: ['https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800', 'https://images.unsplash.com/photo-1597074866923-dc0589150358?w=800', 'https://images.unsplash.com/photo-1614082242765-7c98ca0f3df3?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
   },
   'spiti-gateway': {
-    heroImage: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800',
     title: 'Himalayan Gateway: Shimla to Spiti',
     subtitle: '6 Nights / 7 Days',
     tagline: 'Kinnaur Valley, Chitkul & the mummy at Gue',
@@ -2002,7 +2087,7 @@ export const tripDetails = {
     ],
   },
   'shimla-manali-family': {
-    heroImage: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?w=800',
     title: 'Shimla & Manali Family Package',
     subtitle: 'Snow-Capped Mountains & Beautiful Lakes',
     tagline: 'Kufri adventures, Solang Valley thrills & Himalayan serenity',
@@ -2056,7 +2141,7 @@ export const tripDetails = {
     ],
   },
   'udaipur-mountabu-family': {
-    heroImage: 'https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1587474260584-136574528ed5?w=800',
     title: 'Udaipur & Mount Abu Family Tour',
     subtitle: 'City of Lakes & Rajasthan\'s Only Hill Station',
     tagline: 'Royal palaces, marble temples & serene Nakki Lake sunsets',
@@ -2109,7 +2194,7 @@ export const tripDetails = {
     ],
   },
   'mussoorie-nainital-rishikesh-family': {
-    heroImage: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=800',
     title: 'Mussoorie, Nainital & Rishikesh Family Tour',
     subtitle: 'Triple Hill Station Delight',
     tagline: 'Queen of Hills, City of Lakes & Yoga Capital in one epic trip',
@@ -2158,6 +2243,887 @@ export const tripDetails = {
       'https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?w=800',
     ],
   },
+
+  // ── Turkey ──
+  'turkey-cappadocia': {
+    heroImage: 'https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=800',
+    title: 'Turkey: Cappadocia & Istanbul Magic',
+    subtitle: 'Where East Meets West',
+    tagline: 'Hot air balloons, Ottoman grandeur & turquoise coasts',
+    rating: '4.9',
+    reviews: 490,
+    duration: '7 Days / 6 Nights',
+    groupSize: '10-18 people',
+    difficulty: 'Easy',
+    price: '₹89,999',
+    originalPrice: '₹1,14,999',
+    overview: 'Turkey is one of the world\'s great crossroads — where the domed skyline of Istanbul\'s mosques meets the fairy-chimney valleys of Cappadocia, where hot air balloons drift at sunrise over honeycombed rock formations, and where turquoise Aegean coves glitter beside ancient ruins. This 7-day journey captures the very best of Turkey in one unforgettable arc.',
+    itinerary: [
+      { day: 1, title: 'Arrival in Istanbul', description: 'Transfer to hotel in Sultanahmet. Evening Bosphorus sunset walk along the European shore. Welcome dinner of meze and kebabs near the Grand Bazaar.' },
+      { day: 2, title: 'Istanbul Classics', description: 'Morning at the Blue Mosque (Sultan Ahmet Camii) and Hagia Sophia. Guided tour of Topkapi Palace and the Harem. Afternoon at the Grand Bazaar. Evening Bosphorus dinner cruise.' },
+      { day: 3, title: 'Dolmabahçe & Spice Bazaar', description: 'Visit the opulent Dolmabahçe Palace — the last residence of Ottoman sultans. Spice Bazaar for Turkish delight, saffron, and baklava. Afternoon free in Galata and Beyoğlu.' },
+      { day: 4, title: 'Fly to Cappadocia', description: 'Morning flight to Kayseri/Nevşehir. Transfer to Göreme. Afternoon exploration of Göreme Open Air Museum (UNESCO). Sunset from Love Valley viewpoint.' },
+      { day: 5, title: 'Sunrise Hot Air Balloon', description: 'Pre-dawn hot air balloon flight over Cappadocia\'s fairy chimneys and valleys — the highlight of the trip. Champagne breakfast after landing. Afternoon underground city of Derinkuyu. Evening Turkish pottery class.' },
+      { day: 6, title: 'Rose Valley & Ihlara', description: 'Guided hike through the Rose Valley and Red Valley. Visit Uçhisar Castle for panoramic views. Afternoon at Ihlara Valley canyon walk. Traditional Turkish bath (hammam) in the evening.' },
+      { day: 7, title: 'Departure', description: 'Morning free — last minute shopping for hand-painted ceramics and kilim rugs. Transfer to Kayseri airport. Departure.' },
+    ],
+    inclusions: [
+      '6 nights in 4-star hotels (Istanbul 3N, Cappadocia cave hotel 3N)',
+      'Daily breakfast & 3 dinners',
+      'Istanbul–Cappadocia domestic flight',
+      'Hot air balloon flight with champagne breakfast',
+      'Bosphorus dinner cruise',
+      'Topkapi Palace & Hagia Sophia guided tour',
+      'Underground city & Göreme Open Air Museum',
+      'Turkish pottery class',
+      'All transfers & English-speaking guide',
+    ],
+    exclusions: [
+      'International flights',
+      'Turkey e-Visa (₹3,500 approx.)',
+      'Lunches',
+      'Personal shopping',
+      'Optional hammam (₹1,500)',
+      'Travel insurance',
+    ],
+    batches: [
+      { id: 1, date: 'May 10 – May 16, 2026', slots: 6, price: '₹89,999', status: 'available' },
+      { id: 2, date: 'Jun 15 – Jun 21, 2026', slots: 10, price: '₹94,999', status: 'available' },
+      { id: 3, date: 'Sep 20 – Sep 26, 2026', slots: 8, price: '₹87,999', status: 'available' },
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=800',
+      'https://images.unsplash.com/photo-1589561253831-b8421dd58261?w=800',
+      'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=800',
+      'https://images.unsplash.com/photo-1527838832700-5059252407fa?w=800',
+    ],
+  },
+
+  // ── Egypt ──
+  'egypt-nile-wonders': {
+    heroImage: 'https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=800',
+    title: 'Egypt: Pharaohs & Nile Wonders',
+    subtitle: 'The Cradle of Civilisation',
+    tagline: 'Great Pyramids, Valley of the Kings & a 5-star Nile cruise',
+    rating: '4.8',
+    reviews: 380,
+    duration: '7 Days / 6 Nights',
+    groupSize: '10-16 people',
+    difficulty: 'Easy',
+    price: '₹84,999',
+    originalPrice: '₹1,09,999',
+    overview: 'Egypt is humankind\'s greatest open-air museum — where the last surviving Wonder of the Ancient World still stands, where mummies of pharaohs sleep in gilded tombs, and where the world\'s longest river carves a green ribbon of life through an infinite golden desert. This 7-day journey delivers the full Egypt experience: Cairo\'s grandeur, Luxor\'s temples, and a 5-star Nile cruise between Luxor and Aswan.',
+    itinerary: [
+      { day: 1, title: 'Arrival in Cairo', description: 'Transfer to your hotel near the pyramids. Evening welcome dinner at a Nile-view restaurant. Orientation briefing.' },
+      { day: 2, title: 'Giza Pyramids & Egyptian Museum', description: 'Morning visit to the Great Pyramid of Giza, the Sphinx, and the Solar Boat Museum — the most iconic images in human history. Afternoon at the Grand Egyptian Museum (GEM), the world\'s largest archaeological museum. Evening light show at the pyramids.' },
+      { day: 3, title: 'Cairo Old City', description: 'Explore Islamic Cairo — Khan el-Khalili Bazaar, Al-Azhar Mosque, and the Citadel of Saladin. Afternoon at Coptic Cairo — the Hanging Church and Ben Ezra Synagogue. Evening flight to Luxor.' },
+      { day: 4, title: 'Luxor East Bank', description: 'Karnak Temple Complex — the largest religious site ever built. Luxor Temple illuminated at sunset. Board your 5-star Nile cruise ship for overnight.' },
+      { day: 5, title: 'Valley of the Kings & Cruise Sail', description: 'Sunrise Valley of the Kings — enter the tombs of Ramesses II and Tutankhamun. Hatshepsut Temple at Deir el-Bahari. Memnon Colossi. Sail south towards Edfu through the afternoon.' },
+      { day: 6, title: 'Edfu, Kom Ombo & Aswan', description: 'Morning at the Temple of Horus at Edfu (best-preserved temple in Egypt). Afternoon at the double temple of Kom Ombo. Arrive Aswan. Felucca sail around Elephantine Island at sunset.' },
+      { day: 7, title: 'Aswan & Departure', description: 'Abu Simbel excursion (optional, early morning). Philae Temple on island. High Dam. Transfer to Aswan airport for return flight to Cairo and international departure.' },
+    ],
+    inclusions: [
+      '3 nights in Cairo 5-star hotel + 3 nights on 5-star Nile cruise',
+      'All meals on Nile cruise (full board)',
+      'Daily breakfast in Cairo',
+      'Cairo–Luxor domestic flight',
+      'All temple and museum entries',
+      'Grand Egyptian Museum visit',
+      'Felucca ride in Aswan',
+      'Professional licensed Egyptologist guide',
+      'All transfers',
+    ],
+    exclusions: [
+      'International flights',
+      'Egypt e-Visa (₹2,500 approx.)',
+      'Lunches in Cairo',
+      'Abu Simbel optional tour (₹4,500)',
+      'Personal shopping',
+      'Travel insurance',
+    ],
+    batches: [
+      { id: 1, date: 'Oct 5 – Oct 11, 2026', slots: 8, price: '₹84,999', status: 'available' },
+      { id: 2, date: 'Nov 15 – Nov 21, 2026', slots: 10, price: '₹89,999', status: 'available' },
+      { id: 3, date: 'Feb 10 – Feb 16, 2027', slots: 12, price: '₹82,999', status: 'available' },
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=800',
+      'https://images.unsplash.com/photo-1527838832700-5059252407fa?w=800',
+      'https://images.unsplash.com/photo-1568322445389-f64ac2515020?w=800',
+      'https://images.unsplash.com/photo-1572252009286-268acec5ca0a?w=800',
+    ],
+  },
+
+  // ── South Korea ──
+  'south-korea-seoul': {
+    heroImage: 'https://images.unsplash.com/photo-1538669715315-155098f0fb1d?w=800',
+    title: 'South Korea: Seoul, Jeju & K-Culture',
+    subtitle: 'Land of Morning Calm',
+    tagline: 'Royal palaces, volcanic islands & the K-pop universe',
+    rating: '4.8',
+    reviews: 350,
+    duration: '6 Days / 5 Nights',
+    groupSize: '10-18 people',
+    difficulty: 'Easy',
+    price: '₹74,999',
+    originalPrice: '₹94,999',
+    overview: 'South Korea is a destination that surprises at every turn — centuries-old royal palaces sit beside neon-lit gaming cafes, ancient Buddhist temples perch on mountainsides above K-pop billboard districts, and the volcanic island of Jeju offers emerald coastlines and UNESCO lava tube caves. This 6-day journey blends the electric energy of Seoul with the volcanic beauty of Jeju Island in a perfectly paced experience.',
+    itinerary: [
+      { day: 1, title: 'Arrival in Seoul', description: 'Transfer to Myeongdong hotel. Evening street food walk — tteokbokki, hotteok, and Korean fried chicken. Visit the glittering Cheonggyecheon stream.' },
+      { day: 2, title: 'Seoul Royal Heritage', description: 'Gyeongbokgung Palace with Changing of the Guard ceremony. Bukchon Hanok Village — 600-year-old traditional Korean houses. Insadong for crafts and tea. N Seoul Tower for city panorama at sunset.' },
+      { day: 3, title: 'K-Pop & Modern Seoul', description: 'Gangnam district exploration — COEX Mall, SM Entertainment HQ. K-Pop dance class experience. Afternoon at Lotte World and Seokchon Lake. Evening market in Hongdae.' },
+      { day: 4, title: 'DMZ & Han River', description: 'Morning guided DMZ (Demilitarized Zone) tour — the most tense border on earth, with tunnel exploration and Dorasan Station. Afternoon Han River picnic. Evening Namsangol Hanok Village.' },
+      { day: 5, title: 'Jeju Island', description: 'Morning flight to Jeju Island. Visit Hallasan National Park. Afternoon at Jeju Olle Trail coastal walk. Manjanggul Lava Tube UNESCO site. Seongsan Ilchulbong (Sunrise Peak) at sunset.' },
+      { day: 6, title: 'Jeju & Departure', description: 'Morning at Hyeopjae Beach — emerald sea against black lava rock. Teddy Bear Museum. Haenyeo (woman diver) demonstration. Return flight to Seoul and international departure.' },
+    ],
+    inclusions: [
+      '5 nights in 4-star hotels (Seoul 4N, Jeju 1N)',
+      'Daily breakfast & 2 dinners',
+      'Seoul–Jeju domestic flight (round trip)',
+      'K-Pop dance class',
+      'DMZ guided tour',
+      'Gyeongbokgung Palace visit',
+      'All transfers & English-speaking guide',
+    ],
+    exclusions: [
+      'International flights',
+      'South Korea K-ETA (₹1,200 approx.)',
+      'Lunches',
+      'Personal shopping (skincare, fashion)',
+      'Optional activities',
+      'Travel insurance',
+    ],
+    batches: [
+      { id: 1, date: 'May 15 – May 20, 2026', slots: 8, price: '₹74,999', status: 'available' },
+      { id: 2, date: 'Sep 10 – Sep 15, 2026', slots: 10, price: '₹79,999', status: 'available' },
+      { id: 3, date: 'Oct 20 – Oct 25, 2026', slots: 12, price: '₹72,999', status: 'available' },
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1538669715315-155098f0fb1d?w=800',
+      'https://images.unsplash.com/photo-1534430480872-3498386e7856?w=800',
+      'https://images.unsplash.com/photo-1583309219338-a582f1f9ca6b?w=800',
+      'https://images.unsplash.com/photo-1526481280693-3bfa7568e0f3?w=800',
+    ],
+  },
+
+  // ── Oman ──
+  'oman-desert-adventure': {
+    heroImage: 'https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=800',
+    title: 'Oman: Desert, Wadis & Forts',
+    subtitle: 'Arabia\'s Best-Kept Secret',
+    tagline: 'Grand Mosque, Wahiba Sands & Wadi Shab emerald gorge',
+    rating: '4.9',
+    reviews: 285,
+    duration: '5 Days / 4 Nights',
+    groupSize: '8-16 people',
+    difficulty: 'Easy',
+    price: '₹79,999',
+    originalPrice: '₹99,999',
+    overview: 'Oman is the Middle East as it once was — warm, genuine, spectacularly beautiful, and blissfully uncrowded. The Sultan Qaboos Grand Mosque is one of the world\'s most breathtaking religious buildings. Wadi Shab\'s emerald gorge hides a secret waterfall cave accessible only by swimming. The Wahiba Sands dunes glow amber at sunset. And the ancient souk of Mutrah fills the air with frankincense. This 5-day journey captures Oman\'s magic in an intimate, unhurried format.',
+    itinerary: [
+      { day: 1, title: 'Arrival in Muscat', description: 'Transfer to your hotel near the Royal Opera House. Evening walk along the Mutrah Corniche at sunset. Dinner at a traditional Omani restaurant.' },
+      { day: 2, title: 'Muscat Highlights', description: 'Visit the Sultan Qaboos Grand Mosque — one of the world\'s most beautiful. Mutrah Souk for frankincense, silver, and khanjars. Al Jalali and Al Mirani Forts. Royal Opera House tour. Evening at the Muscat Festival waterfront.' },
+      { day: 3, title: 'Nizwa Fort & Jabrin Castle', description: 'Drive to Nizwa — the ancient capital of Oman. Nizwa Fort with its soaring circular tower. Nizwa Souk on a Friday (livestock market — extraordinary!). Afternoon at the perfectly preserved Jabrin Castle. Overnight at a desert camp.' },
+      { day: 4, title: 'Wahiba Sands & Wadi Bani Khalid', description: 'Morning 4WD dune bashing in the Wahiba Sands. Camel ride at sunrise. Breakfast at the desert camp. Afternoon swim in the natural rock pools of Wadi Bani Khalid — an oasis in the desert.' },
+      { day: 5, title: 'Wadi Shab & Departure', description: 'Boat ride into the dramatic Wadi Shab gorge. Walk through the canyon to a hidden waterfall cave (swimming required). Return to Muscat for afternoon departure.' },
+    ],
+    inclusions: [
+      '4 nights (Muscat 2N, desert luxury camp 1N, Nizwa 1N)',
+      'Daily breakfast & 3 dinners',
+      'Sultan Qaboos Grand Mosque guided visit',
+      'Nizwa Fort & Jabrin Castle entries',
+      '4WD dune bashing in Wahiba Sands',
+      'Wadi Shab boat ride & gorge walk',
+      'Wadi Bani Khalid swimming stop',
+      'All transfers in AC vehicle',
+      'English-speaking guide',
+    ],
+    exclusions: [
+      'International flights',
+      'Oman visa on arrival (₹2,000 approx.)',
+      'Lunches',
+      'Personal shopping',
+      'Optional camel ride upgrade',
+      'Travel insurance',
+    ],
+    batches: [
+      { id: 1, date: 'Oct 10 – Oct 14, 2026', slots: 8, price: '₹79,999', status: 'available' },
+      { id: 2, date: 'Nov 20 – Nov 24, 2026', slots: 10, price: '₹84,999', status: 'available' },
+      { id: 3, date: 'Dec 15 – Dec 19, 2026', slots: 6, price: '₹82,999', status: 'available' },
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=800',
+      'https://images.unsplash.com/photo-1578895101408-1a36b834405b?w=800',
+      'https://images.unsplash.com/photo-1539367628448-4bc5c9d171c8?w=800',
+      'https://images.unsplash.com/photo-1577086664693-894d8405334a?w=800',
+    ],
+  },
+
+  // ── Singapore ──
+  'singapore-city': {
+    heroImage: 'https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=800',
+    title: 'Singapore City Escape',
+    subtitle: 'The Lion City in 5 Days',
+    tagline: 'Gardens by the Bay, Sentosa thrills & Hawker Centre feasts',
+    rating: '4.8',
+    reviews: 460,
+    duration: '5 Days / 4 Nights',
+    groupSize: '8-20 people',
+    difficulty: 'Easy',
+    price: '₹64,999',
+    originalPrice: '₹82,000',
+    overview: 'Singapore is the world\'s most impeccably planned city — where a rainforest-inspired nature dome stands beside the world\'s highest infinity pool, and Michelin-starred food stalls serve $3 plates of char kway teow. This 5-day package covers every iconic experience: Gardens by the Bay, Universal Studios, the Singapore Night Safari, and the spectacular Jewel Changi waterfall.',
+    itinerary: [
+      { day: 1, title: 'Arrival & Marina Bay Sands', description: 'Transfer to hotel near Marina Bay. Evening at the Marina Bay Sands Skypark Observation Deck. Witness the Garden Rhapsody light show at Gardens by the Bay.' },
+      { day: 2, title: 'Gardens & Supertrees', description: 'Morning in Flower Dome and Cloud Forest conservatories. Clarke Quay river cruise. Evening Supertree Grove light show with dinner at Satay by the Bay.' },
+      { day: 3, title: 'Universal Studios & Sentosa', description: 'Full day at Universal Studios Singapore. S.E.A. Aquarium. Siloso Beach. Evening cable car back with city views.' },
+      { day: 4, title: 'Cultural Singapore', description: 'Chinatown — Buddha Tooth Relic Temple, Maxwell Food Centre. Little India. Kampong Glam — Sultan Mosque. Evening Orchard Road shopping.' },
+      { day: 5, title: 'Jewel Changi & Departure', description: 'Jewel Changi Airport — HSBC Rain Vortex (world\'s tallest indoor waterfall), Canopy Park. Last breakfast. Departure.' },
+    ],
+    inclusions: [
+      '4 nights in 4-star Marina Bay area hotel',
+      'Daily breakfast & 2 dinners',
+      'Universal Studios Singapore tickets',
+      'Gardens by the Bay conservatories',
+      'Marina Bay Sands Skypark',
+      'Clarke Quay river cruise',
+      'Sentosa cable car',
+      'All transfers',
+    ],
+    exclusions: [
+      'International flights',
+      'Lunches',
+      'Personal shopping',
+      'Optional night safari (₹4,500)',
+      'Travel insurance',
+    ],
+    batches: [
+      { id: 1, date: 'May 1 – May 5, 2026', slots: 5, price: '₹64,999', status: 'filling' },
+      { id: 2, date: 'Jun 20 – Jun 24, 2026', slots: 10, price: '₹67,999', status: 'available' },
+      { id: 3, date: 'Dec 20 – Dec 24, 2026', slots: 8, price: '₹72,999', status: 'available' },
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1525596662741-e94ff9f26de1?w=800',
+      'https://images.unsplash.com/photo-1518391846015-55a9cc003b25?w=800',
+      'https://images.unsplash.com/photo-1565018054866-968e244671af?w=800',
+      'https://images.unsplash.com/photo-1516815231560-8f41ec531527?w=800',
+    ],
+  },
+
+  // ── Maldives ──
+  'maldives-island': {
+    heroImage: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800',
+    title: 'Maldives Island Bliss',
+    subtitle: 'Indian Ocean Paradise',
+    tagline: 'Overwater villas, turquoise lagoons & whale shark safaris',
+    rating: '4.9',
+    reviews: 295,
+    duration: '4 Days / 3 Nights',
+    groupSize: '2-20 people',
+    difficulty: 'Easy',
+    price: '₹52,999',
+    originalPrice: '₹68,000',
+    overview: 'The Maldives delivers paradise in its purest form — 1,200 coral islands scattered across the Indian Ocean, each ringed by a lagoon of impossible turquoise. From the luxury overwater bungalows of North Malé Atoll to the budget-friendly local island of Maafushi where whale sharks cruise offshore, this package lets you experience the Maldives magic your way.',
+    itinerary: [
+      { day: 1, title: 'Arrival & Speedboat Transfer', description: 'Arrive at Malé International Airport. Speedboat to your island. Check-in. Sunset from the beach.' },
+      { day: 2, title: 'Snorkeling & Sandbank', description: 'Morning house reef snorkeling — turtles, rays, and reef fish. Afternoon private sandbank excursion for photos and tea.' },
+      { day: 3, title: 'Whale Shark Safari', description: 'Full-day boat trip for whale shark swimming (seasonal). Lunch on the boat. Sunset dolphin cruise.' },
+      { day: 4, title: 'Morning Kayak & Departure', description: 'Sunrise kayaking around the island. Transfer to Malé for departure.' },
+    ],
+    inclusions: [
+      '3 nights guesthouse on Maafushi Island',
+      'Daily breakfast & 2 dinners',
+      'Speedboat transfers (Malé ↔ Island)',
+      'Snorkeling excursion',
+      'Sandbank trip',
+      'Whale shark safari',
+      'Kayak rental',
+    ],
+    exclusions: [
+      'International flights to Malé',
+      'Lunches',
+      'Scuba diving (optional)',
+      'Travel insurance',
+    ],
+    batches: [
+      { id: 1, date: 'May 10 – May 13, 2026', slots: 10, price: '₹52,999', status: 'available' },
+      { id: 2, date: 'Jul 15 – Jul 18, 2026', slots: 6, price: '₹54,999', status: 'filling' },
+      { id: 3, date: 'Nov 10 – Nov 13, 2026', slots: 14, price: '₹49,999', status: 'available' },
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=800',
+      'https://images.unsplash.com/photo-1573843981267-be1999ff37cd?w=800',
+      'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800',
+      'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800',
+    ],
+  },
+
+  // ── Philippines ──
+  'philippines-cebu-bohol': {
+    heroImage: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=800',
+    title: 'Philippines: Cebu & Bohol Island Escape',
+    subtitle: 'The Heart of the Visayas',
+    tagline: 'Whale sharks in Oslob, Chocolate Hills & pristine Alona Beach',
+    rating: '4.9',
+    reviews: 290,
+    duration: '6 Days / 5 Nights',
+    groupSize: '6-16 people',
+    difficulty: 'Easy',
+    price: '₹62,999',
+    originalPrice: '₹79,999',
+    overview: 'Cebu is the Philippines\' second city and gateway to some of the country\'s most extraordinary natural wonders. Swim alongside the world\'s largest fish — the gentle whale sharks of Oslob — before hopping to Bohol Island where 1,268 perfectly rounded Chocolate Hills rise from an emerald landscape, tiny tarsiers blink at you from strangler fig branches, and Alona Beach\'s coral reef drops away into an azure abyss. Cebu City\'s 500-year-old Magellan\'s Cross and the colourful Sinulog heritage round out a trip that covers everything from ancient history to world-class marine life.',
+    itinerary: [
+      { day: 1, title: 'Arrival in Cebu City', description: 'Transfer to hotel in Cebu City. Evening walk along the heritage district — Magellan\'s Cross, Basilica Minore del Santo Niño (oldest church in the Philippines). Welcome dinner of lechon (Cebu\'s famous roasted pig) at a local carinderia.' },
+      { day: 2, title: 'Whale Shark Snorkelling in Oslob', description: 'Early morning drive to Oslob (2.5 hrs south). Snorkel with gentle whale sharks in the open sea — an unmissable bucket-list experience. Afternoon at Tumalog Falls — a misty curtain waterfall in the jungle. Visit Sumilon Island sandbar. Return to Cebu City.' },
+      { day: 3, title: 'Kawasan Falls & Canyoneering', description: 'Drive to Badian (3 hrs). Begin Kawasan Falls canyoneering adventure — cliff jumping, cave swimming, and abseiling through three turquoise-green falls. Lunch at the falls. Return to Cebu.' },
+      { day: 4, title: 'Cross to Bohol — Chocolate Hills', description: 'Fast ferry to Tagbilaran, Bohol (2 hrs). Transfer to Carmen — the iconic Chocolate Hills viewpoint (1,268 conical limestone hills, brown in dry season like chocolate drops). Tarsier Sanctuary — spot the world\'s smallest primate. Loboc River cruise lunch. Check-in at Panglao Island resort.' },
+      { day: 5, title: 'Alona Beach & Diving', description: 'Full day at Alona Beach, Panglao Island — snorkelling and diving on the house reef with sea turtles, clownfish, and parrotfish. Panglao lighthouse walk. Optional: Balicasag Island boat trip for spinner dolphins and manta rays. Sunset seafood BBQ on the beach.' },
+      { day: 6, title: 'Bohol & Departure', description: 'Morning free at the beach. Transfer to Tagbilaran Airport. Fly back to Cebu for international connection, or depart direct. Departure.' },
+    ],
+    inclusions: [
+      '5 nights (Cebu City hotel 3N, Panglao beachfront resort 2N)',
+      'Daily breakfast & 2 dinners',
+      'Whale shark snorkelling in Oslob',
+      'Kawasan Falls canyoneering (with guide)',
+      'Cebu–Bohol ferry (round trip)',
+      'Chocolate Hills & Tarsier Sanctuary',
+      'Loboc River lunch cruise',
+      'Alona Beach snorkelling',
+      'All transfers & English-speaking guide',
+    ],
+    exclusions: [
+      'International flights (via Manila or direct to Cebu)',
+      'Lunches (except river cruise)',
+      'Optional scuba diving (₹2,500/dive)',
+      'Optional Balicasag boat trip',
+      'Travel insurance',
+    ],
+    batches: [
+      { id: 1, date: 'May 15 – May 20, 2026', slots: 8, price: '₹62,999', status: 'available' },
+      { id: 2, date: 'Nov 10 – Nov 15, 2026', slots: 10, price: '₹65,999', status: 'available' },
+      { id: 3, date: 'Dec 20 – Dec 25, 2026', slots: 6, price: '₹68,999', status: 'filling' },
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=800',
+      'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=800',
+      'https://images.unsplash.com/photo-1532274402911-5a369e4c4bb5?w=800',
+      'https://images.unsplash.com/photo-1496318447583-f524534e9ce1?w=800',
+    ],
+  },
+  'philippines-palawan': {
+    heroImage: 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=800',
+    title: 'Philippines: Palawan & El Nido',
+    subtitle: 'Island Paradise Awaits',
+    tagline: 'Limestone karsts, secret lagoons & world-class coral reefs',
+    rating: '4.9',
+    reviews: 340,
+    duration: '6 Days / 5 Nights',
+    groupSize: '8-16 people',
+    difficulty: 'Easy',
+    price: '₹69,999',
+    originalPrice: '₹89,999',
+    overview: 'Palawan has been repeatedly named the world\'s best island — and one visit explains exactly why. Ancient limestone karsts rise from jade-green lagoons, UNESCO-listed underground rivers wind through cathedral caves, and coral reefs teeming with marine life stretch across crystal-clear waters. El Nido\'s island hopping, Puerto Princesa\'s underground river, and Coron\'s World War II shipwreck dives make this the ultimate tropical adventure.',
+    itinerary: [
+      { day: 1, title: 'Arrival in Puerto Princesa', description: 'Fly into Puerto Princesa. Transfer to your beachfront hotel. Welcome dinner of fresh seafood and Filipino BBQ.' },
+      { day: 2, title: 'Puerto Princesa Underground River', description: 'UNESCO World Heritage underground river tour — paddle through a 8.2km cave system with soaring chambers and wildlife. Afternoon at Honda Bay island hopping (Starfish Island, Cowrie Island).' },
+      { day: 3, title: 'Transfer to El Nido', description: 'Scenic van transfer through Palawan\'s jungle highway. Afternoon free at El Nido town beach. Evening at rooftop bar overlooking the limestone cliffs.' },
+      { day: 4, title: 'El Nido Island Hopping A', description: 'Full-day island hopping — Big Lagoon, Small Lagoon (kayaking through mangrove channels), Secret Lagoon, 7 Commando Beach. Fresh lunch cooked on the boat.' },
+      { day: 5, title: 'El Nido Island Hopping C', description: 'Secret Beach (swim through a rock crevice), Shimizu Island snorkeling, Matinloc Shrine, Hidden Beach. End at Helicopter Island for sunset.' },
+      { day: 6, title: 'El Nido & Departure', description: 'Morning free — kayak rentals or beach time. Afternoon fly back from El Nido or Puerto Princesa. Departure.' },
+    ],
+    inclusions: [
+      '5 nights (Puerto Princesa 2N, El Nido beachfront 3N)',
+      'Daily breakfast & 2 dinners',
+      'Underground River tour + park fees',
+      'El Nido Island Hopping Tours A & C',
+      'Honda Bay Island Hopping',
+      'All transfers (airport, highway van)',
+      'English-speaking guide',
+    ],
+    exclusions: [
+      'International flights to Manila + domestic flights Manila–Palawan',
+      'Philippine e-Visa (not required for Indian passports under 30 days)',
+      'Lunches (except on boat tours)',
+      'Optional scuba diving',
+      'Travel insurance',
+    ],
+    batches: [
+      { id: 1, date: 'May 5 – May 10, 2026', slots: 8, price: '₹69,999', status: 'available' },
+      { id: 2, date: 'Nov 8 – Nov 13, 2026', slots: 10, price: '₹74,999', status: 'available' },
+      { id: 3, date: 'Dec 10 – Dec 15, 2026', slots: 6, price: '₹72,999', status: 'available' },
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=800',
+      'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=800',
+      'https://images.unsplash.com/photo-1496318447583-f524534e9ce1?w=800',
+      'https://images.unsplash.com/photo-1532274402911-5a369e4c4bb5?w=800',
+    ],
+  },
+
+  // ── Georgia ──
+  'georgia-tbilisi': {
+    heroImage: 'https://images.unsplash.com/photo-1565008576549-57569a49371d?w=800',
+    title: 'Georgia: Tbilisi, Kazbegi & Wine Country',
+    subtitle: 'The Caucasus Crown Jewel',
+    tagline: 'Ancient cave cities, Caucasus peaks & 8,000-year-old wine traditions',
+    rating: '4.9',
+    reviews: 275,
+    duration: '6 Days / 5 Nights',
+    groupSize: '8-18 people',
+    difficulty: 'Easy to Moderate',
+    price: '₹54,999',
+    originalPrice: '₹69,999',
+    overview: 'Georgia is one of Europe\'s best-kept secrets — a country where ancient cave monasteries cling to cliffsides above roaring rivers, the snow-capped Greater Caucasus peaks tower over flower-filled meadows, and 8,000 years of wine-making tradition fills every valley of Kakheti. Tbilisi\'s sulphur bath district, art nouveau balconied streets, and buzzing wine bars make it one of the world\'s most exciting emerging cities.',
+    itinerary: [
+      { day: 1, title: 'Arrival in Tbilisi', description: 'Transfer to your hotel in old town Tbilisi. Evening walk through Rustaveli Avenue, Freedom Square, and the Dezerter Bazaar. Rooftop dinner with views of the Mtkvari River.' },
+      { day: 2, title: 'Tbilisi Old Town & Mtskheta', description: 'Narikala Fortress and city views. Sulphur bath district at Abanotubani. Metekhi Church. Afternoon in Mtskheta — the ancient capital and UNESCO-listed Svetitskhoveli Cathedral. Evening wine bar in Tbilisi.' },
+      { day: 3, title: 'Kazbegi — Gergeti Trinity Church', description: 'Full-day trip to Kazbegi in the Greater Caucasus. 4WD drive up to the iconic Gergeti Trinity Church (2,170m) with Mount Kazbek (5,047m) behind it — Georgia\'s most famous image. Ananuri Fortress and Zhinvali Reservoir on the Georgian Military Highway.' },
+      { day: 4, title: 'Uplistsikhe Cave City & Gori', description: 'Uplistsikhe — a 3,000-year-old rock-hewn cave city with streets, temples, and a theatre carved into the clifftop. Gori city. Return via the Caucasus foothills.' },
+      { day: 5, title: 'Kakheti Wine Region', description: 'Full day in Kakheti — the soul of Georgian wine. Visit two family wineries for traditional qvevri (clay jar) wine tasting. Sighnaghi — the City of Love with panoramic vineyard views. Bodbe Monastery.' },
+      { day: 6, title: 'Tbilisi & Departure', description: 'Morning free in Tbilisi — dry bridge flea market, Fabrika creative hub. Afternoon departure.' },
+    ],
+    inclusions: [
+      '5 nights in Tbilisi old town boutique hotel',
+      'Daily breakfast & 3 dinners',
+      'Kazbegi 4WD full-day tour',
+      'Kakheti wine tasting at 2 wineries',
+      'Mtskheta, Uplistsikhe & Gori guided tour',
+      'Sulphur bath session in Abanotubani',
+      'All transfers & English-speaking guide',
+    ],
+    exclusions: [
+      'International flights',
+      'Georgian visa (Indian passport — visa on arrival available)',
+      'Lunches',
+      'Personal wine purchases',
+      'Travel insurance',
+    ],
+    batches: [
+      { id: 1, date: 'May 12 – May 17, 2026', slots: 10, price: '₹54,999', status: 'available' },
+      { id: 2, date: 'Sep 15 – Sep 20, 2026', slots: 12, price: '₹57,999', status: 'available' },
+      { id: 3, date: 'Oct 10 – Oct 15, 2026', slots: 8, price: '₹52,999', status: 'available' },
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1565008576549-57569a49371d?w=800',
+      'https://images.unsplash.com/photo-1589656966895-2f33e7653819?w=800',
+      'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=800',
+      'https://images.unsplash.com/photo-1601979031925-424e53b6caaa?w=800',
+    ],
+  },
+
+  // ── Iceland ──
+  'iceland-northern-lights': {
+    heroImage: 'https://images.unsplash.com/photo-1476610182048-b716b8518aae?w=800',
+    title: 'Iceland: Northern Lights & Golden Circle',
+    subtitle: 'Land of Fire and Ice',
+    tagline: 'Auroras, geysers, waterfalls & the Blue Lagoon',
+    rating: '4.9',
+    reviews: 420,
+    duration: '6 Days / 5 Nights',
+    groupSize: '8-16 people',
+    difficulty: 'Easy',
+    price: '₹1,29,999',
+    originalPrice: '₹1,59,999',
+    overview: 'Iceland is where the raw power of nature performs on the grandest stage — the Northern Lights dance across winter skies, geysers shoot boiling water 30 metres into the air, and volcanoes quietly steam beneath glaciers. The Golden Circle, South Coast, and Snæfellsnes Peninsula are among the most dramatic landscapes on Earth, and the Blue Lagoon\'s steaming turquoise waters are the world\'s most famous geothermal spa.',
+    itinerary: [
+      { day: 1, title: 'Arrival in Reykjavik', description: 'Transfer from Keflavik airport to Reykjavik. Afternoon in the colourful capital — Hallgrímskirkja church, Harpa Concert Hall, and Old Harbour. Evening Northern Lights hunt (October–March) or midnight sun walk (summer).' },
+      { day: 2, title: 'Golden Circle', description: 'Þingvellir National Park (UNESCO) — walk between the North American and Eurasian tectonic plates. Geysir geothermal area — watch Strokkur erupt every 5 minutes. Gullfoss — the "Golden Waterfall" plunging 32m into a gorge. Friðheimar tomato greenhouse lunch.' },
+      { day: 3, title: 'South Coast', description: 'Seljalandsfoss — walk behind the waterfall curtain. Skógafoss with its rainbow mists. Black sand beach at Reynisfjara with its basalt columns. Jökulsárlón Glacier Lagoon — floating icebergs and diamond ice beach.' },
+      { day: 4, title: 'Snæfellsnes Peninsula', description: 'Drive to the magical Snæfellsnes Peninsula — Snæfellsjökull glacier volcano (Jules Verne\'s "Journey to the Centre of the Earth"). Kirkjufell mountain. Arnarstapi lava arch coastline.' },
+      { day: 5, title: 'Blue Lagoon & Reykjavik', description: 'Afternoon at the world-famous Blue Lagoon geothermal spa — milky turquoise waters at 38°C surrounded by lava fields. Evening farewell dinner in Reykjavik.' },
+      { day: 6, title: 'Departure', description: 'Transfer to Keflavik airport. Departure.' },
+    ],
+    inclusions: [
+      '5 nights in Reykjavik 4-star hotel',
+      'Daily breakfast & 2 dinners',
+      'Blue Lagoon premium entry',
+      'Golden Circle full-day tour',
+      'South Coast tour (Seljalandsfoss, Skógafoss, Jökulsárlón)',
+      'Snæfellsnes Peninsula tour',
+      'Northern Lights hunt tour (seasonal)',
+      'All transfers & English-speaking guide',
+    ],
+    exclusions: [
+      'International flights',
+      'Schengen visa',
+      'Lunches',
+      'Optional horse riding or snowmobile',
+      'Travel insurance',
+    ],
+    batches: [
+      { id: 1, date: 'Feb 10 – Feb 15, 2027', slots: 8, price: '₹1,29,999', status: 'available' },
+      { id: 2, date: 'Mar 5 – Mar 10, 2027', slots: 10, price: '₹1,24,999', status: 'available' },
+      { id: 3, date: 'Aug 15 – Aug 20, 2026', slots: 12, price: '₹1,34,999', status: 'available' },
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1476610182048-b716b8518aae?w=800',
+      'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800',
+      'https://images.unsplash.com/photo-1504893524553-b855bce32c67?w=800',
+      'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800',
+    ],
+  },
+
+  // ── Netherlands ──
+  'netherlands-amsterdam': {
+    heroImage: 'https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=800',
+    title: 'Netherlands: Amsterdam & Tulip Fields',
+    subtitle: 'The Dutch Golden Age',
+    tagline: 'Canal houses, Keukenhof tulips & world-class museums',
+    rating: '4.8',
+    reviews: 315,
+    duration: '5 Days / 4 Nights',
+    groupSize: '10-20 people',
+    difficulty: 'Easy',
+    price: '₹84,999',
+    originalPrice: '₹1,04,999',
+    overview: 'Amsterdam is one of Europe\'s most romantic and culturally rich cities — a 17th-century canal ring lined with elegant gabled houses, world-class museums packed with Rembrandt and Van Gogh, and a laid-back café culture that makes every corner feel like a painting. Spring adds Keukenhof\'s seven million tulips, the windmills of Kinderdijk, and the cheese markets of Gouda to create one of Europe\'s most colourful experiences.',
+    itinerary: [
+      { day: 1, title: 'Arrival in Amsterdam', description: 'Transfer to hotel in the historic canal district. Evening canal boat tour through the UNESCO-listed 17th-century ring. Welcome dinner at a Dutch brasserie.' },
+      { day: 2, title: 'Museums & Canals', description: 'Rijksmuseum — Rembrandt\'s Night Watch and Vermeer\'s Milkmaid. Van Gogh Museum — the world\'s largest Van Gogh collection. Anne Frank House. Afternoon Jordaan neighbourhood. Heineken Experience brewery tour.' },
+      { day: 3, title: 'Keukenhof & Windmills', description: 'Keukenhof Gardens — the world\'s largest flower garden with 7 million tulips (March–May). Windmills at Zaanse Schans. Traditional Dutch cheese tasting. Delft blue ceramics workshop.' },
+      { day: 4, title: 'Haarlem & Volendam', description: 'Haarlem\'s medieval market square and St. Bavo Cathedral. Volendam fishing village — traditional Dutch costumes and fresh herring. Cheese farm at Edam. Evening back in Amsterdam.' },
+      { day: 5, title: 'Amsterdam & Departure', description: 'Morning free — Albert Cuyp market, Vondelpark cycle. Afternoon departure from Schiphol.' },
+    ],
+    inclusions: [
+      '4 nights in Amsterdam 4-star canal-view hotel',
+      'Daily breakfast & 2 dinners',
+      'Rijksmuseum & Van Gogh Museum tickets',
+      'Keukenhof Gardens entry',
+      'Zaanse Schans windmills visit',
+      'Amsterdam canal cruise',
+      'Heineken Experience',
+      'All transfers & English-speaking guide',
+    ],
+    exclusions: [
+      'International flights',
+      'Schengen visa',
+      'Lunches',
+      'Anne Frank House (book in advance)',
+      'Personal shopping',
+      'Travel insurance',
+    ],
+    batches: [
+      { id: 1, date: 'Apr 15 – Apr 19, 2027', slots: 10, price: '₹84,999', status: 'available' },
+      { id: 2, date: 'May 5 – May 9, 2027', slots: 8, price: '₹89,999', status: 'available' },
+      { id: 3, date: 'Sep 10 – Sep 14, 2026', slots: 12, price: '₹82,999', status: 'available' },
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=800',
+      'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800',
+      'https://images.unsplash.com/photo-1512470876302-972faa2aa9a4?w=800',
+      'https://images.unsplash.com/photo-1576153192396-180ecef2a715?w=800',
+    ],
+  },
+
+  // ── Germany ──
+  'germany-bavaria': {
+    heroImage: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800',
+    title: 'Germany: Berlin, Bavaria & Neuschwanstein',
+    subtitle: 'From Imperial Berlin to Fairy-Tale Castles',
+    tagline: 'Cold War history, Oktoberfest, and the world\'s most famous castle',
+    rating: '4.8',
+    reviews: 365,
+    duration: '7 Days / 6 Nights',
+    groupSize: '10-18 people',
+    difficulty: 'Easy',
+    price: '₹1,04,999',
+    originalPrice: '₹1,29,999',
+    overview: 'Germany packs extraordinary variety into a single trip — Berlin where Cold War history meets Europe\'s most vibrant contemporary art scene; Munich where Bavarian beer halls and world-class museums share the city with an English Garden bigger than Central Park; and the Bavarian Alps where Neuschwanstein Castle — the fairy-tale castle that inspired Disneyland — floats above a pristine Alpine lake.',
+    itinerary: [
+      { day: 1, title: 'Arrival in Berlin', description: 'Transfer to hotel in Mitte. Evening walk on Unter den Linden. Berlin Welcome dinner with a local.' },
+      { day: 2, title: 'Berlin: History & Art', description: 'Brandenburg Gate. Reichstag glass dome (pre-book). Holocaust Memorial. Checkpoint Charlie and the Topography of Terror. East Side Gallery — the largest remaining section of the Berlin Wall. Afternoon museum island and the Pergamon Museum.' },
+      { day: 3, title: 'Berlin: Culture & Food', description: 'Kreuzberg neighbourhood — multicultural food market at Markthalle Neun. Potsdamer Platz. Street art tour of Prenzlauer Berg and Friedrichshain. Optional: KaDeWe luxury department store.' },
+      { day: 4, title: 'Flight to Munich', description: 'Morning flight to Munich. Marienplatz and the Glockenspiel. Englischer Garten (bigger than Central Park). Hofbräuhaus for a traditional Bavarian lunch. Residenz Palace. Evening in the Schwabing district.' },
+      { day: 5, title: 'Neuschwanstein Castle', description: 'Full day at Neuschwanstein Castle in the Bavarian Alps — the fairy-tale castle that inspired Sleeping Beauty\'s castle. Guided interior tour. Alpsee lake walk and Hohenschwangau Castle.' },
+      { day: 6, title: 'Munich & Dachau', description: 'Morning at Nymphenburg Palace. Optional: Dachau Memorial. Evening farewell Bavarian dinner — pork knuckle, pretzels and weissbeer.' },
+      { day: 7, title: 'Departure from Munich', description: 'Morning free. Transfer to Munich Airport. Departure.' },
+    ],
+    inclusions: [
+      '6 nights (Berlin 3N, Munich 3N) in 4-star hotels',
+      'Daily breakfast & 3 dinners',
+      'Berlin–Munich domestic flight',
+      'Neuschwanstein Castle guided tour',
+      'Pergamon Museum & Museum Island',
+      'Hofbräuhaus evening experience',
+      'Nymphenburg Palace visit',
+      'All transfers & English-speaking guide',
+    ],
+    exclusions: [
+      'International flights',
+      'Schengen visa',
+      'Lunches',
+      'Reichstag dome (free but pre-registration required)',
+      'Optional Oktoberfest (if applicable)',
+      'Travel insurance',
+    ],
+    batches: [
+      { id: 1, date: 'Sep 20 – Sep 26, 2026', slots: 8, price: '₹1,04,999', status: 'available' },
+      { id: 2, date: 'Oct 5 – Oct 11, 2026', slots: 10, price: '₹1,09,999', status: 'available' },
+      { id: 3, date: 'May 10 – May 16, 2027', slots: 12, price: '₹99,999', status: 'available' },
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800',
+      'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800',
+      'https://images.unsplash.com/photo-1594563703937-fdc640497dcd?w=800',
+      'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800',
+    ],
+  },
+
+  // ── Belgium ──
+  'belgium-bruges': {
+    heroImage: 'https://images.unsplash.com/photo-1592853625511-ad0edcc69c07?w=800',
+    title: 'Belgium: Bruges, Brussels & Belgian Delights',
+    subtitle: 'Medieval Canals & Chocolate Heaven',
+    tagline: 'UNESCO old towns, world-class beer & the best chocolate on Earth',
+    rating: '4.8',
+    reviews: 240,
+    duration: '5 Days / 4 Nights',
+    groupSize: '10-18 people',
+    difficulty: 'Easy',
+    price: '₹79,999',
+    originalPrice: '₹99,999',
+    overview: 'Belgium is Europe\'s most underrated gem — a compact country where every city is a UNESCO treasure. Bruges\' medieval canal network is so perfectly preserved it looks like a film set. Brussels\' Grand Place is one of the world\'s most beautiful squares. Ghent\'s vibrant student scene and dramatic Gravensteen castle complete a picture of a country that punches far above its weight in culture, architecture, and — most importantly — food.',
+    itinerary: [
+      { day: 1, title: 'Arrival in Brussels', description: 'Transfer to hotel near Grand Place. Evening at the Grand Place (UNESCO) — the most ornate square in Europe. Manneken Pis. Belgian waffle and beer tasting walk through Ilot Sacré.' },
+      { day: 2, title: 'Brussels: Museums & Chocolate', description: 'Royal Museums of Fine Arts (Bruegel and Magritte). Atomium — Brussels\' futuristic landmark. Belgian Comic Strip Centre. Afternoon: Chocolate Academy visit and praline-making workshop. Evening in the European Quarter.' },
+      { day: 3, title: 'Bruges', description: 'Full day in Bruges — UNESCO World Heritage city. Canal boat tour. Belfry Tower climb (366 steps) for rooftop views. Basilica of the Holy Blood. Brewery De Halve Maan tour. Chocolate and lace shopping on Wollestraat.' },
+      { day: 4, title: 'Ghent', description: 'Ghent\'s Gravensteen Castle. Saint Bavo\'s Cathedral with the Van Eyck Ghent Altarpiece (one of the world\'s greatest paintings). Ghent\'s vibrant Graffiti Street. Evening canal walk and local jenever (gin) tasting.' },
+      { day: 5, title: 'Brussels & Departure', description: 'Morning free — Sablon antique market, Marolles flea market. Afternoon transfer to Brussels Airport. Departure.' },
+    ],
+    inclusions: [
+      '4 nights in Brussels 4-star hotel',
+      'Daily breakfast & 2 dinners',
+      'Belgian chocolate praline workshop',
+      'Bruges canal boat tour',
+      'De Halve Maan Brewery tour',
+      'Ghent Gravensteen Castle',
+      'All transfers & English-speaking guide',
+    ],
+    exclusions: [
+      'International flights',
+      'Schengen visa',
+      'Lunches',
+      'Personal chocolate shopping',
+      'Travel insurance',
+    ],
+    batches: [
+      { id: 1, date: 'Jun 10 – Jun 14, 2026', slots: 10, price: '₹79,999', status: 'available' },
+      { id: 2, date: 'Sep 5 – Sep 9, 2026', slots: 12, price: '₹82,999', status: 'available' },
+      { id: 3, date: 'Dec 5 – Dec 9, 2026', slots: 8, price: '₹84,999', status: 'available' },
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1592853625511-ad0edcc69c07?w=800',
+      'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=800',
+      'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800',
+      'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800',
+    ],
+  },
+
+  // ── Kazakhstan ──
+  'kazakhstan-almaty': {
+    heroImage: 'https://images.unsplash.com/photo-1605101100278-5d1deb2b6498?w=800',
+    title: 'Kazakhstan: Almaty, Charyn Canyon & Tian Shan',
+    subtitle: 'Central Asia\'s Crown Jewel',
+    tagline: 'Silk Road city, Grand Canyon rival & soaring Tian Shan peaks',
+    rating: '4.7',
+    reviews: 180,
+    duration: '5 Days / 4 Nights',
+    groupSize: '8-16 people',
+    difficulty: 'Moderate',
+    price: '₹59,999',
+    originalPrice: '₹74,999',
+    overview: 'Kazakhstan is Central Asia\'s most accessible and dramatic frontier destination. Almaty sits beneath the soaring snow-capped Tian Shan mountains, and within an hour\'s drive you can be riding a cable car to alpine meadows or hiking through gorges to turquoise glacial lakes. The Charyn Canyon — Central Asia\'s answer to the Grand Canyon — stretches for 90km of dramatic red-rock formations, and the ancient Silk Road caravanserais hint at the great trading civilisations that once passed through this land.',
+    itinerary: [
+      { day: 1, title: 'Arrival in Almaty', description: 'Transfer to hotel in central Almaty. Evening at Panfilov Park and Zenkov Cathedral — one of the world\'s tallest wooden buildings. Welcome dinner at a traditional Kazakh yurt restaurant.' },
+      { day: 2, title: 'Almaty City & Shymbulak', description: 'Central State Museum. Green Bazaar — the region\'s most vibrant covered market (dried fruits, kumiss, horsemeat). Cable car to Shymbulak Alpine Resort (2,500m) for panoramic Tian Shan views. Medeu speed-skating rink (highest in the world at 1,691m).' },
+      { day: 3, title: 'Charyn Canyon', description: 'Full-day 4WD trip to Charyn Canyon — the Valley of Castles with its extraordinary red-rock formations. Hike through the canyon floor. Lunch at a canyon-side camp. Return via the Ash Tree Grove.' },
+      { day: 4, title: 'Big Almaty Lake & Kok Tobe', description: 'Morning hike to the stunning turquoise Big Almaty Lake surrounded by glaciated peaks. Afternoon at Kok Tobe hill — cable car, panoramic views, and traditional amusements. Evening farewell dinner.' },
+      { day: 5, title: 'Departure', description: 'Morning at Almaty\'s Arasan thermal baths (optional). Transfer to airport. Departure.' },
+    ],
+    inclusions: [
+      '4 nights in Almaty 4-star hotel',
+      'Daily breakfast & 3 dinners',
+      'Charyn Canyon full-day 4WD tour',
+      'Big Almaty Lake hike',
+      'Shymbulak cable car',
+      'Green Bazaar guided walk',
+      'All transfers & English-speaking guide',
+    ],
+    exclusions: [
+      'International flights',
+      'Kazakhstan e-Visa (Indian passport — apply online, ₹1,500 approx.)',
+      'Lunches',
+      'Optional horse riding',
+      'Travel insurance',
+    ],
+    batches: [
+      { id: 1, date: 'Jun 15 – Jun 19, 2026', slots: 10, price: '₹59,999', status: 'available' },
+      { id: 2, date: 'Aug 10 – Aug 14, 2026', slots: 8, price: '₹62,999', status: 'available' },
+      { id: 3, date: 'Sep 20 – Sep 24, 2026', slots: 12, price: '₹57,999', status: 'available' },
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1605101100278-5d1deb2b6498?w=800',
+      'https://images.unsplash.com/photo-1584433144859-1fc3ab64a957?w=800',
+      'https://images.unsplash.com/photo-1504893524553-b855bce32c67?w=800',
+      'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=800',
+    ],
+  },
+
+  // ── Mongolia ──
+  'mongolia-gobi': {
+    heroImage: 'https://images.unsplash.com/photo-1614531341773-3bff8b7cb3fc?w=800',
+    title: 'Mongolia: Gobi Desert & Nomadic Steppes',
+    subtitle: 'The Last Great Wilderness',
+    tagline: 'Ger camps, Genghis Khan\'s legacy & endless golden steppes',
+    rating: '4.9',
+    reviews: 155,
+    duration: '7 Days / 6 Nights',
+    groupSize: '6-14 people',
+    difficulty: 'Moderate',
+    price: '₹84,999',
+    originalPrice: '₹1,04,999',
+    overview: 'Mongolia is the last great wilderness — a country of boundless steppes, the legendary Gobi Desert, ancient volcanic landscapes, and a nomadic culture unchanged for centuries. Stay in a traditional ger camp with a herder family, ride Mongolian horses across open grassland under skies more densely star-packed than almost anywhere on Earth, explore the Flaming Cliffs where Roy Chapman Andrews discovered dinosaur eggs, and discover the legacy of Genghis Khan\'s world-conquering empire.',
+    itinerary: [
+      { day: 1, title: 'Arrival in Ulaanbaatar', description: 'Transfer to hotel in Ulaanbaatar. Afternoon at the National Museum of Mongolia — 40,000 years of nomadic history. Evening cultural show of traditional music and contortion.' },
+      { day: 2, title: 'Ulaanbaatar & Terelj', description: 'Gandantegchinlen Monastery — Mongolia\'s most sacred Buddhist site. Afternoon at Terelj National Park — Turtle Rock, Ariyabal Meditation Temple, and first ger camp experience. Mongolian BBQ dinner under the stars.' },
+      { day: 3, title: 'Fly to the Gobi', description: 'Morning flight to Dalanzadgad. 4WD transfer to Gobi ger camp. Afternoon camel trek through the dunes. Sunset from the Khongoryn Els sand dunes (longest in Mongolia, up to 300m high).' },
+      { day: 4, title: 'Flaming Cliffs & Eagle Valley', description: 'Bayanzag Flaming Cliffs — where Roy Chapman Andrews discovered the first nest of dinosaur eggs in 1922. Yolyn Am (Eagle Valley) — a dramatic gorge with year-round ice in the Gobi. Saxaul forest.' },
+      { day: 5, title: 'Nomad Family Stay', description: 'Visit a nomadic herder family — join them for the day: milking goats, learning to make aaruul (dried cheese), and trying archery and wrestling (Mongolian national sports). Dinner and overnight in a genuine family ger.' },
+      { day: 6, title: 'Khustai National Park', description: 'Return to Ulaanbaatar via Khustai Nuruu National Park — home to the world\'s last surviving truly wild horses (Przewalski\'s). Farewell dinner in Ulaanbaatar.' },
+      { day: 7, title: 'Departure', description: 'Morning free. Transfer to Chinggis Khaan International Airport. Departure.' },
+    ],
+    inclusions: [
+      '6 nights (UB hotel 2N, Gobi ger camp 3N, nomad family ger 1N)',
+      'All meals included',
+      'Ulaanbaatar–Gobi domestic flight',
+      'Gobi 4WD tours (Flaming Cliffs, Yolyn Am, Khongoryn Els)',
+      'Camel trek',
+      'Nomad family cultural experience',
+      'Khustai wild horse park visit',
+      'Cultural show in UB',
+      'All transfers & English-speaking guide',
+    ],
+    exclusions: [
+      'International flights',
+      'Mongolia e-Visa (Indian passport — apply online, ₹2,000 approx.)',
+      'Personal alcohol',
+      'Optional horse riding extra',
+      'Travel insurance',
+    ],
+    batches: [
+      { id: 1, date: 'Jun 20 – Jun 26, 2026', slots: 8, price: '₹84,999', status: 'available' },
+      { id: 2, date: 'Aug 5 – Aug 11, 2026', slots: 6, price: '₹89,999', status: 'available' },
+      { id: 3, date: 'Sep 5 – Sep 11, 2026', slots: 10, price: '₹82,999', status: 'available' },
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1614531341773-3bff8b7cb3fc?w=800',
+      'https://images.unsplash.com/photo-1520208422220-d12a3c588e6c?w=800',
+      'https://images.unsplash.com/photo-1604580864964-0462f5d5b1a8?w=800',
+      'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=800',
+    ],
+  },
+
+  // ── Russia ──
+  'russia-moscow-stpete': {
+    heroImage: 'https://images.unsplash.com/photo-1513326738677-b964603b136d?w=800',
+    title: 'Russia: Moscow & St. Petersburg',
+    subtitle: 'Imperial Grandeur of the Tsars',
+    tagline: 'Kremlin, Hermitage, Bolshoi Ballet & Trans-Siberian Railway',
+    rating: '4.8',
+    reviews: 220,
+    duration: '7 Days / 6 Nights',
+    groupSize: '8-16 people',
+    difficulty: 'Easy',
+    price: '₹1,19,999',
+    originalPrice: '₹1,49,999',
+    overview: 'Russia is a country of breathtaking scale and imperial opulence — where golden-domed cathedrals rise above fortress walls, and world-class art museums house three million masterpieces. Moscow\'s Red Square and the Kremlin are among the world\'s most powerful historic images, while St. Petersburg\'s Hermitage Museum rivals the Louvre, and the Mariinsky Ballet is the world standard. This 7-day journey between Russia\'s two great capitals delivers the imperial grandeur of the Tsars in extraordinary depth.',
+    itinerary: [
+      { day: 1, title: 'Arrival in Moscow', description: 'Transfer to hotel near the Kremlin. Evening walk on Red Square — St Basil\'s Cathedral illuminated at night is one of the world\'s great sights. Welcome dinner at a traditional Russian restaurant.' },
+      { day: 2, title: 'Moscow Kremlin & Red Square', description: 'Guided Kremlin tour — Cathedral Square, the Armoury Chamber (Fabergé eggs, royal carriages, tsarist regalia). Lenin\'s Mausoleum. GUM department store arcade. Afternoon at Gorky Park. Bolshoi Theatre evening performance (optional, pre-book).' },
+      { day: 3, title: 'Moscow Cultural Day', description: 'Tretyakov Gallery — Russia\'s greatest collection of national art including iconic Russian Orthodox icons. Moscow Metro Art Tour — the world\'s most beautiful underground stations (marble chandeliers, mosaics, socialist realist frescoes). Evening at the Arbat pedestrian street.' },
+      { day: 4, title: 'High-Speed Train to St. Petersburg', description: 'Sapsan high-speed train (3.5 hrs) to St. Petersburg. Afternoon on Nevsky Prospekt — the city\'s grand main boulevard. Evening at the Church on Spilled Blood and Mikhailovsky Garden.' },
+      { day: 5, title: 'The Hermitage Museum', description: 'Full day at the State Hermitage Museum — 3 million artworks across the Winter Palace and five buildings. Da Vinci, Michelangelo, Rembrandt, Monet, Picasso. Palace Square and Alexander Column. Evening White Nights canal boat tour (summer only — the sun barely sets).' },
+      { day: 6, title: 'Peterhof & Catherine\'s Palace', description: 'Morning boat to Peterhof Palace — the "Russian Versailles" with 150 fountains and golden statues. Afternoon at Tsarskoe Selo — Catherine\'s Palace with the legendary Amber Room (an entire room panelled in amber, gold leaf, and mirrors). Farewell dinner on the Neva River.' },
+      { day: 7, title: 'Departure from St. Petersburg', description: 'Morning free. Transfer to Pulkovo Airport. Departure.' },
+    ],
+    inclusions: [
+      '6 nights (Moscow 3N, St. Petersburg 3N) in 4-star hotels',
+      'Daily breakfast & 3 dinners',
+      'Moscow–St. Petersburg Sapsan high-speed train',
+      'Full Kremlin guided tour + Armoury Chamber',
+      'Hermitage Museum full-day guided visit',
+      'Peterhof Palace & Tsarskoe Selo (Amber Room)',
+      'Moscow Metro art tour',
+      'White Nights canal boat tour (seasonal)',
+      'All transfers & English-speaking guide',
+    ],
+    exclusions: [
+      'International flights',
+      'Russian visa (₹6,000 approx., requires invitation letter — provided)',
+      'Bolshoi Theatre tickets (optional, ₹4,000–₹15,000)',
+      'Lunches',
+      'Personal shopping at GUM/Arbat',
+      'Travel insurance',
+    ],
+    batches: [
+      { id: 1, date: 'Jun 10 – Jun 16, 2026', slots: 8, price: '₹1,19,999', status: 'available' },
+      { id: 2, date: 'Jul 5 – Jul 11, 2026', slots: 6, price: '₹1,24,999', status: 'available' },
+      { id: 3, date: 'Sep 8 – Sep 14, 2026', slots: 10, price: '₹1,14,999', status: 'available' },
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1513326738677-b964603b136d?w=800',
+      'https://images.unsplash.com/photo-1547448415-e9f5b28e570d?w=800',
+      'https://images.unsplash.com/photo-1520106212299-d99c443e4568?w=800',
+      'https://images.unsplash.com/photo-1604580864964-0462f5d5b1a8?w=800',
+    ],
+  },
+
+  // ── Luxembourg ──
+  'luxembourg-vianden': {
+    heroImage: 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=800',
+    title: 'Luxembourg & Vianden Castle Explorer',
+    subtitle: 'Europe\'s Hidden Grand Duchy',
+    tagline: 'UNESCO fortresses, Moselle wines & the Ardennes forest',
+    rating: '4.7',
+    reviews: 140,
+    duration: '3 Days / 2 Nights',
+    groupSize: '8-18 people',
+    difficulty: 'Easy',
+    price: '₹44,999',
+    originalPrice: '₹56,999',
+    overview: 'Luxembourg is Europe\'s most surprising secret — a tiny grand duchy where medieval hilltop fortresses loom over dramatic river gorges, UNESCO-listed old city ramparts shelter cosmopolitan streets below, and the Moselle Valley\'s sun-drenched vineyards produce some of the region\'s most delicate white wines. Most visitors pass through on a European circuit without stopping — those who do stop discover one of the continent\'s most rewarding hidden gems. Best combined with Belgium or Germany as part of a wider Benelux itinerary.',
+    itinerary: [
+      { day: 1, title: 'Arrival in Luxembourg City', description: 'Transfer to hotel. Explore the Bock Casemates — 17km of underground rock-hewn fortification tunnels (UNESCO). Chemin de la Corniche — the "most beautiful balcony in Europe" overlooking the Alzette gorge and the Grund district below. Welcome dinner in the Grand Duchy.' },
+      { day: 2, title: 'Vianden Castle & Müllerthal', description: 'Drive to Vianden — the fairy-tale castle above the Our River, one of Europe\'s most romantic medieval fortresses. Victor Hugo\'s house in Vianden. Afternoon in Müllerthal ("Little Switzerland") — the dramatic sandstone gorge trail through mossy boulders and waterfalls. Return to Luxembourg City.' },
+      { day: 3, title: 'Moselle Valley & Departure', description: 'Morning drive along the Moselle Valley — rolling vineyards, ornate wine villages, and tasting at a Crémant de Luxembourg producer. Afternoon departure.' },
+    ],
+    inclusions: [
+      '2 nights in Luxembourg City boutique hotel',
+      'Daily breakfast & 1 dinner',
+      'Bock Casemates guided tour',
+      'Vianden Castle entry',
+      'Müllerthal trail guided walk',
+      'Moselle wine tasting',
+      'All transfers & English-speaking guide',
+    ],
+    exclusions: [
+      'International flights (usually combined with Belgium/Germany package)',
+      'Schengen visa',
+      'Lunches',
+      'Travel insurance',
+    ],
+    batches: [
+      { id: 1, date: 'May 22 – May 24, 2026', slots: 10, price: '₹44,999', status: 'available' },
+      { id: 2, date: 'Aug 20 – Aug 22, 2026', slots: 12, price: '₹46,999', status: 'available' },
+      { id: 3, date: 'Oct 8 – Oct 10, 2026', slots: 8, price: '₹43,999', status: 'available' },
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800',
+      'https://images.unsplash.com/photo-1593978301851-40c1849d47d4?w=800',
+      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800',
+      'https://images.unsplash.com/photo-1563911892437-1feda0179e1b?w=800',
+    ],
+  },
 };
 
 // ── Domestic Specialized Destinations ──
@@ -2170,7 +3136,7 @@ export const domesticDestinations = [
       { name: "Keralan Heights & Hidden Falls", id: "kerala-heights", detail: "A 6-day offbeat adventure focusing on the misty meadows of Vagamon and the cliffs of Varkala. Highlights include sunrise jeep off-roading, a guided forest trail to a hidden waterfall, and a sunset mangrove boat ride." },
       { name: "Tea Trails & Backwater Tales", id: "tea-trails", detail: "A comprehensive journey from the spice gardens of Munnar to the luxury houseboats of Alleppey. This package features tea tasting sessions, traditional Kathakali shows, and a heritage walk through the colonial streets of Fort Kochi." }
     ],
-    thumbnail: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944"
+    thumbnail: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=800"
   },
   {
     state: "Andaman",
@@ -2180,7 +3146,7 @@ export const domesticDestinations = [
       { name: "Havelock & Neil Island Explorer", id: "andaman-explorer", detail: "A 5-day immersive journey covering the best of the archipelago. Features multiple nights in Havelock for water sports at Elephant Beach and a dedicated day to explore the natural rock formations and serene vibes of Neil Island." },
       { name: "Andaman Heritage & Sunset Soul", id: "andaman-heritage", detail: "Our best-selling 6-day itinerary that blends history with relaxation. Includes guided tours of Ross Island and Cellular Jail, morning scuba slots, and a special sunset visit to Chidiya Tapu for the perfect end to your trip." }
     ],
-    thumbnail: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2"
+    thumbnail: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800"
   },
   {
     state: "Kashmir",
@@ -2191,7 +3157,7 @@ export const domesticDestinations = [
     tours: [
       { name: "Kashmir Family Grandeur", id: "kashmir-family", duration: "7 Days", price: 29999, detail: "Covers Srinagar, Gulmarg, Pahalgam with houseboats, gondola ride, and bonfire." }
     ],
-    thumbnail: "https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5"
+    thumbnail: "https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800"
   },
   {
     state: "Ladakh",
@@ -2201,7 +3167,7 @@ export const domesticDestinations = [
       { name: "Leh & High Altitudes Explorer", id: "leh-explorer", detail: "A 7-day comprehensive journey covering the spiritual landmarks of Leh and the dramatic Sham Valley. Includes a transition from the historic Shanti Stupa to the rugged beauty of the Nubra Valley." },
       { name: "Pangong Soul & Siachen Frontier", id: "pangong-soul", detail: "A specialized itinerary focusing on the eastern reaches of Ladakh. Highlights include an overnight stay at the iconic Pangong Tso and a landmark visit to the Siachen Base Camp via the Nubra Valley." }
     ],
-    thumbnail: "https://images.unsplash.com/photo-1581793745862-99fde7fa73d2"
+    thumbnail: "https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?w=800"
   },
   {
     state: "Sikkim",
@@ -2211,18 +3177,9 @@ export const domesticDestinations = [
       { name: "Sikkim Silk Route & High Passes", id: "sikkim-silk", detail: "A 6-day immersive journey exploring the historic Silk Route and East Sikkim. Highlights include the glacial Tsomgo Lake, the legendary Baba Mandir, and a specialized permit-inclusive trip to the Nathula Pass." },
       { name: "North Sikkim Wilderness & Wonders", id: "sikkim-north", detail: "A rugged adventure from the waterfalls of Gangtok to the remote villages of Lachen and Lachung. Features a sunrise visit to Gurudongmar Lake and an excursion to \"Zero Point,\" the northernmost accessible tip of the state." }
     ],
-    thumbnail: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23"
+    thumbnail: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800"
   },
-  {
-    state: "Bhutan",
-    highlight: "The Kingdom of Clouds and Calm",
-    about: "Bhutan is a serene Himalayan kingdom known for its dramatic landscapes, ancient fortress-like Dzongs, and a unique philosophy of Gross National Happiness. As the \"Last Great Himalayan Kingdom,\" it offers a mindful journey through lush valleys, cliffside monasteries, and vibrant cultural festivals. From the spiritual heights of Tiger's Nest to the rare black-necked cranes of Phobjikha Valley, it is a destination that blends natural beauty with deep-rooted Vajrayana Buddhist traditions.",
-    tours: [
-      { name: "Bhutan: Kingdom of Clouds (8 Days)", id: "bhutan-clouds", detail: "A comprehensive 7-night/8-day circuit covering Phuentsholing, Thimphu, Punakha, Paro, and the offbeat Phobjikha Valley. Includes visits to the Simply Bhutan Museum, Chimi Lhakhang \"Fertility Temple,\" and the longest suspension bridge in the country." },
-      { name: "Himalayan Happiness & Tiger's Nest Hike", id: "bhutan-happiness", detail: "A curated adventure focusing on Bhutan's spiritual heart. Highlights include a moderate hike to Paro Taktsang, sunset views from Kharbandi Gompa, and an exploration of Paro's vibrant local handicraft markets and nightlife." }
-    ],
-    thumbnail: "https://images.unsplash.com/photo-1553856622-d1b352e9a211"
-  },
+
   {
     state: "Spiti Valley",
     highlight: "The Middle Land",
@@ -2231,17 +3188,9 @@ export const domesticDestinations = [
       { name: "Spiti Circuit: Manali to Chandratal (6N/7D)", id: "spiti-circuit", detail: "A high-altitude loop starting from Manali via the Atal Tunnel. Includes 5-star highlights like the world's highest post office in Hikkim, fossil hunting in Langza, and a signature lakeside camping experience at Chandratal" },
       { name: "Himalayan Gateway: Shimla to Spiti (6N/7D)", id: "spiti-gateway", detail: "A gradual ascent through the lush Kinnaur Valley to the rugged terrain of Spiti. Features stays in the \"last village of India\" (Chitkul), visits to the 500-year-old mummy at Gue, and the 1000-year-old UNESCO site of Tabo." }
     ],
-    thumbnail: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b"
+    thumbnail: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800"
   },
-  {
-    state: "Sri Lanka",
-    highlight: "The Teardrop of India",
-    about: "Sri Lanka is a vibrant island nation that offers a magical blend of misty highlands, ancient spiritual heritage, and golden tropical shores. Travelers can journey from the bustling streets of Colombo to the serene tea plantations of \"Little England\" (Nuwara Eliya) and explore UNESCO World Heritage sites like the historic Galle Fort. Whether you are witnessing gentle giants at an elephant sanctuary or catching panoramic 360-degree views from a mountain tower, the island promises a soul-stirring adventure for every explorer.",
-    tours: [
-      { name: "Island Essence & Heritage Trail", id: "srilanka-essence", detail: "An all-inclusive circuit designed for young explorers. Highlights include a day at leisure in Negombo, cultural dives in Kandy, mountain treks in Ella, and a coastal finale in Bentota and Colombo." }
-    ],
-    thumbnail: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a"
-  },
+
   {
     state: "Uttarakhand",
     highlight: "Devbhoomi — Land of the Gods",
@@ -2250,7 +3199,7 @@ export const domesticDestinations = [
       { name: "Rishikesh & Mussoorie Family Trip", id: "rishikesh-mussoorie-family", detail: "A 4-day family getaway from Delhi covering the spiritual vibes of Rishikesh with Ganga Aarti and the hill station charm of Mussoorie with Kempty Falls, Mall Road, and Gun Hill." },
       { name: "Mussoorie, Nainital & Rishikesh Family Tour", id: "mussoorie-nainital-rishikesh-family", detail: "An epic 6-day triple hill station tour covering Rishikesh's spiritual vibes, Mussoorie's colonial charm, and Nainital's enchanting lakes — all in one seamless journey from Delhi." }
     ],
-    thumbnail: "https://images.unsplash.com/photo-1590523277543-a94d2e4eb00b"
+    thumbnail: "https://images.unsplash.com/photo-1590523277543-a94d2e4eb00b?w=800"
   },
   {
     state: "Himachal Pradesh",
@@ -2259,7 +3208,7 @@ export const domesticDestinations = [
     tours: [
       { name: "Shimla & Manali Family Package", id: "shimla-manali-family", detail: "A 6-day family escape from Shimla's Rashtrapati Niwas and Kufri to Manali's Solang Valley and Naggar Palace. Includes Deluxe rooms, daily breakfast & dinner, and all transfers by Swift Dzire." }
     ],
-    thumbnail: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23"
+    thumbnail: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800"
   },
   {
     state: "Rajasthan",
@@ -2274,85 +3223,269 @@ export const domesticDestinations = [
 
 // ── International Country-wise Destinations ──
 export const internationalDestinations = [
+  // ── South East Asia ──
+  {
+    country: "Philippines",
+    about: "The Philippines is a tropical archipelago of 7,641 islands, home to some of the world's most beautiful white-sand beaches, electric coral reefs, and dramatic limestone karst scenery. From the UNESCO-listed Puerto Princesa Underground River and the island-hopping paradise of El Nido to the whale sharks of Cebu's Oslob, the Chocolate Hills of Bohol, and the cosmopolitan buzz of Manila, the Philippines is a destination of extraordinary diversity and warmth.",
+    cities: ["Manila", "Cebu", "Bohol", "Palawan", "Boracay", "Siargao"],
+    thumbnail: "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=800",
+    tours: [
+      { name: "Philippines: Cebu & Bohol Island Escape", id: "philippines-cebu-bohol" },
+      { name: "Philippines: Palawan & El Nido", id: "philippines-palawan" },
+    ],
+  },
   {
     country: "Thailand",
-    about: "Thailand is the ultimate Southeast Asian adventure — ancient golden temples, vibrant floating markets, ethical elephant sanctuaries, and some of the world's most stunning beaches. From the electric energy of Bangkok to the turquoise coves of Krabi and the electric night markets of Chiang Mai, 'The Land of Smiles' has something extraordinary for every traveller.",
+    about: "Thailand is the ultimate Southeast Asian adventure — ancient golden temples, vibrant floating markets, ethical elephant sanctuaries, and some of the world's most stunning beaches. From the electric energy of Bangkok to the turquoise coves of Krabi and the vibrant night markets of Chiang Mai, 'The Land of Smiles' has something extraordinary for every traveller.",
     cities: ["Bangkok", "Phuket", "Krabi", "Pattaya", "Chiang Mai"],
-    thumbnail: "https://images.unsplash.com/photo-1508009603885-50cf7c579365",
+    thumbnail: "https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800",
     tours: [
       { name: "Thailand Explorer", id: "thailand-explorer" },
       { name: "Thailand Beach Bliss", id: "thailand-beach-bliss" },
     ],
   },
   {
-    country: "Vietnam",
-    about: "Vietnam is a country of extraordinary contrasts — colonial-era old towns, towering karst landscapes, sizzling street-food scenes, and turquoise bays. From the ancient lantern-lit streets of Hoi An to the UNESCO wonder of Ha Long Bay and the buzzing alleys of Hanoi's Old Quarter, Vietnam rewards every type of traveller with something genuinely unforgettable.",
-    cities: ["Hanoi", "Ho Chi Minh City", "Da Nang", "Ha Long Bay", "Hoi An"],
-    thumbnail: "https://images.unsplash.com/photo-1528127269322-539801943592",
-    tours: [
-      { name: "Vietnam Classic Tour", id: "vietnam-classic" },
-      { name: "Ha Long Bay Luxury Cruise", id: "vietnam-halong-bay" },
-    ],
-  },
-  {
     country: "Bali",
     about: "Bali is the Island of Gods — a sculpted volcanic landscape of emerald rice terraces, ancient sea temples, vibrant coral reefs, and a deeply spiritual Hindu culture. Whether you seek adventure on Mount Batur, serenity at Ubud's yoga retreats, or legendary nightlife at Seminyak's beach clubs, Bali delivers it all in tropical splendour.",
     cities: ["Ubud", "Seminyak", "Nusa Penida", "Uluwatu", "Canggu"],
-    thumbnail: "https://images.unsplash.com/photo-1537996194471-e657df975ab4",
+    thumbnail: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800",
     tours: [
       { name: "Bali", id: "bali" },
       { name: "Bali Adventure", id: "bali-adventure" },
     ],
   },
   {
-    country: "Dubai",
-    about: "Dubai is a city that turned the impossible into reality — the world's tallest building, man-made islands, indoor ski slopes, and a gold souk. This dazzling desert metropolis blends futuristic architecture with rich Emirati heritage, offering desert safaris under starlit skies, dhow cruises on the Creek, and shopping at gold-laden souks. An experience unlike anywhere else on Earth.",
-    cities: ["Dubai City", "Abu Dhabi", "Sharjah", "Desert Safari", "Palm Jumeirah"],
-    thumbnail: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c",
+    country: "Vietnam",
+    about: "Vietnam is a country of extraordinary contrasts — colonial-era old towns, towering karst landscapes, sizzling street-food scenes, and turquoise bays. From the ancient lantern-lit streets of Hoi An to the UNESCO wonder of Ha Long Bay and the buzzing alleys of Hanoi's Old Quarter, Vietnam rewards every type of traveller with something genuinely unforgettable.",
+    cities: ["Hanoi", "Ho Chi Minh City", "Da Nang", "Ha Long Bay", "Hoi An"],
+    thumbnail: "https://images.unsplash.com/photo-1528127269322-539801943592?w=800",
     tours: [
-      { name: "Dubai Luxury Escape", id: "dubai-luxury" },
+      { name: "Vietnam Classic Tour", id: "vietnam-classic" },
+      { name: "Ha Long Bay Luxury Cruise", id: "vietnam-halong-bay" },
     ],
   },
-  {
-    country: "Europe",
-    about: "Europe is a living tapestry of art, history, cuisine, and natural wonder. Walk the romantic streets of Paris, marvel at the Swiss Alps from a cogwheel train, toss a coin into the Trevi Fountain in Rome, and cruise Amsterdam's 17th-century canals. Whether you're drawn to the thermal spas of Budapest, the cliffside villages of Santorini, or the midnight sun of Norway — Europe is the world's most endlessly rewarding continent.",
-    cities: ["Switzerland", "Paris", "Italy", "London", "Amsterdam"],
-    thumbnail: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b",
-    tours: [
-      { name: "Europe Grand Tour", id: "europe-grand-tour" },
-      { name: "Swiss Alps", id: "swiss-alps" },
-      { name: "Paris Romance", id: "paris-romance" },
-      { name: "Santorini Sunsets", id: "santorini-sunsets" },
-    ],
-  },
+  // ── East Asia ──
   {
     country: "Japan",
     about: "Japan is a country of extraordinary contrasts — where 1,000-year-old temples stand in the shadow of neon-lit skyscrapers. Experience cherry blossoms in Kyoto, bullet trains cutting through countryside, Michelin-starred ramen stalls, the powder snows of Hokkaido, and the pop-culture tsunami of Tokyo's Akihabara district. Japan will redefine your understanding of what a destination can be.",
     cities: ["Tokyo", "Kyoto", "Osaka", "Nara", "Mount Fuji"],
-    thumbnail: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e",
+    thumbnail: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800",
     tours: [
       { name: "Japan Cherry Blossom", id: "japan-cherry" },
       { name: "Tokyo, Japan", id: "tokyo" },
     ],
   },
   {
-    country: "Singapore",
-    about: "Singapore is the world's most impeccably planned city-state — a tropical garden city offering adventure for every age, from 5 to 85! Blending Michelin-starred hawker stalls with futuristic Supertrees and colonial history, it's spotlessly safe, endlessly exciting, and perfectly suited for families, couples, and solo adventurers alike.",
-    cities: ["Marina Bay", "Sentosa Island", "Orchard Road", "Jewel Changi"],
-    thumbnail: "https://images.unsplash.com/photo-1518391846015-55a9cc003b25",
+    country: "South Korea",
+    about: "South Korea is a captivating blend of ancient traditions and hyper-modern innovation. Walk the streets of Seoul where centuries-old palaces stand beside K-pop boutiques and rooftop cafes, explore the haenyeo diving culture of Jeju Island, soak in the colourful lantern festivals of Gyeongju, and savour the extraordinary depth of Korean cuisine — from royal banquets to streetside tteokbokki stalls.",
+    cities: ["Seoul", "Busan", "Jeju Island", "Gyeongju", "Incheon"],
+    thumbnail: "https://images.unsplash.com/photo-1538669715315-155098f0fb1d?w=800",
     tours: [
+      { name: "South Korea: Seoul, Jeju & K-Culture", id: "south-korea-seoul" },
+    ],
+  },
+  // ── Singapore ──
+  {
+    country: "Singapore",
+    about: "Singapore is a dazzling city-state where gleaming skyscrapers, world-class theme parks, and a vibrant multicultural food scene come together in a compact, spotlessly clean package. Stroll through Gardens by the Bay under the iconic Supertrees, lose yourself in Universal Studios, explore Chinatown, Little India, and Kampong Glam, and sample everything from Michelin-starred hawker food to rooftop cocktails with a skyline view.",
+    cities: ["Marina Bay", "Sentosa", "Orchard Road", "Chinatown", "Little India"],
+    thumbnail: "https://images.unsplash.com/photo-1525596662741-e94ff9f26de1?w=800",
+    tours: [
+      { name: "Singapore City Escape", id: "singapore-city" },
       { name: "Singapore Highlights", id: "singapore-highlights" },
       { name: "Singapore Family Fun", id: "singapore-family" },
     ],
   },
+  // ── Maldives ──
   {
     country: "Maldives",
-    about: "The Maldives is the world's most serene escape — 1,200 coral islands scattered across the Indian Ocean like turquoise jewels, with the most pristine white-sand beaches, the clearest waters on the planet, and a vibrant underwater world teeming with manta rays, whale sharks, and rainbow-hued reefs. Whether in a private overwater villa or a budget guesthouse on a local island, the Maldives transports you to another world entirely.",
-    cities: ["Male", "Maafushi Island", "Vaadhoo Island", "North Malé Atoll"],
-    thumbnail: "https://images.unsplash.com/photo-1514282401047-d79a71a590e8",
+    about: "The Maldives is the ultimate Indian Ocean escape — 1,200 coral islands scattered across an impossibly blue sea, each ringed by turquoise lagoons, powdery white sand, and vibrant coral reefs. Whether you choose an overwater bungalow in a private resort or a local island adventure on a budget, the Maldives promises sunsets, snorkelling with whale sharks, and a sense of peace that is almost impossible to describe.",
+    cities: ["Malé Atoll", "Maafushi", "South Ari Atoll", "Baa Atoll", "Addu Atoll"],
+    thumbnail: "https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=800",
     tours: [
+      { name: "Maldives Island Bliss", id: "maldives-island" },
       { name: "Maldives Overwater Bliss", id: "maldives-overwater-bliss" },
       { name: "Maldives Budget Escape", id: "maldives-budget-escape" },
+    ],
+  },
+  // ── Europe ──
+  {
+    country: "Georgia",
+    about: "Georgia is the Caucasus' best-kept secret — a country of dramatic mountain landscapes, ancient cave cities, UNESCO-listed old towns, and some of the world's oldest wine-making traditions dating back 8,000 years. From the charming streets of Tbilisi's sulphur-bath district and the snow-capped peaks of Kazbegi to the seaside glamour of Batumi, Georgia is a destination of extraordinary beauty and depth.",
+    cities: ["Tbilisi", "Batumi", "Kazbegi", "Mtskheta", "Sighnaghi"],
+    thumbnail: "https://images.unsplash.com/photo-1565008576549-57569a49371d?w=800",
+    tours: [
+      { name: "Georgia: Tbilisi, Kazbegi & Wine Country", id: "georgia-tbilisi" },
+    ],
+  },
+  {
+    country: "Russia",
+    about: "Russia is the world's largest country — a land of imperial grandeur, golden-domed cathedrals, the iconic Trans-Siberian Railway, and the ethereal beauty of Lake Baikal. Marvel at the opulent palaces of St. Petersburg, explore the historic fortress of Moscow's Kremlin, and witness the breathtaking ballet at the Bolshoi Theatre. Russia's scale and cultural richness are simply unmatched anywhere on Earth.",
+    cities: ["Moscow", "St. Petersburg", "Sochi", "Kazan", "Vladivostok"],
+    thumbnail: "https://images.unsplash.com/photo-1513326738677-b964603b136d?w=800",
+    tours: [
+      { name: "Russia: Moscow & St. Petersburg", id: "russia-moscow-stpete" },
+    ],
+  },
+  {
+    country: "Iceland",
+    about: "Iceland is where the raw power of nature is on full, dramatic display — active volcanoes, cascading waterfalls, bubbling geysers, and vast glaciers. Chase the Northern Lights in winter, drive the legendary Ring Road past lava fields and fjords, soak in geothermal hot springs, and watch puffins wheel overhead in the midnight sun of summer. Iceland is not just a destination — it's a force of nature.",
+    cities: ["Reykjavik", "Vik", "Akureyri", "Blue Lagoon", "Jokulsarlon"],
+    thumbnail: "https://images.unsplash.com/photo-1476610182048-b716b8518aae?w=800",
+    tours: [
+      { name: "Iceland: Northern Lights & Golden Circle", id: "iceland-northern-lights" },
+    ],
+  },
+  // ── Western Europe ──
+  {
+    country: "Italy",
+    about: "Italy is a country of unparalleled beauty and culture — the birthplace of the Renaissance, home to the world's finest cuisine, and blessed with a landscape that ranges from the fashion-forward streets of Milan to the ancient grandeur of Rome, the artistic treasures of Florence, and the dreamlike canals of Venice. Italy's dolce vita philosophy permeates every aspect of life, from leisurely espresso mornings to long, laughter-filled al fresco dinners.",
+    cities: ["Rome", "Florence", "Venice", "Milan", "Tuscany"],
+    thumbnail: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=800",
+    tours: [
+      { name: "Italy: Rome, Florence & Venice", id: "italy-rome-florence-venice" },
+      { name: "Europe Grand Tour", id: "europe-grand-tour" },
+    ],
+  },
+  {
+    country: "France",
+    about: "France is the world's most visited country for good reason — Paris, the City of Light, is one of humanity's greatest achievements: home to the Eiffel Tower, the Louvre, Michelin-starred restaurants, and some of the world's most glamorous boutiques. Beyond Paris, the sun-kissed promenade of Nice, the lavender fields of Provence, and the wine-soaked villages of Bordeaux make France an endlessly rewarding destination.",
+    cities: ["Paris", "Nice"],
+    thumbnail: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800",
+    tours: [
+      { name: "Paris Romance", id: "paris-romance" },
+      { name: "Europe Grand Tour", id: "europe-grand-tour" },
+    ],
+  },
+  {
+    country: "Switzerland",
+    about: "Switzerland is the jewel of the Alps — a small but spectacular country of impossibly postcard-perfect landscapes, with snow-capped peaks, deep glacial lakes, chocolate-box villages, and some of Europe's finest ski resorts. Take the Glacier Express through dramatic mountain scenery, paraglide over Interlaken, marvel at the Matterhorn from Zermatt, and sample artisan cheese fondue in a mountain hut. Switzerland is the pinnacle of Alpine luxury and natural wonder.",
+    cities: ["Zurich", "Lucerne", "Interlaken", "Zermatt"],
+    thumbnail: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800",
+    tours: [
+      { name: "Swiss Alps", id: "swiss-alps" },
+    ],
+  },
+  {
+    country: "Netherlands",
+    about: "The Netherlands is a country of extraordinary charm — a flat, beautifully ordered landscape of windmills, tulip fields, and more bicycles than people. Amsterdam's 17th-century canal ring, UNESCO-listed and utterly romantic, is lined with elegant gabled townhouses, world-class museums including the Rijksmuseum and Van Gogh Museum, and a vibrant café culture. Beyond the capital, Keukenhof's tulip gardens and the windmills of Kinderdijk paint a picture of quintessential Dutch life.",
+    cities: ["Amsterdam"],
+    thumbnail: "https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=800",
+    tours: [
+      { name: "Netherlands: Amsterdam & Tulip Fields", id: "netherlands-amsterdam" },
+    ],
+  },
+  {
+    country: "Germany",
+    about: "Germany is a country of extraordinary depth and diversity — from the cosmopolitan energy of Berlin, where Cold War history meets a world-class contemporary art scene, to the fairy-tale Bavarian Alps and the legendary Oktoberfest of Munich. Drive the Romantic Road through medieval towns, cruise the Rhine past vineyard-clad hillsides, explore Hamburg's cutting-edge Elbphilharmonie, and savour a pretzel with a perfectly poured German beer. Few countries pack such cultural richness into a single border.",
+    cities: ["Berlin", "Munich", "Hamburg", "Frankfurt"],
+    thumbnail: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800",
+    tours: [
+      { name: "Germany: Berlin, Bavaria & Neuschwanstein", id: "germany-bavaria" },
+    ],
+  },
+  {
+    country: "Belgium",
+    about: "Belgium is one of Europe's most underrated treasures — a compact country of extraordinary medieval cities, world-class chocolate and waffle artisans, over 1,500 varieties of locally brewed beer, and some of Europe's finest Art Nouveau architecture. Wander the canal-laced streets of Bruges, explore Brussels' ornate Grand Place (a UNESCO World Heritage Site), and discover the vibrant dining scene of Ghent. Belgium punches far above its weight in culture, gastronomy, and sheer charm.",
+    cities: ["Brussels", "Bruges", "Ghent"],
+    thumbnail: "https://images.unsplash.com/photo-1592853625511-ad0edcc69c07?w=800",
+    tours: [
+      { name: "Belgium: Bruges, Brussels & Belgian Delights", id: "belgium-bruges" },
+    ],
+  },
+  {
+    country: "Luxembourg",
+    about: "Luxembourg is one of Europe's most surprising destinations — a tiny grand duchy of medieval fortresses perched above dramatic river gorges, a cosmopolitan capital that blends old-world charm with modern sophistication, and a countryside of rolling vineyards along the Moselle River. Luxembourg City's old town and fortifications are UNESCO-listed, and the country's blend of French, German, and Luxembourgish cultures creates a uniquely rich cultural tapestry.",
+    cities: ["Luxembourg City", "Vianden", "Echternach"],
+    thumbnail: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800",
+    tours: [
+      { name: "Luxembourg & Vianden Castle Explorer", id: "luxembourg-vianden" },
+      { name: "Europe Grand Tour", id: "europe-grand-tour" },
+    ],
+  },
+  {
+    country: "Greece",
+    about: "Greece is where Western civilisation was born — a land of ancient mythology, dazzling white-washed island villages, crystal-clear Aegean waters, and the world's most iconic ruins. Stand in awe at the Acropolis in Athens, watch the sun set over Santorini's caldera in a blaze of orange and pink, and dance until dawn in Mykonos' legendary beach clubs. Greece is romance, history, and breathtaking beauty all rolled into one.",
+    cities: ["Mykonos", "Santorini", "Athens"],
+    thumbnail: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800",
+    tours: [
+      { name: "Santorini Sunsets", id: "santorini-sunsets" },
+    ],
+  },
+  // ── South Asia ──
+  {
+    country: "Sri Lanka",
+    about: "Sri Lanka is a vibrant island nation that offers a magical blend of misty highlands, ancient spiritual heritage, and golden tropical shores. Travelers can journey from the bustling streets of Colombo to the serene tea plantations of 'Little England' (Nuwara Eliya) and explore UNESCO World Heritage sites like the historic Galle Fort. Whether you are witnessing gentle giants at an elephant sanctuary or catching panoramic views from a mountain tower, the island promises a soul-stirring adventure for every explorer.",
+    cities: ["Colombo", "Kandy", "Ella", "Galle", "Sigiriya"],
+    thumbnail: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800",
+    tours: [
+      { name: "Island Essence & Heritage Trail", id: "srilanka-essence" },
+    ],
+  },
+  {
+    country: "Bhutan",
+    about: "Bhutan is a serene Himalayan kingdom known for its dramatic landscapes, ancient fortress-like Dzongs, and a unique philosophy of Gross National Happiness. As the 'Last Great Himalayan Kingdom,' it offers a mindful journey through lush valleys, cliffside monasteries, and vibrant cultural festivals. From the spiritual heights of Tiger's Nest to the rare black-necked cranes of Phobjikha Valley, it is a destination that blends natural beauty with deep-rooted Vajrayana Buddhist traditions.",
+    cities: ["Thimphu", "Paro", "Punakha", "Phuentsholing"],
+    thumbnail: "https://images.unsplash.com/photo-1553856622-d1b352e9a211?w=800",
+    tours: [
+      { name: "Bhutan: Kingdom of Clouds (8 Days)", id: "bhutan-clouds" },
+      { name: "Himalayan Happiness & Tiger's Nest Hike", id: "bhutan-happiness" },
+    ],
+  },
+  // ── Central Asia ──
+  {
+    country: "Kazakhstan",
+    about: "Kazakhstan is Central Asia's emerging powerhouse — a vast country of dramatic contrasts where futuristic architecture in Nur-Sultan meets the ancient Silk Road bazaars of Shymkent, the soaring Tian Shan mountains tower over the cosmopolitan café culture of Almaty, and the surreal Charyn Canyon rivals the American Grand Canyon. Kazakhstan is a frontier destination for the true explorer.",
+    cities: ["Almaty", "Nur-Sultan", "Shymkent", "Charyn Canyon", "Big Almaty Lake"],
+    thumbnail: "https://images.unsplash.com/photo-1605101100278-5d1deb2b6498?w=800",
+    tours: [
+      { name: "Kazakhstan: Almaty, Charyn Canyon & Tian Shan", id: "kazakhstan-almaty" },
+    ],
+  },
+  {
+    country: "Mongolia",
+    about: "Mongolia is the last great wilderness — a country of boundless steppes, the legendary Gobi Desert, turquoise glacial lakes, and a nomadic culture unchanged for centuries. Ride horses across open grassland under skies more densely star-packed than almost anywhere on Earth, stay in traditional ger camps with herder families, and explore the legacy of Genghis Khan's vast empire. Mongolia is raw, real, and utterly unforgettable.",
+    cities: ["Ulaanbaatar", "Gobi Desert", "Khuvsgul Lake", "Karakorum", "Terelj"],
+    thumbnail: "https://images.unsplash.com/photo-1614531341773-3bff8b7cb3fc?w=800",
+    tours: [
+      { name: "Mongolia: Gobi Desert & Nomadic Steppes", id: "mongolia-gobi" },
+    ],
+  },
+  // ── Middle East ──
+  {
+    country: "Dubai",
+    about: "Dubai is a city that turned the impossible into reality — the world's tallest building, man-made islands, indoor ski slopes, and a gold souk. This dazzling desert metropolis blends futuristic architecture with rich Emirati heritage, offering desert safaris under starlit skies, dhow cruises on the Creek, and shopping at gold-laden souks. An experience unlike anywhere else on Earth.",
+    cities: ["Dubai City", "Abu Dhabi", "Sharjah", "Desert Safari", "Palm Jumeirah"],
+    thumbnail: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800",
+    tours: [
+      { name: "Dubai Luxury Escape", id: "dubai-luxury" },
+    ],
+  },
+  {
+    country: "Egypt",
+    about: "Egypt is the cradle of civilisation — a land where colossal pyramids rise from golden desert sands, river cruises glide past temple complexes thousands of years old, and bazaars overflow with the scent of spices and the sound of haggling. From the Sphinx to the Valley of the Kings, from the dive reefs of Dahab to the turquoise waters of Hurghada, Egypt is a destination of timeless, jaw-dropping wonder.",
+    cities: ["Cairo", "Luxor", "Aswan", "Hurghada", "Alexandria"],
+    thumbnail: "https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=800",
+    tours: [
+      { name: "Egypt: Pharaohs & Nile Wonders", id: "egypt-nile-wonders" },
+    ],
+  },
+  {
+    country: "Turkey",
+    about: "Turkey is where East meets West in the most spectacular fashion — a land of fairy-tale hot air balloons over the honeycombed valleys of Cappadocia, the magnificent domed skyline of Istanbul's grand mosques, turquoise Aegean coves accessible only by boat, and ancient ruins scattered across wild olive groves. Turkey is one of the world's great crossroads, and one of its most generous, vibrant, and rewarding destinations.",
+    cities: ["Istanbul", "Cappadocia", "Antalya", "Bodrum", "Pamukkale"],
+    thumbnail: "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=800",
+    tours: [
+      { name: "Turkey: Cappadocia & Istanbul Magic", id: "turkey-cappadocia" },
+    ],
+  },
+  {
+    country: "Oman",
+    about: "Oman is the Arabian Peninsula's best-kept secret — a country of spectacular natural diversity where rugged desert dunes meet dramatic fjords, ancient walled fortresses, and some of the most pristine turtle nesting beaches in the world. The historic souks of Muscat, the dramatic Wadi Shab gorges, the starlit sands of Wahiba, and the lush monsoon greenery of Dhofar make Oman a destination unlike any other in the Middle East.",
+    cities: ["Muscat", "Salalah", "Nizwa", "Wahiba Sands", "Wadi Shab"],
+    thumbnail: "https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=800",
+    tours: [
+      { name: "Oman: Desert, Wadis & Forts", id: "oman-desert-adventure" },
     ],
   },
 ];
@@ -2446,7 +3579,7 @@ export const categories = [
     title: 'European Tours',
     subtitle: 'Euro Essence',
     span: 'md:col-span-1 md:row-span-1',
-    image: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b',
+    image: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800',
     items: ['Switzerland', 'France', 'Italy'],
     gradient: 'from-amber-500/80 to-orange-600/80'
   },
@@ -2455,7 +3588,7 @@ export const categories = [
     title: 'Budget Tours',
     subtitle: 'Affordable Getaways',
     span: 'md:col-span-1 md:row-span-1',
-    image: 'https://images.unsplash.com/photo-1540541338287-41700207dee6',
+    image: 'https://images.unsplash.com/photo-1540541338287-41700207dee6?w=800',
     items: ['Backpacking', 'Weekend Trips'],
     gradient: 'from-rose-500/80 to-pink-600/80'
   }

@@ -58,8 +58,18 @@ const tagKeywords = {
 const filterTripsByTag = (tag) => {
   const keywords = tagKeywords[tag] || [];
   return Object.entries(tripDetails)
-    .filter(([, t]) => {
+    .filter(([id, t]) => {
       const blob = `${t.title} ${t.subtitle} ${t.tagline} ${t.overview}`.toLowerCase();
+      
+      if (tag === 'beach') {
+        const exclude = ['dubai', 'singapore', 'ha long', 'vietnam'];
+        if (exclude.some(ex => blob.includes(ex) || id.toLowerCase().includes(ex))) return false;
+      }
+      if (tag === 'adventure') {
+        const exclude = ['bali', 'indonesia'];
+        if (exclude.some(ex => blob.includes(ex) || id.toLowerCase().includes(ex))) return false;
+      }
+
       return keywords.some((k) => blob.includes(k));
     })
     .map(([id, t]) => ({ id, ...t }));
@@ -114,7 +124,7 @@ const ExplorePage = () => {
         <div className="relative h-[55vh] overflow-hidden">
           <div className="w-full h-full bg-gradient-to-br from-violet-500 to-indigo-700" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-          <button onClick={() => navigate(-1)} className="absolute top-6 left-6 z-10 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/40 transition">←</button>
+          <button onClick={() => navigate(-1)} className="absolute top-24 md:top-28 left-6 z-10 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/40 transition">←</button>
           <div className="absolute bottom-10 left-6 right-6 max-w-5xl mx-auto text-white">
             <p className="text-sm uppercase tracking-widest text-white/70 mb-2">Travel Style</p>
             <h1 className="text-5xl font-black">{topbarCat.name}</h1>
@@ -182,7 +192,7 @@ const ExplorePage = () => {
       <div className="relative h-[55vh] overflow-hidden">
         <img src={info.image} alt={info.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-        <button onClick={() => navigate(-1)} className="absolute top-6 left-6 z-10 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/40 transition">←</button>
+        <button onClick={() => navigate(-1)} className="absolute top-24 md:top-28 left-6 z-10 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/40 transition">←</button>
         <div className="absolute bottom-10 left-6 right-6 max-w-5xl mx-auto text-white">
           {cat && <p className="text-sm uppercase tracking-widest text-white/70 mb-2">{cat.subtitle}</p>}
           <h1 className="text-5xl font-black mb-2">{info.title}</h1>
@@ -196,21 +206,32 @@ const ExplorePage = () => {
         {/* INTERNATIONAL */}
         {slug === "international" && (
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Popular Destinations</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Explore by Destination</h2>
+            <p className="text-gray-500 mb-6">Click a destination to see all available packages</p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {internationalDestinations.map((dest) => (
-                <div key={dest.country} onClick={() => navigate(`/destination/${dest.country}`)} className="group bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg cursor-pointer transition">
-                  <img src={dest.thumbnail} alt={dest.country} className="h-44 w-full object-cover group-hover:scale-105 transition duration-500" />
-                  <div className="p-5">
-                    <h3 className="text-lg font-bold text-gray-900">{dest.country}</h3>
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {dest.cities.map((city) => (
-                        <span key={city} className="text-xs bg-violet-100 text-violet-600 px-3 py-1 rounded-full">{city}</span>
-                      ))}
+              {internationalDestinations.map((dest) => {
+                const pkgCount = (dest.tours || []).filter(t => tripDetails[t.id]).length;
+                return (
+                  <div
+                    key={dest.country}
+                    onClick={() => navigate(`/destination/${dest.country}`)}
+                    className="group bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg cursor-pointer transition"
+                  >
+                    <div className="relative h-44 overflow-hidden">
+                      <img src={dest.thumbnail} alt={dest.country} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                      {pkgCount > 0 && (
+                        <span className="absolute top-3 right-3 text-xs bg-white/90 backdrop-blur-sm text-emerald-600 font-bold px-2.5 py-1 rounded-full shadow">
+                          {pkgCount} {pkgCount === 1 ? 'Package' : 'Packages'}
+                        </span>
+                      )}
+                    </div>
+                    <div className="p-5 flex items-center justify-between">
+                      <h3 className="text-lg font-bold text-gray-900">{dest.country}</h3>
+                      <span className="text-violet-500 text-sm font-semibold group-hover:translate-x-1 transition-transform">View →</span>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

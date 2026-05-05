@@ -29,6 +29,24 @@ const DestinationPage = () => {
     }
   }
 
+  // If name is a city inside internationalFallback, use the parent country's data
+  if (!intlCountry && !domestic) {
+    outer: for (const region of internationalFallback) {
+      for (const country of region.countries) {
+        const cityFound = country.cities.find(
+          (c) => c.toLowerCase() === name.toLowerCase()
+        );
+        if (cityFound) {
+          intlCountry =
+            internationalDestinations.find(
+              (d) => d.country.toLowerCase() === country.country.toLowerCase()
+            ) || country;
+          break outer;
+        }
+      }
+    }
+  }
+
   // Try matching a city inside topbarCategories
   let cityMatch = null;
   let cityParentCountry = null;
@@ -84,7 +102,7 @@ const DestinationPage = () => {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
-          <button onClick={() => navigate(-1)} className="absolute top-6 left-6 z-10 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/40 transition">←</button>
+          <button onClick={() => navigate(-1)} className="absolute top-24 md:top-28 left-6 z-10 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/40 transition">←</button>
 
           <div className="absolute bottom-10 left-6 right-6 max-w-5xl mx-auto text-white">
             {domestic.highlight && <p className="text-sm uppercase tracking-widest text-violet-300 mb-2">{domestic.highlight}</p>}
@@ -166,7 +184,7 @@ const DestinationPage = () => {
         <div className="relative h-[55vh] overflow-hidden">
           <img src={intlCountry.thumbnail} alt={intlCountry.country} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-          <button onClick={() => navigate(-1)} className="absolute top-6 left-6 z-10 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/40 transition">←</button>
+          <button onClick={() => navigate(-1)} className="absolute top-24 md:top-28 left-6 z-10 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/40 transition">←</button>
           <div className="absolute bottom-10 left-6 right-6 max-w-5xl mx-auto text-white">
             <p className="text-sm uppercase tracking-widest text-white/70 mb-2">International</p>
             <h1 className="text-5xl font-black">{intlCountry.country}</h1>
@@ -182,11 +200,11 @@ const DestinationPage = () => {
           )}
 
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Popular Cities</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Popular Destinations</h2>
             <div className="flex flex-wrap gap-3">
               {intlCountry.cities.map((city) => (
-                <span key={city} className="px-5 py-2.5 bg-white rounded-2xl shadow-sm border border-gray-100 text-sm font-semibold text-gray-700 hover:border-violet-200 hover:text-violet-600 cursor-pointer transition" onClick={() => navigate(`/destination/${city}`)}>
-                  {city}
+                <span key={city} className="px-5 py-2.5 bg-white rounded-2xl shadow-sm border border-gray-100 text-sm font-semibold text-gray-700">
+                  📍 {city}
                 </span>
               ))}
             </div>
@@ -232,12 +250,17 @@ const DestinationPage = () => {
   // ─── City Match ──────────────────────────────────
   if (cityMatch) {
     const related = findRelatedTrips(cityMatch.city || name);
+    const heroImg = cityMatch.thumbnail || (related.length > 0 ? related[0].heroImage : null);
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="relative h-[55vh] overflow-hidden">
-          <div className="w-full h-full bg-gradient-to-br from-violet-500 to-indigo-700" />
+          {heroImg ? (
+            <img src={heroImg} alt={cityMatch.city || name} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-violet-500 to-indigo-700" />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-          <button onClick={() => navigate(-1)} className="absolute top-6 left-6 z-10 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/40 transition">←</button>
+          <button onClick={() => navigate(-1)} className="absolute top-24 md:top-28 left-6 z-10 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/40 transition">←</button>
           <div className="absolute bottom-10 left-6 right-6 max-w-5xl mx-auto text-white">
             <p className="text-sm uppercase tracking-widest text-white/70 mb-2">{cityParentCountry}</p>
             <h1 className="text-5xl font-black">{cityMatch.city || name}</h1>
@@ -319,7 +342,7 @@ const DestinationPage = () => {
         <div className="relative h-[55vh] overflow-hidden">
           <img src={related[0].heroImage} alt={name} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-          <button onClick={() => navigate(-1)} className="absolute top-6 left-6 z-10 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/40 transition">←</button>
+          <button onClick={() => navigate(-1)} className="absolute top-24 md:top-28 left-6 z-10 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/40 transition">←</button>
           <div className="absolute bottom-10 left-6 right-6 max-w-5xl mx-auto text-white">
             <h1 className="text-5xl font-black capitalize">{name}</h1>
           </div>

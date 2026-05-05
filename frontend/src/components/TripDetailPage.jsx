@@ -84,23 +84,23 @@ const TripDetailPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* HERO */}
-      <div className="relative h-[60vh] overflow-hidden">
+      <div className="relative h-[50vh] sm:h-[60vh] overflow-hidden">
         <img src={trip.heroImage} alt={trip.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
         <button
           onClick={() => navigate(-1)}
-          className="absolute top-6 left-6 z-10 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/40 transition"
+          className="absolute top-24 md:top-28 left-6 z-10 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/40 transition"
         >
           ←
         </button>
 
         <div className="absolute bottom-10 left-6 right-6 max-w-5xl mx-auto text-white">
-          <p className="text-sm uppercase tracking-widest text-white/70 mb-2">{trip.subtitle}</p>
-          <h1 className="text-5xl font-black mb-2">{trip.title}</h1>
-          <p className="text-lg text-white/80">{trip.tagline}</p>
+          <p className="text-xs sm:text-sm uppercase tracking-widest text-white/70 mb-2">{trip.subtitle}</p>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black mb-2 leading-tight">{trip.title}</h1>
+          <p className="text-sm sm:text-lg text-white/80">{trip.tagline}</p>
 
-          <div className="flex flex-wrap gap-4 mt-4 text-sm">
+          <div className="flex flex-wrap gap-2 mt-4 text-xs sm:text-sm">
             <span className="bg-white/20 backdrop-blur px-3 py-1 rounded-full">⭐ {trip.rating} ({trip.reviews} reviews)</span>
             <span className="bg-white/20 backdrop-blur px-3 py-1 rounded-full">🕐 {trip.duration}</span>
             {trip.groupSize && <span className="bg-white/20 backdrop-blur px-3 py-1 rounded-full">👥 {trip.groupSize}</span>}
@@ -110,7 +110,7 @@ const TripDetailPage = () => {
       </div>
 
       {/* CONTENT */}
-      <div className="max-w-5xl mx-auto px-6 py-12 space-y-16">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-12 sm:space-y-16">
 
         {/* PRICE + OVERVIEW */}
         <div className="grid md:grid-cols-3 gap-8">
