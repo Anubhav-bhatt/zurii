@@ -33,8 +33,8 @@ export const internationalFallback = [
       { country: 'Switzerland', cities: ['Zurich', 'Lucerne', 'Interlaken', 'Zermatt'], thumbnail: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800' },
       { country: 'Netherlands', cities: ['Amsterdam'], thumbnail: 'https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=800' },
       { country: 'Germany', cities: ['Berlin', 'Munich', 'Hamburg', 'Frankfurt'], thumbnail: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800' },
-      { country: 'Belgium', cities: ['Brussels'], thumbnail: 'https://images.unsplash.com/photo-1592853625511-ad0edcc69c07?w=800' },
-      { country: 'Luxembourg', cities: ['Luxembourg City'], thumbnail: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800' },
+      { country: 'Belgium', cities: ['Brussels'], thumbnail: 'https://images.unsplash.com/photo-1575845664732-ee40fdc525a3?w=800' },
+      { country: 'Luxembourg', cities: ['Luxembourg City'], thumbnail: 'https://images.unsplash.com/photo-1588336899745-22da91d8f816?w=800' },
       { country: 'Greece', cities: ['Mykonos', 'Santorini', 'Athens'], thumbnail: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800' },
     ]
   },
@@ -66,7 +66,7 @@ export const internationalFallback = [
       { country: 'Dubai', cities: ['Dubai City', 'Abu Dhabi', 'Palm Jumeirah'], thumbnail: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800' },
       { country: 'Egypt', cities: ['Cairo', 'Luxor', 'Aswan', 'Hurghada'], thumbnail: 'https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=800' },
       { country: 'Turkey', cities: ['Istanbul', 'Cappadocia', 'Antalya', 'Bodrum'], thumbnail: 'https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=800' },
-      { country: 'Oman', cities: ['Muscat', 'Salalah', 'Nizwa', 'Wahiba Sands'], thumbnail: 'https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=800' },
+      { country: 'Oman', cities: ['Muscat', 'Salalah', 'Nizwa', 'Wahiba Sands'], thumbnail: 'https://images.unsplash.com/photo-1723883480638-95ac2fdd1dfa?w=800' },
     ]
   },
 ];
@@ -889,7 +889,7 @@ export const tripDetails = {
       { id: 1, date: 'Nov 12 – Nov 14, 2026', slots: 10, price: '₹11,999', status: 'available' },
       { id: 2, date: 'Dec 4 – Dec 6, 2026', slots: 5, price: '₹12,499', status: 'filling' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=800', 'https://images.unsplash.com/photo-1571536802807-30451e3955d8?w=800', 'https://images.unsplash.com/photo-1571536802807-30451e3955d8?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=800', 'https://images.unsplash.com/photo-1571536802807-30451e3955d8?w=800', 'https://images.unsplash.com/photo-1587474260584-136574528ed5?w=800'],
   },
   'spiti-valley': {
     heroImage: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800',
@@ -1082,7 +1082,7 @@ export const tripDetails = {
       { day: 1, title: 'City Palace & Crystal Gallery', description: 'Explore the grand architecture of the Mewar Dynasty.' },
       { day: 2, title: 'Lake Pichola & Jagmandir', description: 'Exclusive boat ride and lunch at Jagmandir island palace.' }
     ],
-    gallery: ['https://images.unsplash.com/photo-1565967511849-76a60a516170?w=800', 'https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=800', 'https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800', 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1565967511849-76a60a516170?w=800', 'https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800', 'https://images.unsplash.com/photo-1568495248636-6432b97bd949?w=800', 'https://images.unsplash.com/photo-1570462945015-55dc6e92dd70?w=800'],
   },
 
   // ── Thailand ──
@@ -1244,7 +1244,7 @@ export const tripDetails = {
     ],
   },
   'vietnam-halong-bay': {
-    heroImage: 'https://images.unsplash.com/photo-1562408590-e32931084e23?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1528127269322-539801943592?w=800',
     title: 'Ha Long Bay Luxury Cruise',
     subtitle: 'Wonder of the World',
     tagline: 'Sail through 1,900 limestone islands and emerald waters',
@@ -1284,10 +1284,10 @@ export const tripDetails = {
       { id: 3, date: 'Sep 22 – Sep 25, 2026', slots: 14, price: '₹36,999', status: 'available' },
     ],
     gallery: [
-      'https://images.unsplash.com/photo-1562408590-e32931084e23?w=800',
       'https://images.unsplash.com/photo-1528127269322-539801943592?w=800',
-      'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800',
-      'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800',
+      'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800',
+      'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800',
+      'https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800',
     ],
   },
 
@@ -1723,7 +1723,7 @@ export const tripDetails = {
 
   // ── Kashmir ──
   'kashmir-family': {
-    heroImage: 'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=800',
     title: 'Kashmir Family Grandeur',
     subtitle: 'Heaven on Earth — Family Edition',
     tagline: 'Houseboats, Gondola rides & snowy Gulmarg meadows',
@@ -1848,7 +1848,7 @@ export const tripDetails = {
     gallery: ['https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1587922546307-776227941871?w=800', 'https://images.unsplash.com/photo-1609920658906-8223bd289001?w=800', 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800'],
   },
   'sikkim-north': {
-    heroImage: 'https://images.unsplash.com/photo-1527838832700-4e316174be4f?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800',
     title: 'North Sikkim Wilderness & Wonders',
     subtitle: 'Gurudongmar & Zero Point',
     tagline: 'Sunrise at one of the world\'s highest lakes',
@@ -1971,7 +1971,7 @@ export const tripDetails = {
     gallery: ['https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800', 'https://images.unsplash.com/photo-1597074866923-dc0589150358?w=800', 'https://images.unsplash.com/photo-1614082242765-7c98ca0f3df3?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
   },
   'spiti-gateway': {
-    heroImage: 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1553856622-d1b352e9a211?w=800',
     title: 'Himalayan Gateway: Shimla to Spiti',
     subtitle: '6 Nights / 7 Days',
     tagline: 'Kinnaur Valley, Chitkul & the mummy at Gue',
@@ -2036,7 +2036,7 @@ export const tripDetails = {
 
   // ── Family Packages ──
   'rishikesh-mussoorie-family': {
-    heroImage: 'https://images.unsplash.com/photo-1592639296346-560c37a0f711?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1583261429112-e0e7fe037a49?w=800',
     title: 'Rishikesh & Mussoorie Family Trip',
     subtitle: 'Spiritual Serenity & Hill Station Charm',
     tagline: 'Ganga Aarti, Kempty Falls & Mall Road — the perfect family escape',
@@ -2194,7 +2194,7 @@ export const tripDetails = {
     ],
   },
   'mussoorie-nainital-rishikesh-family': {
-    heroImage: 'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1565967511849-76a60a516170?w=800',
     title: 'Mussoorie, Nainital & Rishikesh Family Tour',
     subtitle: 'Triple Hill Station Delight',
     tagline: 'Queen of Hills, City of Lakes & Yoga Capital in one epic trip',
@@ -2294,7 +2294,7 @@ export const tripDetails = {
     gallery: [
       'https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=800',
       'https://images.unsplash.com/photo-1589561253831-b8421dd58261?w=800',
-      'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=800',
+      'https://images.unsplash.com/photo-1526048598645-62b31f82b8f5?w=800',
       'https://images.unsplash.com/photo-1527838832700-5059252407fa?w=800',
     ],
   },
@@ -2408,7 +2408,7 @@ export const tripDetails = {
 
   // ── Oman ──
   'oman-desert-adventure': {
-    heroImage: 'https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1723883480638-95ac2fdd1dfa?w=800',
     title: 'Oman: Desert, Wadis & Forts',
     subtitle: 'Arabia\'s Best-Kept Secret',
     tagline: 'Grand Mosque, Wahiba Sands & Wadi Shab emerald gorge',
@@ -2871,7 +2871,7 @@ export const tripDetails = {
 
   // ── Belgium ──
   'belgium-bruges': {
-    heroImage: 'https://images.unsplash.com/photo-1592853625511-ad0edcc69c07?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1575845664732-ee40fdc525a3?w=800',
     title: 'Belgium: Bruges, Brussels & Belgian Delights',
     subtitle: 'Medieval Canals & Chocolate Heaven',
     tagline: 'UNESCO old towns, world-class beer & the best chocolate on Earth',
@@ -3080,7 +3080,7 @@ export const tripDetails = {
 
   // ── Luxembourg ──
   'luxembourg-vianden': {
-    heroImage: 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1588336899745-22da91d8f816?w=800',
     title: 'Luxembourg & Vianden Castle Explorer',
     subtitle: 'Europe\'s Hidden Grand Duchy',
     tagline: 'UNESCO fortresses, Moselle wines & the Ardennes forest',
@@ -3118,7 +3118,7 @@ export const tripDetails = {
       { id: 3, date: 'Oct 8 – Oct 10, 2026', slots: 8, price: '₹43,999', status: 'available' },
     ],
     gallery: [
-      'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800',
+      'https://images.unsplash.com/photo-1588336899745-22da91d8f816?w=800',
       'https://images.unsplash.com/photo-1593978301851-40c1849d47d4?w=800',
       'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800',
       'https://images.unsplash.com/photo-1563911892437-1feda0179e1b?w=800',
@@ -3177,7 +3177,7 @@ export const domesticDestinations = [
       { name: "Sikkim Silk Route & High Passes", id: "sikkim-silk", detail: "A 6-day immersive journey exploring the historic Silk Route and East Sikkim. Highlights include the glacial Tsomgo Lake, the legendary Baba Mandir, and a specialized permit-inclusive trip to the Nathula Pass." },
       { name: "North Sikkim Wilderness & Wonders", id: "sikkim-north", detail: "A rugged adventure from the waterfalls of Gangtok to the remote villages of Lachen and Lachung. Features a sunrise visit to Gurudongmar Lake and an excursion to \"Zero Point,\" the northernmost accessible tip of the state." }
     ],
-    thumbnail: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800"
+    thumbnail: "https://images.unsplash.com/photo-1587922546307-776227941871?w=800"
   },
 
   {
@@ -3199,7 +3199,7 @@ export const domesticDestinations = [
       { name: "Rishikesh & Mussoorie Family Trip", id: "rishikesh-mussoorie-family", detail: "A 4-day family getaway from Delhi covering the spiritual vibes of Rishikesh with Ganga Aarti and the hill station charm of Mussoorie with Kempty Falls, Mall Road, and Gun Hill." },
       { name: "Mussoorie, Nainital & Rishikesh Family Tour", id: "mussoorie-nainital-rishikesh-family", detail: "An epic 6-day triple hill station tour covering Rishikesh's spiritual vibes, Mussoorie's colonial charm, and Nainital's enchanting lakes — all in one seamless journey from Delhi." }
     ],
-    thumbnail: "https://images.unsplash.com/photo-1590523277543-a94d2e4eb00b?w=800"
+    thumbnail: "https://images.unsplash.com/photo-1585409677983-0f6c41ca9c3b?w=800"
   },
   {
     state: "Himachal Pradesh",
@@ -3208,7 +3208,7 @@ export const domesticDestinations = [
     tours: [
       { name: "Shimla & Manali Family Package", id: "shimla-manali-family", detail: "A 6-day family escape from Shimla's Rashtrapati Niwas and Kufri to Manali's Solang Valley and Naggar Palace. Includes Deluxe rooms, daily breakfast & dinner, and all transfers by Swift Dzire." }
     ],
-    thumbnail: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800"
+    thumbnail: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800"
   },
   {
     state: "Rajasthan",
@@ -3388,7 +3388,7 @@ export const internationalDestinations = [
     country: "Belgium",
     about: "Belgium is one of Europe's most underrated treasures — a compact country of extraordinary medieval cities, world-class chocolate and waffle artisans, over 1,500 varieties of locally brewed beer, and some of Europe's finest Art Nouveau architecture. Wander the canal-laced streets of Bruges, explore Brussels' ornate Grand Place (a UNESCO World Heritage Site), and discover the vibrant dining scene of Ghent. Belgium punches far above its weight in culture, gastronomy, and sheer charm.",
     cities: ["Brussels", "Bruges", "Ghent"],
-    thumbnail: "https://images.unsplash.com/photo-1592853625511-ad0edcc69c07?w=800",
+    thumbnail: "https://images.unsplash.com/photo-1575845664732-ee40fdc525a3?w=800",
     tours: [
       { name: "Belgium: Bruges, Brussels & Belgian Delights", id: "belgium-bruges" },
     ],
@@ -3397,7 +3397,7 @@ export const internationalDestinations = [
     country: "Luxembourg",
     about: "Luxembourg is one of Europe's most surprising destinations — a tiny grand duchy of medieval fortresses perched above dramatic river gorges, a cosmopolitan capital that blends old-world charm with modern sophistication, and a countryside of rolling vineyards along the Moselle River. Luxembourg City's old town and fortifications are UNESCO-listed, and the country's blend of French, German, and Luxembourgish cultures creates a uniquely rich cultural tapestry.",
     cities: ["Luxembourg City", "Vianden", "Echternach"],
-    thumbnail: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800",
+    thumbnail: "https://images.unsplash.com/photo-1588336899745-22da91d8f816?w=800",
     tours: [
       { name: "Luxembourg & Vianden Castle Explorer", id: "luxembourg-vianden" },
       { name: "Europe Grand Tour", id: "europe-grand-tour" },
@@ -3483,7 +3483,7 @@ export const internationalDestinations = [
     country: "Oman",
     about: "Oman is the Arabian Peninsula's best-kept secret — a country of spectacular natural diversity where rugged desert dunes meet dramatic fjords, ancient walled fortresses, and some of the most pristine turtle nesting beaches in the world. The historic souks of Muscat, the dramatic Wadi Shab gorges, the starlit sands of Wahiba, and the lush monsoon greenery of Dhofar make Oman a destination unlike any other in the Middle East.",
     cities: ["Muscat", "Salalah", "Nizwa", "Wahiba Sands", "Wadi Shab"],
-    thumbnail: "https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=800",
+    thumbnail: "https://images.unsplash.com/photo-1723883480638-95ac2fdd1dfa?w=800",
     tours: [
       { name: "Oman: Desert, Wadis & Forts", id: "oman-desert-adventure" },
     ],

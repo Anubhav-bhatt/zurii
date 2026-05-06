@@ -6,7 +6,7 @@ const DomesticTours = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="py-16 px-6 max-w-7xl mx-auto bg-gray-50/50 rounded-[50px] my-10">
+    <section className="py-10 px-6 max-w-7xl mx-auto bg-gray-50/50 rounded-[50px] my-4">
 
       {/* HEADER */}
       <ScrollFade>

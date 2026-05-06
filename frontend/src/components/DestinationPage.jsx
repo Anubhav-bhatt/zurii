@@ -74,10 +74,11 @@ const DestinationPage = () => {
   // Find related trips for a given search term
   const findRelatedTrips = (term) => {
     const q = term.toLowerCase();
+    const regex = new RegExp(`\\b${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
     return Object.entries(tripDetails)
       .filter(([, t]) => {
-        const blob = `${t.title} ${t.subtitle} ${t.tagline} ${t.overview}`.toLowerCase();
-        return blob.includes(q);
+        const blob = `${t.title} ${t.subtitle} ${t.tagline} ${t.overview}`;
+        return regex.test(blob);
       })
       .map(([id, t]) => ({ id, ...t }));
   };

@@ -6,7 +6,7 @@ const DestinationCategories = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="py-20 px-6 max-w-7xl mx-auto">
+    <section className="py-10 px-6 max-w-7xl mx-auto">
 
       {/* HEADER */}
       <ScrollFade>

@@ -8,7 +8,7 @@ const pageConfig = {
     title: "International Destinations",
     tagline: "Explore the world's most breathtaking destinations",
     description: "From the neon-lit streets of Tokyo to the sun-kissed shores of Bali, our international tours are designed to give you the most immersive experience possible.",
-    image: "https://images.unsplash.com/photo-1518684079-3c830dffeef0",
+    image: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05",
   },
   "european-tours": {
     title: "European Tours",

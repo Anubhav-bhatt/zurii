@@ -34,7 +34,7 @@ const TripCarousel = () => {
   };
 
   return (
-    <section className="pt-32 pb-16 px-6">
+    <section className="pt-10 pb-16 px-6">
 
       {/* HEADER */}
       <div className="text-center mb-10">
