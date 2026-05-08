@@ -6,12 +6,26 @@ const { Pool } = require('pg');
 const app = express();
 const port = process.env.PORT || 5001;
 
-app.use(cors({
-  origin: true,
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow server-to-server requests and same-origin calls with no Origin header.
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.length === 0) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
   methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
-}));
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json());
 
 if (!process.env.DATABASE_URL) {
@@ -50,13 +64,32 @@ initDB();
 
 app.post('/api/contact', async (req, res) => {
   try {
-    const { name, email, phone, interest, message, callback, priority } = req.body;
+    const { name, email, phone, interest, message, callback, priority } = req.body || {};
+    const cleanName = String(name || '').trim();
+    const cleanEmail = String(email || '').trim();
+    const cleanPhone = String(phone || '').trim();
+
+    if (!cleanName || !cleanEmail || !cleanPhone) {
+      return res.status(400).json({
+        success: false,
+        error: 'name, email, and phone are required',
+      });
+    }
+
     const query = `
       INSERT INTO contacts (name, email, phone, interest, message, callback, priority)
       VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *;
     `;
-    const values = [name, email, phone, interest, message, callback, priority || 'normal'];
+    const values = [
+      cleanName,
+      cleanEmail,
+      cleanPhone,
+      interest || null,
+      message || null,
+      callback || null,
+      priority || 'normal',
+    ];
     const result = await pool.query(query, values);
     res.status(201).json({ success: true, data: result.rows[0] });
   } catch (err) {

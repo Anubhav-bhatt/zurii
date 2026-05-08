@@ -1,4 +1,9 @@
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000/api';
+import { API_BASE_URL } from './config/api';
+
+const normalizeBaseUrl = (value) => String(value || '').trim().replace(/\/+$/, '');
+const envApiBase = normalizeBaseUrl(import.meta.env.VITE_API_BASE);
+const derivedApiBase = API_BASE_URL ? `${API_BASE_URL}/api` : '/api';
+const API_BASE = envApiBase || (import.meta.env.DEV ? 'http://localhost:8000/api' : derivedApiBase);
 
 export async function fetchDomesticDestinations() {
   try {
