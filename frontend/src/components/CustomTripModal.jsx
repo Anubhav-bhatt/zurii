@@ -72,7 +72,7 @@ const CustomTripModal = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  const inputClass = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-400 outline-none focus:border-violet-400 focus:bg-white/10 transition-all font-medium";
+  const inputClass = "w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 outline-none focus:border-violet-400 focus:bg-white/[0.08] transition-all duration-300 font-medium backdrop-blur-md";
 
   // ── Success Screen ──
   if (submitted) {
@@ -162,7 +162,7 @@ const CustomTripModal = ({ isOpen, onClose }) => {
               <button
                 onClick={() => { if (form.destination && form.travelDate && form.budget) setStep(2); }}
                 disabled={!form.destination || !form.travelDate || !form.budget}
-                className="w-full py-3.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black text-sm uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-violet-500/20 mt-2"
+                className="w-full py-3.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-xs tracking-wide rounded-xl transition-all duration-300 shadow-md shadow-violet-500/10 mt-2 active:scale-[0.98]"
               >
                 Next →
               </button>
@@ -198,13 +198,13 @@ const CustomTripModal = ({ isOpen, onClose }) => {
               </div>
 
               <div className="flex gap-3">
-                <button onClick={() => setStep(1)} className="px-5 py-3.5 bg-white/5 border border-white/10 text-gray-400 font-bold text-sm rounded-xl hover:bg-white/10 transition-all">
+                <button onClick={() => setStep(1)} className="px-5 py-3.5 bg-white/5 border border-white/10 text-gray-400 font-bold text-xs rounded-xl hover:bg-white/10 active:scale-[0.97] transition-all duration-300">
                   ← Back
                 </button>
                 <button
                   onClick={handleSubmit}
                   disabled={!form.name || !form.email || !form.phone || isSubmitting}
-                  className="flex-1 py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black text-sm uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-amber-500/20"
+                  className="flex-1 py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-xs tracking-wide rounded-xl transition-all duration-300 shadow-md shadow-amber-500/10 active:scale-[0.98]"
                 >
                   {isSubmitting ? 'Submitting...' : '🚀 Submit Custom Trip'}
                 </button>

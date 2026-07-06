@@ -33,7 +33,7 @@ export const internationalFallback = [
       { country: 'Switzerland', cities: ['Zurich', 'Lucerne', 'Interlaken', 'Zermatt'], thumbnail: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800' },
       { country: 'Netherlands', cities: ['Amsterdam'], thumbnail: 'https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=800' },
       { country: 'Germany', cities: ['Berlin', 'Munich', 'Hamburg', 'Frankfurt'], thumbnail: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800' },
-      { country: 'Belgium', cities: ['Brussels'], thumbnail: 'https://images.unsplash.com/photo-1592853625511-ad0edcc69c07?w=800' },
+      { country: 'Belgium', cities: ['Brussels'], thumbnail: 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800' },
       { country: 'Luxembourg', cities: ['Luxembourg City'], thumbnail: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800' },
       { country: 'Greece', cities: ['Mykonos', 'Santorini', 'Athens'], thumbnail: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800' },
     ]
@@ -66,7 +66,7 @@ export const internationalFallback = [
       { country: 'Dubai', cities: ['Dubai City', 'Abu Dhabi', 'Palm Jumeirah'], thumbnail: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800' },
       { country: 'Egypt', cities: ['Cairo', 'Luxor', 'Aswan', 'Hurghada'], thumbnail: 'https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=800' },
       { country: 'Turkey', cities: ['Istanbul', 'Cappadocia', 'Antalya', 'Bodrum'], thumbnail: 'https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=800' },
-      { country: 'Oman', cities: ['Muscat', 'Salalah', 'Nizwa', 'Wahiba Sands'], thumbnail: 'https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=800' },
+      { country: 'Oman', cities: ['Muscat', 'Salalah', 'Nizwa', 'Wahiba Sands'], thumbnail: 'https://images.unsplash.com/photo-1699855803432-17f4ab468b2d?w=800' },
     ]
   },
 ];
@@ -1819,7 +1819,7 @@ export const tripDetails = {
 
   // ── Sikkim ──
   'sikkim-silk': {
-    heroImage: 'https://images.unsplash.com/photo-1539367628448-4bc5c9d171c8?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1600618528240-fb9fc964b853?w=1200',
     title: 'Sikkim Silk Route & High Passes',
     subtitle: 'East Sikkim Adventure',
     tagline: 'Tsomgo Lake, Nathula Pass & the ancient Silk Route',
@@ -1848,7 +1848,7 @@ export const tripDetails = {
     gallery: ['https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1587922546307-776227941871?w=800', 'https://images.unsplash.com/photo-1609920658906-8223bd289001?w=800', 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800'],
   },
   'sikkim-north': {
-    heroImage: 'https://images.unsplash.com/photo-1527838832700-4e316174be4f?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=1200',
     title: 'North Sikkim Wilderness & Wonders',
     subtitle: 'Gurudongmar & Zero Point',
     tagline: 'Sunrise at one of the world\'s highest lakes',
@@ -2087,7 +2087,7 @@ export const tripDetails = {
     ],
   },
   'shimla-manali-family': {
-    heroImage: 'https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200',
     title: 'Shimla & Manali Family Package',
     subtitle: 'Snow-Capped Mountains & Beautiful Lakes',
     tagline: 'Kufri adventures, Solang Valley thrills & Himalayan serenity',
@@ -2134,7 +2134,7 @@ export const tripDetails = {
       { id: 3, date: 'Jul 1 – Jul 6, 2026', slots: 10, price: '₹45,000', status: 'available' },
     ],
     gallery: [
-      'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800',
+      'https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=800',
       'https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800',
       'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800',
       'https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?w=800',
@@ -2408,7 +2408,7 @@ export const tripDetails = {
 
   // ── Oman ──
   'oman-desert-adventure': {
-    heroImage: 'https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1699855803432-17f4ab468b2d?w=1200',
     title: 'Oman: Desert, Wadis & Forts',
     subtitle: 'Arabia\'s Best-Kept Secret',
     tagline: 'Grand Mosque, Wahiba Sands & Wadi Shab emerald gorge',
@@ -2452,10 +2452,10 @@ export const tripDetails = {
       { id: 3, date: 'Dec 15 – Dec 19, 2026', slots: 6, price: '₹82,999', status: 'available' },
     ],
     gallery: [
-      'https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=800',
+      'https://images.unsplash.com/photo-1699855803432-17f4ab468b2d?w=800',
       'https://images.unsplash.com/photo-1578895101408-1a36b834405b?w=800',
-      'https://images.unsplash.com/photo-1539367628448-4bc5c9d171c8?w=800',
-      'https://images.unsplash.com/photo-1577086664693-894d8405334a?w=800',
+      'https://images.unsplash.com/photo-1579193219623-8ef5f1baa518?w=800',
+      'https://images.unsplash.com/photo-1635749688148-3ead1499e58e?w=800',
     ],
   },
 
@@ -2871,7 +2871,7 @@ export const tripDetails = {
 
   // ── Belgium ──
   'belgium-bruges': {
-    heroImage: 'https://images.unsplash.com/photo-1592853625511-ad0edcc69c07?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=1200',
     title: 'Belgium: Bruges, Brussels & Belgian Delights',
     subtitle: 'Medieval Canals & Chocolate Heaven',
     tagline: 'UNESCO old towns, world-class beer & the best chocolate on Earth',
@@ -3177,7 +3177,7 @@ export const domesticDestinations = [
       { name: "Sikkim Silk Route & High Passes", id: "sikkim-silk", detail: "A 6-day immersive journey exploring the historic Silk Route and East Sikkim. Highlights include the glacial Tsomgo Lake, the legendary Baba Mandir, and a specialized permit-inclusive trip to the Nathula Pass." },
       { name: "North Sikkim Wilderness & Wonders", id: "sikkim-north", detail: "A rugged adventure from the waterfalls of Gangtok to the remote villages of Lachen and Lachung. Features a sunrise visit to Gurudongmar Lake and an excursion to \"Zero Point,\" the northernmost accessible tip of the state." }
     ],
-    thumbnail: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800"
+    thumbnail: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800"
   },
 
   {
@@ -3388,7 +3388,7 @@ export const internationalDestinations = [
     country: "Belgium",
     about: "Belgium is one of Europe's most underrated treasures — a compact country of extraordinary medieval cities, world-class chocolate and waffle artisans, over 1,500 varieties of locally brewed beer, and some of Europe's finest Art Nouveau architecture. Wander the canal-laced streets of Bruges, explore Brussels' ornate Grand Place (a UNESCO World Heritage Site), and discover the vibrant dining scene of Ghent. Belgium punches far above its weight in culture, gastronomy, and sheer charm.",
     cities: ["Brussels", "Bruges", "Ghent"],
-    thumbnail: "https://images.unsplash.com/photo-1592853625511-ad0edcc69c07?w=800",
+    thumbnail: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800",
     tours: [
       { name: "Belgium: Bruges, Brussels & Belgian Delights", id: "belgium-bruges" },
     ],
@@ -3483,7 +3483,7 @@ export const internationalDestinations = [
     country: "Oman",
     about: "Oman is the Arabian Peninsula's best-kept secret — a country of spectacular natural diversity where rugged desert dunes meet dramatic fjords, ancient walled fortresses, and some of the most pristine turtle nesting beaches in the world. The historic souks of Muscat, the dramatic Wadi Shab gorges, the starlit sands of Wahiba, and the lush monsoon greenery of Dhofar make Oman a destination unlike any other in the Middle East.",
     cities: ["Muscat", "Salalah", "Nizwa", "Wahiba Sands", "Wadi Shab"],
-    thumbnail: "https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=800",
+    thumbnail: "https://images.unsplash.com/photo-1699855803432-17f4ab468b2d?w=800",
     tours: [
       { name: "Oman: Desert, Wadis & Forts", id: "oman-desert-adventure" },
     ],

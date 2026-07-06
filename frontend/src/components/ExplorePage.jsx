@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { categories, internationalDestinations, domesticDestinations, tripDetails, topbarCategories } from "../data";
 import GetQuoteModal from "./GetQuoteModal";
+import TravelCard from "./TravelCard";
 
 const pageConfig = {
   international: {
@@ -328,27 +329,8 @@ const ExplorePage = () => {
 };
 
 // Reusable trip card
-const TripCard = ({ trip, navigate, onGetQuote }) => (
-  <div onClick={() => navigate(`/trip/${trip.id}`)} className="group bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg cursor-pointer transition">
-    {trip.heroImage && <img src={trip.heroImage} alt={trip.title} className="h-44 w-full object-cover group-hover:scale-105 transition duration-500" />}
-    <div className="p-5">
-      <h3 className="text-lg font-bold text-gray-900">{trip.title}</h3>
-      {trip.tagline && <p className="text-gray-500 text-sm mt-1">{trip.tagline}</p>}
-      <div className="flex items-center justify-between mt-3">
-        <span className="font-bold text-violet-600">{trip.price}</span>
-        {trip.duration && <span className="text-xs text-gray-400">{trip.duration}</span>}
-      </div>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onGetQuote && onGetQuote(trip);
-        }}
-        className="mt-3 w-full py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-bold rounded-full hover:brightness-110 active:scale-[0.97] transition-all shadow-md shadow-emerald-500/20"
-      >
-        💰 Get Quote
-      </button>
-    </div>
-  </div>
+const TripCard = ({ trip, onGetQuote }) => (
+  <TravelCard trip={trip} onGetQuote={onGetQuote} />
 );
 
 export default ExplorePage;

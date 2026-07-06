@@ -59,44 +59,44 @@ const GetInTouch = () => {
   };
 
   const inputBase =
-    "w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-sm text-white placeholder-gray-400 outline-none focus:border-violet-400 focus:bg-white/10 transition-all font-medium backdrop-blur-sm";
+    "w-full bg-white/[0.04] border border-white/10 rounded-xl px-5 py-3 text-sm text-white placeholder-gray-500 outline-none focus:border-violet-400 focus:bg-white/[0.08] transition-all duration-300 font-medium backdrop-blur-md";
 
   return (
-    <section className="pt-24 pb-16 px-6 relative overflow-hidden -mb-px" 
+    <section className="section-gap section-padding relative overflow-hidden -mb-px" 
              style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)' }}>
       
       {/* Decorative blobs */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-violet-600/20 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-500/20 rounded-full blur-[100px] translate-y-1/3 -translate-x-1/4 pointer-events-none" />
 
-      <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative z-10">
+      <div className="max-content grid lg:grid-cols-2 gap-10 lg:gap-16 items-center relative z-10">
 
         {/* LEFT COPY */}
-        <div className="lg:pr-10">
+        <div className="lg:pr-5">
           <span className="inline-block px-4 py-1.5 rounded-full bg-white/10 text-violet-300 text-xs font-black uppercase tracking-[0.2em] mb-6 backdrop-blur-md border border-white/10">
             Let's Connect
           </span>
-          <h2 className="text-4xl md:text-5xl font-black mb-6 text-white leading-tight">
+          <h2 className="text-fluid-section font-black mb-6 text-white leading-tight">
             Plan Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-300">Dream Trip</span> ✈️
           </h2>
 
-          <p className="text-gray-300 text-lg mb-10 leading-relaxed">
+          <p className="text-gray-300 text-fluid-body mb-8 lg:mb-10 leading-relaxed">
             Share your travel aspirations with us, and our destination experts will craft a personalized itinerary just for you. Your ultimate adventure is one conversation away.
           </p>
 
-          <div className="space-y-6">
+          <div className="space-y-5 sm:space-y-6">
             {[
               { icon: '⚡', title: 'Lightning Fast Response', desc: 'Hear back from us within 24 hours.' },
               { icon: '🔒', title: '100% Secure & Private', desc: 'Your data is safe, no spam ever.' },
               { icon: '🧳', title: 'Bespoke Packages', desc: 'Tailored perfectly to your unique budget.' },
             ].map((feature, idx) => (
-              <div key={idx} className="flex items-center gap-5 group">
-                <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xl shadow-inner group-hover:bg-violet-600/30 transition-colors">
+              <div key={idx} className="flex items-center gap-4 sm:gap-5 group">
+                <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xl shadow-inner group-hover:bg-violet-600/30 transition-colors shrink-0">
                   {feature.icon}
                 </div>
                 <div>
-                  <h4 className="font-bold text-white tracking-wide">{feature.title}</h4>
-                  <p className="text-sm text-gray-400 mt-0.5">{feature.desc}</p>
+                  <h4 className="font-bold text-white tracking-wide text-sm sm:text-base">{feature.title}</h4>
+                  <p className="text-xs sm:text-sm text-gray-400 mt-0.5">{feature.desc}</p>
                 </div>
               </div>
             ))}
@@ -104,9 +104,9 @@ const GetInTouch = () => {
         </div>
 
         {/* RIGHT FORM */}
-        <div className="relative">
+        <div className="relative w-full">
           <div className="absolute -inset-1 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-[32px] blur opacity-30" />
-          <div className="relative bg-[#1e2336]/80 backdrop-blur-xl border border-white/10 p-8 md:p-10 rounded-[32px] shadow-2xl">
+          <div className="relative bg-[#1e2336]/80 backdrop-blur-xl border border-white/10 p-6 sm:p-8 md:p-10 rounded-[32px] shadow-2xl">
 
             {submitted ? (
               <div className="text-center py-16 animate-in fade-in zoom-in duration-500">
@@ -188,16 +188,16 @@ const GetInTouch = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full relative mt-4 flex items-center justify-center py-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:brightness-110 text-white font-black uppercase tracking-widest rounded-xl transition-all shadow-xl shadow-violet-500/20 disabled:opacity-70 disabled:cursor-not-allowed group overflow-hidden"
+                  className="w-full relative mt-4 flex items-center justify-center py-3.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:brightness-105 text-white font-bold tracking-wide rounded-xl transition-all duration-300 shadow-lg shadow-violet-500/10 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed group overflow-hidden"
                 >
-                  <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
+                  <div className="absolute inset-0 bg-white/10 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
                   {isSubmitting ? (
-                    <span className="flex items-center gap-2 text-sm">
+                    <span className="flex items-center gap-2 text-xs">
                       <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                       Submitting...
                     </span>
                   ) : (
-                    <span className="text-sm">Start Planning</span>
+                    <span className="text-xs">Start Planning</span>
                   )}
                 </button>
               </form>

@@ -9,20 +9,20 @@ const TravelGuides = () => {
   const rest = guides.filter((g) => !g.featured);
 
   return (
-    <section className="py-20 px-6 max-w-7xl mx-auto">
+    <section className="section-gap section-padding max-content">
 
       {/* HEADER */}
       <ScrollFade>
-        <div className="flex flex-col items-center mb-16 text-center">
+        <div className="flex flex-col items-center mb-10 sm:mb-12 text-center">
           <span className="text-violet-600 text-xs font-bold uppercase tracking-widest mb-3">
             Stories & Insights
           </span>
 
-          <h2 className="text-4xl font-black text-gray-900">
+          <h2 className="text-fluid-section font-black text-gray-900">
             Travel Guides & Blogs
           </h2>
 
-          <p className="text-gray-500 mt-3 max-w-lg text-sm">
+          <p className="text-gray-500 mt-3 max-w-lg text-fluid-body">
             Real stories, honest tips, and insider guides from our travels around the world
           </p>
 
@@ -87,12 +87,12 @@ const TravelGuides = () => {
       )}
 
       {/* GRID CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="flex md:grid md:grid-cols-3 gap-8 overflow-x-auto md:overflow-x-visible scrollbar-hide snap-x snap-mandatory px-4 -mx-4 md:px-0 md:mx-0 py-2 h-[450px] md:h-auto">
         {rest.map((guide) => (
-          <ScrollFade key={guide.id}>
+          <ScrollFade key={guide.id} className="w-[82vw] sm:w-[50vw] md:w-auto shrink-0 snap-center h-[410px] md:h-full">
             <div
               onClick={() => navigate(`/blog/${guide.slug}`)}
-              className="group bg-white rounded-[28px] overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer h-full flex flex-col"
+              className="group bg-white rounded-3xl overflow-hidden border border-zinc-200/50 shadow-sm hover:shadow-[0_12px_30px_rgba(0,0,0,0.04)] transition-all duration-500 cursor-pointer h-full flex flex-col"
             >
 
               {/* IMAGE */}

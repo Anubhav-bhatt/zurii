@@ -176,7 +176,7 @@ const GetQuoteModal = ({ isOpen, onClose, tripName = "" }) => {
                     value={form.name}
                     onChange={handleChange}
                     placeholder="E.g., Anubhav Bhatt"
-                    className="w-full bg-gray-50 border border-gray-200/80 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50 transition-all font-medium"
+                    className="w-full bg-gray-50 border border-gray-200/80 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/10 transition-all font-medium"
                   />
                   {errors.name && <p className="text-red-500 text-xs mt-1.5 ml-1 font-medium">{errors.name}</p>}
                 </div>
@@ -190,7 +190,7 @@ const GetQuoteModal = ({ isOpen, onClose, tripName = "" }) => {
                       value={form.email}
                       onChange={handleChange}
                       placeholder="hello@example.com"
-                      className="w-full bg-gray-50 border border-gray-200/80 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50 transition-all font-medium"
+                      className="w-full bg-gray-50 border border-gray-200/80 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/10 transition-all font-medium"
                     />
                     {errors.email && <p className="text-red-500 text-xs mt-1.5 ml-1 font-medium">{errors.email}</p>}
                   </div>
@@ -204,7 +204,7 @@ const GetQuoteModal = ({ isOpen, onClose, tripName = "" }) => {
                       onChange={handleChange}
                       placeholder="+91 99068 92984"
                       required
-                      className="w-full bg-gray-50 border border-gray-200/80 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50 transition-all font-medium"
+                      className="w-full bg-gray-50 border border-gray-200/80 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/10 transition-all font-medium"
                     />
                     {errors.phone && <p className="text-red-500 text-xs mt-1.5 ml-1 font-medium">{errors.phone}</p>}
                   </div>
@@ -218,7 +218,7 @@ const GetQuoteModal = ({ isOpen, onClose, tripName = "" }) => {
                       name="travelers"
                       value={form.travelers}
                       onChange={handleChange}
-                      className="w-full bg-gray-50 border border-gray-200/80 rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50 transition-all font-medium"
+                      className="w-full bg-gray-50 border border-gray-200/80 rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:bg-white focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/10 transition-all font-medium"
                     >
                       <option value="">Select</option>
                       <option value="1">1 Person</option>
@@ -237,7 +237,7 @@ const GetQuoteModal = ({ isOpen, onClose, tripName = "" }) => {
                       type="date"
                       value={form.travelDate}
                       onChange={handleChange}
-                      className="w-full bg-gray-50 border border-gray-200/80 rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50 transition-all font-medium"
+                      className="w-full bg-gray-50 border border-gray-200/80 rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:bg-white focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/10 transition-all font-medium"
                     />
                   </div>
                 </div>
@@ -251,7 +251,7 @@ const GetQuoteModal = ({ isOpen, onClose, tripName = "" }) => {
                     onChange={handleChange}
                     placeholder="E.g., Need airport pickup, vegetarian meals..."
                     rows="2"
-                    className="w-full bg-gray-50 border border-gray-200/80 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50 transition-all font-medium resize-none"
+                    className="w-full bg-gray-50 border border-gray-200/80 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/10 transition-all font-medium resize-none"
                   />
                 </div>
               </div>
@@ -261,16 +261,16 @@ const GetQuoteModal = ({ isOpen, onClose, tripName = "" }) => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full relative flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black text-[13px] uppercase tracking-widest rounded-xl hover:brightness-110 active:scale-[0.98] transition-all shadow-xl shadow-emerald-500/20 disabled:opacity-70 disabled:cursor-not-allowed group overflow-hidden"
+                  className="w-full relative flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-[13px] tracking-wide rounded-xl hover:brightness-105 active:scale-[0.98] transition-all duration-300 shadow-md shadow-emerald-500/10 disabled:opacity-70 disabled:cursor-not-allowed group overflow-hidden"
                 >
-                  <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
+                  <div className="absolute inset-0 bg-white/10 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
                   {isSubmitting ? (
-                    <span className="flex items-center gap-2">
+                    <span className="flex items-center gap-2 text-xs">
                        <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                        Submitting...
                     </span>
                   ) : (
-                    <span>🚀 Get My Quote</span>
+                    <span className="text-xs">🚀 Get My Quote</span>
                   )}
                 </button>
               </div>

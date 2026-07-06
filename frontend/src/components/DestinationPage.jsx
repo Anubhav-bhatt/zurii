@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { domesticDestinations, internationalDestinations, internationalFallback, topbarCategories, tripDetails } from "../data";
 import GetQuoteModal from "./GetQuoteModal";
+import TravelCard from "./TravelCard";
 
 const DestinationPage = () => {
   const { name } = useParams();
@@ -123,37 +124,11 @@ const DestinationPage = () => {
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Tour Packages</h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {resolvedDomesticTours.map((trip) => (
-                  <div
+                  <TravelCard
                     key={trip.id}
-                    onClick={() => navigate(`/trip/${trip.id}`)}
-                    className="group bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg cursor-pointer transition"
-                  >
-                    {trip.heroImage && (
-                      <img
-                        src={trip.heroImage}
-                        alt={trip.title}
-                        className="h-44 w-full object-cover group-hover:scale-105 transition duration-500"
-                      />
-                    )}
-                    <div className="p-5">
-                      <h3 className="text-lg font-bold text-gray-900">{trip.title}</h3>
-                      {trip.tagline && <p className="text-gray-500 text-sm mt-1">{trip.tagline}</p>}
-                      <div className="flex items-center justify-between mt-3">
-                        <span className="font-bold text-violet-600">{trip.price}</span>
-                        {trip.duration && <span className="text-xs text-gray-400">{trip.duration}</span>}
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setQuoteTrip(trip);
-                        }}
-                        className="mt-3 w-full py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-bold rounded-full hover:brightness-110 active:scale-[0.97] transition-all shadow-md shadow-emerald-500/20"
-                      >
-                        💰 Get Quote
-                      </button>
-                      <p className="text-violet-500 text-sm font-semibold mt-3">View Details →</p>
-                    </div>
-                  </div>
+                    trip={trip}
+                    onGetQuote={setQuoteTrip}
+                  />
                 ))}
               </div>
             </div>
@@ -215,27 +190,11 @@ const DestinationPage = () => {
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Trip Packages</h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {allTrips.map((trip) => (
-                  <div key={trip.id} onClick={() => navigate(`/trip/${trip.id}`)} className="group bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg cursor-pointer transition">
-                    {trip.heroImage && <img src={trip.heroImage} alt={trip.title} className="h-44 w-full object-cover group-hover:scale-105 transition duration-500" />}
-                    <div className="p-5">
-                      <h3 className="text-lg font-bold text-gray-900">{trip.title}</h3>
-                      {trip.tagline && <p className="text-gray-500 text-sm mt-1">{trip.tagline}</p>}
-                      <div className="flex items-center justify-between mt-3">
-                        <span className="font-bold text-violet-600">{trip.price}</span>
-                        {trip.duration && <span className="text-xs text-gray-400">{trip.duration}</span>}
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setQuoteTrip(trip);
-                        }}
-                        className="mt-3 w-full py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-bold rounded-full hover:brightness-110 active:scale-[0.97] transition-all shadow-md shadow-emerald-500/20"
-                      >
-                        💰 Get Quote
-                      </button>
-                      <p className="text-violet-500 text-sm font-semibold mt-3">View Details →</p>
-                    </div>
-                  </div>
+                  <TravelCard
+                    key={trip.id}
+                    trip={trip}
+                    onGetQuote={setQuoteTrip}
+                  />
                 ))}
               </div>
             </div>
@@ -296,26 +255,11 @@ const DestinationPage = () => {
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Related Trips</h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {related.map((trip) => (
-                  <div key={trip.id} onClick={() => navigate(`/trip/${trip.id}`)} className="group bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg cursor-pointer transition">
-                    <img src={trip.heroImage} alt={trip.title} className="h-44 w-full object-cover group-hover:scale-105 transition duration-500" />
-                    <div className="p-5">
-                      <h3 className="text-lg font-bold text-gray-900">{trip.title}</h3>
-                      <p className="text-gray-500 text-sm mt-1">{trip.tagline}</p>
-                      <div className="flex items-center justify-between mt-3">
-                        <span className="font-bold text-violet-600">{trip.price}</span>
-                        <span className="text-xs text-gray-400">{trip.duration}</span>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setQuoteTrip(trip);
-                        }}
-                        className="mt-3 w-full py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-bold rounded-full hover:brightness-110 active:scale-[0.97] transition-all shadow-md shadow-emerald-500/20"
-                      >
-                        💰 Get Quote
-                      </button>
-                    </div>
-                  </div>
+                  <TravelCard
+                    key={trip.id}
+                    trip={trip}
+                    onGetQuote={setQuoteTrip}
+                  />
                 ))}
               </div>
             </div>
@@ -352,26 +296,11 @@ const DestinationPage = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Trips in {name}</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {related.map((trip) => (
-              <div key={trip.id} onClick={() => navigate(`/trip/${trip.id}`)} className="group bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg cursor-pointer transition">
-                <img src={trip.heroImage} alt={trip.title} className="h-44 w-full object-cover group-hover:scale-105 transition duration-500" />
-                <div className="p-5">
-                  <h3 className="text-lg font-bold text-gray-900">{trip.title}</h3>
-                  <p className="text-gray-500 text-sm mt-1">{trip.tagline}</p>
-                  <div className="flex items-center justify-between mt-3">
-                    <span className="font-bold text-violet-600">{trip.price}</span>
-                    <span className="text-xs text-gray-400">{trip.duration}</span>
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setQuoteTrip(trip);
-                    }}
-                    className="mt-3 w-full py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-bold rounded-full hover:brightness-110 active:scale-[0.97] transition-all shadow-md shadow-emerald-500/20"
-                  >
-                    💰 Get Quote
-                  </button>
-                </div>
-              </div>
+              <TravelCard
+                key={trip.id}
+                trip={trip}
+                onGetQuote={setQuoteTrip}
+              />
             ))}
           </div>
         </div>

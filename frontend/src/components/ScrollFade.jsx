@@ -9,15 +9,21 @@ export const ScrollFade = ({
 }) => {
   const [ref, isVisible] = useScrollFade({ once });
 
+  const prefersReduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   return (
     <div
       ref={ref}
-      className={`transition-all ease-out ${className}`}
-      style={{
+      className={`transition-all ${className}`}
+      style={prefersReduced ? {
         opacity: isVisible ? 1 : 0,
-        transform: isVisible ? "translateY(0)" : "translateY(15px)",
+        transform: "none"
+      } : {
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? "translateY(0)" : "translateY(8px)",
         transitionDuration: `${duration}ms`,
-        transitionDelay: `${delay}ms`
+        transitionDelay: `${delay}ms`,
+        transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)"
       }}
     >
       {children}

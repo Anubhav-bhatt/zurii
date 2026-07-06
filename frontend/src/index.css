@@ -1,10 +1,213 @@
 @import "tailwindcss";
 
+/* ══════════════════════════════════════════════════════════
+   ZURII TRAVELS — Apple-Inspired Design System
+   Fluid Typography · Responsive Spacing · Motion Profiles
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Base Reset & Rendering ── */
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+/* ── Fluid Typography Scale ── */
+.text-fluid-hero {
+  font-size: clamp(2rem, 5vw + 0.5rem, 4rem);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+}
+
+.text-fluid-display {
+  font-size: clamp(1.75rem, 3.5vw + 0.5rem, 3.25rem);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+}
+
+.text-fluid-section {
+  font-size: clamp(1.375rem, 2.5vw + 0.25rem, 2.5rem);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+}
+
+.text-fluid-subtitle {
+  font-size: clamp(0.875rem, 1vw + 0.25rem, 1.125rem);
+  line-height: 1.5;
+}
+
+.text-fluid-body {
+  font-size: clamp(0.875rem, 0.5vw + 0.5rem, 1rem);
+  line-height: 1.65;
+}
+
+/* ── Responsive Section Spacing ── */
+.section-padding {
+  padding-left: clamp(1rem, 4vw, 3rem);
+  padding-right: clamp(1rem, 4vw, 3rem);
+}
+
+.section-gap {
+  padding-top: clamp(1.75rem, 3.5vw, 3.5rem);
+  padding-bottom: clamp(1.75rem, 3.5vw, 3.5rem);
+}
+
+.section-gap-sm {
+  padding-top: clamp(1.25rem, 2.5vw, 2.5rem);
+  padding-bottom: clamp(1.25rem, 2.5vw, 2.5rem);
+}
+
+/* ── Scrollbar Hide (preserves functionality) ── */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 
+/* ── Apple-Style Spring Easing Transitions ── */
+.transition-premium {
+  transition-property: transform, opacity, box-shadow, background-color, border-color, color;
+  transition-duration: 400ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.transition-premium-fast {
+  transition-property: transform, opacity, box-shadow, background-color, border-color, color;
+  transition-duration: 220ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.transition-premium-slow {
+  transition-property: transform, opacity, box-shadow, background-color, border-color, color;
+  transition-duration: 600ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Keyframe Animations ── */
 @keyframes fadeSlideIn {
   from { opacity: 0; transform: translateY(-6px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseSubtle {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.01); }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideInUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes backdropFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-pulse-subtle {
+  animation: pulseSubtle 3s ease-in-out infinite;
+}
+
+.animate-fade-slide-up {
+  animation: fadeSlideUp 450ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-slide-in-up {
+  animation: slideInUp 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-backdrop-in {
+  animation: backdropFadeIn 300ms ease both;
+}
+
+/* ── Touch & Button Targets ── */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* ── Accessibility Focus States ── */
+*:focus-visible {
+  outline: 2px solid #8b5cf6;
+  outline-offset: 2.5px;
+  border-radius: 8px;
+}
+
+/* ── Reduced Motion Compatibility ── */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+  
+  *, *::before, *::after {
+    animation-delay: -1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    background-attachment: scroll !important;
+    scroll-behavior: auto !important;
+    transition-delay: 0s !important;
+    transition-duration: 0s !important;
+  }
+}
+
+/* ── Safe Area Insets (iOS notch/bottom bar) ── */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* ── Responsive Card Grid System ── */
+.card-grid {
+  display: grid;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  grid-template-columns: repeat(1, 1fr);
+}
+
+@media (min-width: 480px) {
+  .card-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 768px) {
+  .card-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1024px) {
+  .card-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (min-width: 1280px) {
+  .card-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* ── Max Content Width for Ultra-Wide ── */
+.max-content {
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
 }

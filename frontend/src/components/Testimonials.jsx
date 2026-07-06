@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { ScrollFade } from "./ScrollFade";
 import { testimonials } from "../data";
 
-const StarRating = ({ rating }) => (
+const StarRating = React.memo(({ rating }) => (
   <div className="flex items-center gap-0.5">
     {[...Array(rating)].map((_, i) => (
       <svg key={i} className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
@@ -10,19 +10,19 @@ const StarRating = ({ rating }) => (
       </svg>
     ))}
   </div>
-);
+));
 
-const TestimonialCard = ({ t, featured = false }) => (
+const TestimonialCard = React.memo(({ t, featured = false }) => (
   <div
-    className={`group relative rounded-2xl border transition-all duration-500 hover:-translate-y-1 ${
+    className={`group relative rounded-3xl border transition-premium hover:-translate-y-0.5 ${
       featured
-        ? "bg-gradient-to-br from-violet-600 via-indigo-600 to-purple-700 border-violet-500/30 shadow-xl shadow-violet-500/20 text-white p-8"
-        : "bg-white border-gray-100 shadow-md hover:shadow-xl hover:border-violet-200/60 p-6"
+        ? "bg-gradient-to-br from-violet-600 via-indigo-600 to-purple-700 border-violet-500/30 shadow-md shadow-violet-500/10 text-white p-8"
+        : "bg-white border-zinc-200/50 shadow-xs hover:shadow-md hover:border-violet-200/60 p-6"
     }`}
   >
     {/* Decorative corner accent */}
     {featured && (
-      <div className="absolute top-0 right-0 w-24 h-24 overflow-hidden rounded-tr-2xl">
+      <div className="absolute top-0 right-0 w-24 h-24 overflow-hidden rounded-tr-3xl">
         <div className="absolute top-3 right-3 w-16 h-16 bg-white/10 rounded-full blur-xl" />
       </div>
     )}
@@ -47,7 +47,7 @@ const TestimonialCard = ({ t, featured = false }) => (
     </p>
 
     {/* Divider */}
-    <div className={`h-px mb-4 ${featured ? "bg-white/20" : "bg-gray-100"}`} />
+    <div className={`h-px mb-4 ${featured ? "bg-white/20" : "bg-zinc-100"}`} />
 
     {/* Author */}
     <div className="flex items-center gap-3">
@@ -65,17 +65,17 @@ const TestimonialCard = ({ t, featured = false }) => (
         </p>
       </div>
       {t.trip && (
-        <span className={`shrink-0 text-xs px-2.5 py-1 rounded-full font-medium ${
+        <span className={`shrink-0 text-xs px-2.5 py-1 rounded-full font-semibold ${
           featured
             ? "bg-white/15 text-white/90"
-            : "bg-violet-50 text-violet-600"
+            : "bg-violet-50/50 border border-violet-100 text-violet-600"
         }`}>
           {t.trip}
         </span>
       )}
     </div>
   </div>
-);
+));
 
 const Testimonials = () => {
   const scrollRef = useRef(null);
@@ -83,21 +83,53 @@ const Testimonials = () => {
   const [isPaused, setIsPaused] = useState(false);
 
   // Split testimonials into columns for masonry
-  const col1 = testimonials.filter((_, i) => i % 3 === 0);
-  const col2 = testimonials.filter((_, i) => i % 3 === 1);
-  const col3 = testimonials.filter((_, i) => i % 3 === 2);
+  const col1 = useMemo(() => testimonials.filter((_, i) => i % 3 === 0), []);
+  const col2 = useMemo(() => testimonials.filter((_, i) => i % 3 === 1), []);
+  const col3 = useMemo(() => testimonials.filter((_, i) => i % 3 === 2), []);
 
-  // Mobile auto-slide
+  const handleScroll = useCallback(() => {
+    if (!scrollRef.current) return;
+    const container = scrollRef.current;
+    const slideWidth = container.offsetWidth * 0.85 + 16;
+    const index = Math.round(container.scrollLeft / slideWidth);
+    if (index >= 0 && index < testimonials.length) {
+      setActiveSlide(index);
+    }
+  }, []);
+
+  const scrollToSlide = useCallback((index) => {
+    if (!scrollRef.current) return;
+    const container = scrollRef.current;
+    const slideWidth = container.offsetWidth * 0.85 + 16;
+    container.scrollTo({
+      left: index * slideWidth,
+      behavior: 'smooth'
+    });
+    setActiveSlide(index);
+  }, []);
+
+  // Mobile auto-slide with programmatic snapping sync
   useEffect(() => {
     if (isPaused) return;
     const timer = setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % testimonials.length);
+      setActiveSlide((prev) => {
+        const next = (prev + 1) % testimonials.length;
+        if (scrollRef.current) {
+          const container = scrollRef.current;
+          const slideWidth = container.offsetWidth * 0.85 + 16;
+          container.scrollTo({
+            left: next * slideWidth,
+            behavior: 'smooth'
+          });
+        }
+        return next;
+      });
     }, 4500);
     return () => clearInterval(timer);
   }, [isPaused]);
 
   return (
-    <section className="py-20 px-6 overflow-hidden relative">
+    <section className="section-gap section-padding overflow-hidden relative">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-gray-50/50 via-white to-gray-50/50 pointer-events-none" />
       <div className="absolute inset-0 pointer-events-none">
@@ -105,10 +137,10 @@ const Testimonials = () => {
         <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-indigo-100/30 rounded-full blur-3xl" />
       </div>
 
-      <div className="max-w-6xl mx-auto relative">
+      <div className="max-content relative">
         {/* HEADER */}
         <ScrollFade>
-          <div className="flex flex-col items-center mb-16 text-center">
+          <div className="flex flex-col items-center mb-12 sm:mb-16 text-center">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200/50 mb-5 shadow-sm">
               <div className="flex -space-x-1.5">
                 {testimonials.slice(0, 4).map((t, i) => (
@@ -125,7 +157,7 @@ const Testimonials = () => {
               </span>
             </div>
 
-            <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
+            <h2 className="text-fluid-section font-black text-gray-900 tracking-tight">
               Loved by Travelers
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-indigo-600 mt-1">
                 Across India & Beyond
@@ -175,36 +207,36 @@ const Testimonials = () => {
           </div>
         </div>
 
-        {/* MOBILE — Swipeable Carousel */}
+        {/* MOBILE — Native Scroll Snap Carousel */}
         <div
           className="md:hidden"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
+          onTouchStart={() => setIsPaused(true)}
+          onTouchEnd={() => setIsPaused(false)}
         >
-          <div className="overflow-hidden rounded-2xl">
-            <div
-              className="flex transition-transform duration-700 ease-out"
-              style={{ transform: `translateX(-${activeSlide * 100}%)` }}
-            >
-              {testimonials.map((t) => (
-                <div key={t.id} className="min-w-full px-1">
-                  <TestimonialCard t={t} />
-                </div>
-              ))}
-            </div>
+          <div
+            ref={scrollRef}
+            onScroll={handleScroll}
+            className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 -mx-4 px-4"
+          >
+            {testimonials.map((t) => (
+              <div key={t.id} className="min-w-[85%] snap-center first:ml-0">
+                <TestimonialCard t={t} />
+              </div>
+            ))}
           </div>
 
           {/* Mobile dots */}
-          <div className="flex justify-center gap-1.5 mt-6">
+          <div className="flex justify-center gap-1.5 mt-4">
             {testimonials.map((_, i) => (
               <button
                 key={i}
-                onClick={() => setActiveSlide(i)}
-                className={`h-2 rounded-full transition-all duration-300 ${
+                onClick={() => scrollToSlide(i)}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
                   activeSlide === i
-                    ? "w-6 bg-gradient-to-r from-violet-500 to-indigo-500"
-                    : "w-2 bg-gray-200"
+                    ? "w-5 bg-gradient-to-r from-violet-500 to-indigo-500"
+                    : "w-1.5 bg-gray-200"
                 }`}
+                aria-label={`Go to testimonial slide ${i + 1}`}
               />
             ))}
           </div>
