@@ -822,7 +822,7 @@ const Topbar = () => {
           </div>
 
           {/* Spotlight-Style Floating Search Panel (Global Placement) */}
-          {searchFocused && (
+          {isMobileSearchActive && searchFocused && (
             <div className="absolute top-full right-6 mt-3.5 w-[360px] max-w-[calc(100vw-48px)] bg-white/95 backdrop-blur-xl border border-zinc-200/50 rounded-3xl shadow-2xl shadow-black/10 z-[100] overflow-hidden transition-all duration-300 animate-in fade-in slide-in-from-top-3">
               
               {/* Query results list */}
