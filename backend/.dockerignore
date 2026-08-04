@@ -1,0 +1,16 @@
+# CRITICAL: node_modules is committed to this repo but is stale and
+# platform-specific (bcrypt ships native binaries). Copying it in would
+# shadow the clean `npm ci` layer and crash on missing/incompatible modules.
+node_modules
+npm-debug.log*
+
+# Secrets never belong in an image — env is injected at runtime.
+.env
+.env.*
+
+.git
+.gitignore
+Dockerfile
+.dockerignore
+*.md
+.DS_Store

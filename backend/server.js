@@ -64,6 +64,12 @@ const initDB = async () => {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    // CREATE TABLE IF NOT EXISTS is a no-op on a pre-existing table, so every
+    // column added after the first release needs its own ALTER to bring older
+    // databases up to date. interest/callback were missing here, which made
+    // POST /api/contact fail with Postgres 42703 on any older database.
+    await pool.query(`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS interest VARCHAR(255)`);
+    await pool.query(`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS callback VARCHAR(50)`);
     await pool.query(`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS priority VARCHAR(20) DEFAULT 'normal'`);
     await pool.query(`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS status VARCHAR(30) DEFAULT 'pending'`);
     await pool.query(`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS source VARCHAR(50) DEFAULT 'Website'`);
@@ -80,22 +86,43 @@ const initDB = async () => {
     `);
     console.log("✓ Admins table ready.");
 
-    // Seed initial admin users (skip if they already exist)
-    const adminUsers = [
-      { username: 'Yashjain28', password: 'Yash*123' },
-      { username: 'aayat10',    password: 'aayat101' },
-      { username: 'arshiya01',  password: 'arshiya010' },
-    ];
+    // Seed admin accounts from the environment, never from source.
+    // Format: ADMIN_SEED="alice:s3cret,bob:otherpass"
+    //
+    // Credentials previously lived in this file, which meant they were readable
+    // by anyone with access to the repository. Existing accounts are left
+    // untouched — rotate with `node create-admin.js reset <user> <newpass>`.
+    const seed = (process.env.ADMIN_SEED || '').trim();
 
-    for (const admin of adminUsers) {
-      const exists = await pool.query('SELECT id FROM admins WHERE username = $1', [admin.username]);
-      if (exists.rows.length === 0) {
-        const hash = await bcrypt.hash(admin.password, 12);
-        await pool.query(
-          'INSERT INTO admins (username, password_hash) VALUES ($1, $2)',
-          [admin.username, hash]
+    if (!seed) {
+      const { rows } = await pool.query('SELECT COUNT(*)::int AS n FROM admins');
+      if (rows[0].n === 0) {
+        console.warn(
+          '⚠ No admin accounts exist and ADMIN_SEED is unset — the admin panel ' +
+          'is unreachable. Set ADMIN_SEED, or run: node create-admin.js add <user> <pass>'
         );
-        console.log(`  → Seeded admin: ${admin.username}`);
+      }
+    } else {
+      for (const entry of seed.split(',')) {
+        // Split on the FIRST colon only, so passwords may contain colons.
+        const separator = entry.indexOf(':');
+        const username = separator === -1 ? '' : entry.slice(0, separator).trim();
+        const password = separator === -1 ? '' : entry.slice(separator + 1);
+
+        if (!username || !password) {
+          console.warn(`⚠ Skipping malformed ADMIN_SEED entry (expected user:password)`);
+          continue;
+        }
+
+        const exists = await pool.query('SELECT id FROM admins WHERE username = $1', [username]);
+        if (exists.rows.length === 0) {
+          const hash = await bcrypt.hash(password, 12);
+          await pool.query(
+            'INSERT INTO admins (username, password_hash) VALUES ($1, $2)',
+            [username, hash]
+          );
+          console.log(`  → Seeded admin: ${username}`);
+        }
       }
     }
 

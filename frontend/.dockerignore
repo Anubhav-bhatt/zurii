@@ -1,0 +1,16 @@
+node_modules
+dist
+.vite
+npm-debug.log*
+
+# Must be excluded: a stray .env would compete with the VITE_API_URL build
+# arg and could bake localhost:5001 into the production bundle.
+.env
+.env.*
+
+.git
+.gitignore
+Dockerfile
+.dockerignore
+*.md
+.DS_Store
