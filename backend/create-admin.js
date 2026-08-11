@@ -328,9 +328,19 @@ async function run() {
         // token_version is incremented in the same statement as the new hash, so
         // a changed password cannot leave old sessions alive even briefly — which
         // matters most in the case this exists for: a suspected compromise.
+        //
+        // must_change_password is cleared here because this command sets a FINAL
+        // password, and the help text has always said so. It previously left the
+        // flag untouched, so the documented sequence for provisioning an account
+        // with a known-good password — `add` (which sets the flag TRUE), then
+        // `change-password` — produced an admin who was still forced through the
+        // first-login replacement screen and could reach nothing else. The
+        // temporary-credential path is `reset-password`, which sets it TRUE.
         const result = await pool.query(
           `UPDATE admins
               SET password_hash = $1,
+                  must_change_password = FALSE,
+                  password_changed_at = NOW(),
                   token_version = token_version + 1,
                   failed_login_attempts = 0,
                   locked_until = NULL
@@ -342,7 +352,7 @@ async function run() {
           adminId: result.rows[0].id,
           eventType: AUDIT_EVENTS.PASSWORD_CHANGED,
           success: true,
-          metadata: { username, source: 'cli' },
+          metadata: { username, source: 'cli', mustChangePassword: false },
         });
         console.log(`✓ Password changed for "${username}".`);
         console.log('  All existing sessions for this admin have been revoked; they must log in again.');

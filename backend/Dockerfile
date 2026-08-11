@@ -1,9 +1,15 @@
 # syntax=docker/dockerfile:1
 
+# Base image is pinned to a minor version rather than the floating `20-alpine`
+# tag. `20-alpine` silently re-points at a new Node and a new Alpine on every
+# rebuild, so two builds of the same commit could ship different runtimes — and
+# a regression would look like an application bug. Bump this deliberately.
+ARG NODE_VERSION=20.19-alpine
+
 # ─────────────────────────────────────────────────────────────
 # Stage 1: install production dependencies only
 # ─────────────────────────────────────────────────────────────
-FROM node:20-alpine AS deps
+FROM node:${NODE_VERSION} AS deps
 WORKDIR /app
 
 # Copy manifests first so this layer caches until dependencies change.
@@ -12,21 +18,43 @@ COPY package.json package-lock.json ./
 # `npm ci` installs exactly what the lockfile pins and fails loudly if the
 # lockfile drifts from package.json. bcrypt v6 ships musl prebuilds, so no
 # compiler toolchain is needed on Alpine.
-RUN npm ci --omit=dev && npm cache clean --force
+#
+# Install scripts are deliberately NOT disabled: bcrypt resolves its native
+# prebuild in a postinstall step, and --ignore-scripts would produce an image
+# that fails at require() time on every login.
+RUN npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
 
 # ─────────────────────────────────────────────────────────────
 # Stage 2: runtime
 # ─────────────────────────────────────────────────────────────
-FROM node:20-alpine AS runtime
+FROM node:${NODE_VERSION} AS runtime
 WORKDIR /app
 
+LABEL org.opencontainers.image.title="zurii-backend" \
+      org.opencontainers.image.description="Zurii Travels API — Express + PostgreSQL" \
+      org.opencontainers.image.source="https://github.com/anubhavbhatt/zurii" \
+      org.opencontainers.image.licenses="UNLICENSED"
+
+# `apk upgrade` picks up Alpine security fixes published after the base image
+# was cut — without it the image ships whatever CVEs were open on tag day.
 # tini reaps zombies and forwards SIGTERM so the container stops promptly
 # instead of being SIGKILLed after the 10s timeout.
-RUN apk add --no-cache tini
+RUN apk upgrade --no-cache && apk add --no-cache tini
 
 ENV NODE_ENV=production \
-    PORT=5001
+    PORT=5001 \
+    NPM_CONFIG_UPDATE_NOTIFIER=false
 
+# Dependencies and, below, the source tree are left owned by root while the
+# process runs as `node`. That is deliberate and is the stronger arrangement:
+# the application can read its own code but cannot rewrite it, so remote code
+# execution has nowhere on disk to persist — a tampered `node_modules/pg` would
+# otherwise survive every restart and sit in the path of every database call.
+#
+# It costs nothing here because this backend never writes to the filesystem at
+# runtime (no uploads, no generated files, no cache directory); everything
+# durable lives in PostgreSQL. If that ever changes, give the new path its own
+# writable volume rather than chowning the application tree.
 COPY --from=deps /app/node_modules ./node_modules
 
 # Copy the whole source tree rather than naming each file.
