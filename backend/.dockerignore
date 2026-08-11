@@ -14,3 +14,10 @@ Dockerfile
 .dockerignore
 *.md
 .DS_Store
+
+# Tests are not needed at runtime. They also connect to a real database, so
+# keeping them out of the production image removes any chance of running them
+# against production data from inside the container.
+tests
+*.test.mjs
+*.test.js

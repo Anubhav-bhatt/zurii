@@ -11,7 +11,7 @@ const CopyButton = ({ text, label = 'Copy' }) => {
   return (
     <button
       onClick={() => copied(text, setCopiedText)}
-      className="inline-flex items-center gap-1.5 mt-3 px-4 py-2 rounded-lg text-xs font-bold bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-100 transition"
+      className="inline-flex items-center gap-1.5 mt-3 px-4 py-2 rounded-lg text-xs font-bold bg-violet-50 dark:bg-violet-950/30 text-violet-600 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-950/50 border border-violet-100 dark:border-violet-900/50 transition"
     >
       {copiedText === text ? (
         <><span>✅</span> Copied!</>
@@ -37,14 +37,14 @@ const longHaulRows = [
 ];
 
 const PaymentPolicy = () => (
-  <section className="min-h-screen bg-gray-50 pt-24 pb-20 px-6">
+  <section className="min-h-screen bg-gray-50 dark:bg-zinc-950 pt-24 pb-20 px-6">
     <div className="max-w-5xl mx-auto space-y-12">
 
       {/* ── Header ── */}
       <div className="text-center">
-        <span className="inline-block text-xs font-semibold uppercase tracking-widest text-violet-500 bg-violet-50 px-3 py-1 rounded-full mb-3">Payments</span>
-        <h1 className="text-4xl font-black text-gray-900 mb-3">Payment Details</h1>
-        <p className="text-gray-500 text-lg max-w-xl mx-auto leading-relaxed">
+        <span className="inline-block text-xs font-semibold uppercase tracking-widest text-violet-500 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 px-3 py-1 rounded-full mb-3">Payments</span>
+        <h1 className="text-4xl font-black text-gray-900 dark:text-zinc-50 mb-3">Payment Details</h1>
+        <p className="text-gray-500 dark:text-zinc-400 text-lg max-w-xl mx-auto leading-relaxed">
           Secure &amp; convenient payment options. Find all the information you need to make payments for your dream vacation with complete security.
         </p>
 
@@ -57,7 +57,7 @@ const PaymentPolicy = () => (
           ].map((s, i) => (
             <div key={i} className="text-center">
               <p className="text-3xl font-black bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">{s.value}</p>
-              <p className="text-xs text-gray-400 font-semibold uppercase tracking-widest mt-1">{s.label}</p>
+              <p className="text-xs text-gray-400 dark:text-zinc-500 font-semibold uppercase tracking-widest mt-1">{s.label}</p>
             </div>
           ))}
         </div>
@@ -69,50 +69,52 @@ const PaymentPolicy = () => (
 
       {/* ── Payment Schedule ── */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Payment Schedule</h2>
-        <p className="text-gray-500 text-sm mb-6">Flexible payment plans for different destinations</p>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-zinc-50 mb-2">Payment Schedule</h2>
+        <p className="text-gray-500 dark:text-zinc-400 text-sm mb-6">Flexible payment plans for different destinations</p>
 
         <div className="grid sm:grid-cols-2 gap-6">
 
           {/* Short Haul */}
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-gray-100 dark:border-zinc-800 shadow-sm overflow-hidden">
             <div className="bg-gradient-to-r from-violet-600 to-indigo-600 px-6 py-4">
               <h3 className="text-white font-bold text-lg">✈️ Short Haul Packages</h3>
               <p className="text-violet-200 text-xs mt-1">
                 Weekend · Domestic · Bhutan · Nepal · Sri Lanka · Thailand · Singapore · Bali · Kazakhstan · Azerbaijan · Vietnam · Dubai etc.
               </p>
             </div>
-            <div className="divide-y divide-gray-50">
-              <div className="grid grid-cols-2 px-5 py-2 bg-gray-50">
-                <span className="text-[10px] font-black uppercase tracking-wide text-gray-400">Days Before Departure</span>
-                <span className="text-[10px] font-black uppercase tracking-wide text-gray-400">Payment Amount</span>
+            <div className="divide-y divide-gray-50 dark:divide-zinc-800">
+              {/* header row uses the elevated step in dark so it stays distinguishable from the zinc-900 card */}
+              <div className="grid grid-cols-2 px-5 py-2 bg-gray-50 dark:bg-zinc-800">
+                <span className="text-[10px] font-black uppercase tracking-wide text-gray-400 dark:text-zinc-500">Days Before Departure</span>
+                <span className="text-[10px] font-black uppercase tracking-wide text-gray-400 dark:text-zinc-500">Payment Amount</span>
               </div>
               {shortHaulRows.map((row, i) => (
-                <div key={i} className="grid grid-cols-2 px-5 py-3.5 items-start gap-4 hover:bg-violet-50/30 transition">
-                  <span className="text-xs font-bold text-violet-700">{row.days}</span>
-                  <span className="text-xs text-gray-600 leading-snug">{row.amount}</span>
+                <div key={i} className="grid grid-cols-2 px-5 py-3.5 items-start gap-4 hover:bg-violet-50/30 dark:hover:bg-violet-950/30 transition">
+                  <span className="text-xs font-bold text-violet-700 dark:text-violet-400">{row.days}</span>
+                  <span className="text-xs text-gray-600 dark:text-zinc-300 leading-snug">{row.amount}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Long Haul */}
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-gray-100 dark:border-zinc-800 shadow-sm overflow-hidden">
             <div className="bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-4">
               <h3 className="text-white font-bold text-lg">🌍 Long Haul Packages</h3>
               <p className="text-indigo-200 text-xs mt-1">
                 Europe · UK · USA · Canada · Japan · South Korea · Australia etc.
               </p>
             </div>
-            <div className="divide-y divide-gray-50">
-              <div className="grid grid-cols-2 px-5 py-2 bg-gray-50">
-                <span className="text-[10px] font-black uppercase tracking-wide text-gray-400">Days Before Departure</span>
-                <span className="text-[10px] font-black uppercase tracking-wide text-gray-400">Payment Amount</span>
+            <div className="divide-y divide-gray-50 dark:divide-zinc-800">
+              {/* header row uses the elevated step in dark so it stays distinguishable from the zinc-900 card */}
+              <div className="grid grid-cols-2 px-5 py-2 bg-gray-50 dark:bg-zinc-800">
+                <span className="text-[10px] font-black uppercase tracking-wide text-gray-400 dark:text-zinc-500">Days Before Departure</span>
+                <span className="text-[10px] font-black uppercase tracking-wide text-gray-400 dark:text-zinc-500">Payment Amount</span>
               </div>
               {longHaulRows.map((row, i) => (
-                <div key={i} className="grid grid-cols-2 px-5 py-3.5 items-start gap-4 hover:bg-indigo-50/30 transition">
-                  <span className="text-xs font-bold text-indigo-700">{row.days}</span>
-                  <span className="text-xs text-gray-600 leading-snug">{row.amount}</span>
+                <div key={i} className="grid grid-cols-2 px-5 py-3.5 items-start gap-4 hover:bg-indigo-50/30 dark:hover:bg-indigo-950/30 transition">
+                  <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400">{row.days}</span>
+                  <span className="text-xs text-gray-600 dark:text-zinc-300 leading-snug">{row.amount}</span>
                 </div>
               ))}
             </div>
@@ -121,23 +123,23 @@ const PaymentPolicy = () => (
       </div>
 
       {/* ── Security Notice ── */}
-      <div className="bg-red-50 border border-red-100 rounded-3xl p-7">
+      <div className="bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/50 rounded-3xl p-7">
         <div className="flex items-start gap-4">
           <span className="text-3xl shrink-0">🔐</span>
           <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-2">Important Security Notice</h2>
-            <ul className="space-y-2 text-sm text-gray-700 leading-relaxed">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-zinc-50 mb-2">Important Security Notice</h2>
+            <ul className="space-y-2 text-sm text-gray-700 dark:text-zinc-300 leading-relaxed">
               <li>• For secure transactions, please make payments <strong>exclusively to the official bank details listed on our website</strong>.</li>
               <li>• Payments made to any other account will not be our responsibility, and we cannot compensate for any losses incurred from such transactions.</li>
-              <li>• For any questions or concerns, please contact us at <a href="tel:+919906892984" className="text-violet-600 font-semibold hover:underline">+91 99068 92984</a> or <a href="tel:+919929618966" className="text-violet-600 font-semibold hover:underline">+91 99296 18966</a>.</li>
+              <li>• For any questions or concerns, please contact us at <a href="tel:+919906892984" className="text-violet-600 dark:text-violet-400 font-semibold hover:underline">+91 99068 92984</a> or <a href="tel:+919929618966" className="text-violet-600 dark:text-violet-400 font-semibold hover:underline">+91 99296 18966</a>.</li>
             </ul>
           </div>
         </div>
       </div>
 
       {/* ── Payment T&C ── */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8">
-        <h2 className="text-xl font-bold text-gray-900 mb-5">📄 Payment Terms &amp; Conditions</h2>
+      <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-gray-100 dark:border-zinc-800 shadow-sm p-8">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-zinc-50 mb-5">📄 Payment Terms &amp; Conditions</h2>
         <ul className="space-y-3">
           {[
             'Flight ticket issuance requires full airfare payment.',
@@ -145,16 +147,16 @@ const PaymentPolicy = () => (
             'Payment schedules may vary based on events, peak seasons, etc.',
             'Please contact your assigned Sales Executive for the exact payment schedule.',
           ].map((point, i) => (
-            <li key={i} className="flex items-start gap-3 text-sm text-gray-600">
+            <li key={i} className="flex items-start gap-3 text-sm text-gray-600 dark:text-zinc-300">
               <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-violet-500 shrink-0" />
               {point}
             </li>
           ))}
-          <li className="flex items-start gap-3 text-sm text-gray-600">
+          <li className="flex items-start gap-3 text-sm text-gray-600 dark:text-zinc-300">
             <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-violet-500 shrink-0" />
             Do check our{' '}
-            <a href="/cancellation-policy" className="text-violet-600 hover:underline font-semibold mx-0.5">Cancellation Policy</a>,{' '}
-            <a href="/privacy-policy" className="text-violet-600 hover:underline font-semibold mx-0.5">Privacy Policy</a> and Disclaimer on our website for related details.
+            <a href="/cancellation-policy" className="text-violet-600 dark:text-violet-400 hover:underline font-semibold mx-0.5">Cancellation Policy</a>,{' '}
+            <a href="/privacy-policy" className="text-violet-600 dark:text-violet-400 hover:underline font-semibold mx-0.5">Privacy Policy</a> and Disclaimer on our website for related details.
           </li>
         </ul>
       </div>

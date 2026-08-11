@@ -1,363 +1,187 @@
-import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
-const Footer = () => {
-  const [hoveredLink, setHoveredLink] = useState(null);
-  
-  // Mobile accordion state
-  const [expandedSection, setExpandedSection] = useState(null);
+import Container from './ui/Container';
+import { SITE, whatsappLink } from './../config/site';
 
-  const toggleSection = (section) => {
-    setExpandedSection(prev => (prev === section ? null : section));
-  };
+/**
+ * Site footer.
+ *
+ * Only real, already-configured business information appears here. The previous
+ * footer rendered Facebook, Twitter and YouTube icons that all pointed at `#`;
+ * those are gone rather than presented as real profiles. No email address
+ * exists anywhere in the project, so none is invented.
+ *
+ * Legal links point only at pages that exist as routes.
+ *
+ * The footer slab is zinc-950 in both themes, so its own text and borders need
+ * no dark pairings — two judgement calls follow from that:
+ *   · the top border steps up to zinc-700 in dark, where the page behind it is
+ *     also zinc-950 and the border is the only thing separating the two;
+ *   · links carry a light neutral focus ring instead of relying on the global
+ *     focus outline, which is zinc-800 in the light theme and would disappear
+ *     against this slab.
+ */
 
-  const exploreLinks = [
-    { label: 'Weekend Trips', icon: '🏕️', href: '/weekend-trips' },
-    { label: 'Corporate Tours', icon: '🏢', href: '/corporate-tours' },
-    { label: 'Blogs', icon: '📝', href: '/blogs' },
-  ];
+const COLUMNS = [
+  {
+    title: 'Explore',
+    links: [
+      { label: 'All Packages', to: '/packages' },
+      { label: 'International', to: '/packages?tag=international' },
+      { label: 'India', to: '/packages?tag=domestic' },
+      { label: 'Trending Trips', to: '/packages?popular=true' },
+    ],
+  },
+  {
+    title: 'Company',
+    links: [
+      { label: 'About Zurii', to: '/about' },
+      { label: 'Contact Us', to: '/contact-us' },
+      { label: 'Weekend Trips', to: '/weekend-trips' },
+      { label: 'Corporate Tours', to: '/corporate-tours' },
+      { label: 'Blogs', to: '/blogs' },
+    ],
+  },
+  {
+    title: 'Policies',
+    links: [
+      { label: 'Payment Policy', to: '/payment-policy' },
+      { label: 'No-Cost EMI', to: '/no-cost-emi' },
+      { label: 'Cancellation Policy', to: '/cancellation-policy' },
+      { label: 'Terms & Conditions', to: '/terms-conditions' },
+      { label: 'Privacy Policy', to: '/privacy-policy' },
+    ],
+  },
+];
 
-  const supportLinks = [
-    { label: 'Contact Us', icon: '📞', href: '/contact-us' },
-    { label: 'Payment Policy', icon: '💳', href: '/payment-policy' },
-    { label: 'No-Cost EMI', icon: '🏷️', href: '/no-cost-emi' },
-  ];
+const InstagramIcon = () => (
+  <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+  </svg>
+);
 
-  const legalLinks = [
-    { label: 'Terms & Conditions', icon: '📄', href: '/terms-conditions' },
-    { label: 'Privacy Policy', icon: '🔒', href: '/privacy-policy' },
-    { label: 'Cancellation Policy', icon: '❌', href: '/cancellation-policy' },
-  ];
-
+export default function Footer() {
   return (
-    <>
-      <footer className="relative bg-slate-900 border-t border-slate-800">
-        {/* Main footer */}
-        <div className="pt-14 pb-8 relative">
-          {/* Subtle gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-violet-600/5 via-transparent to-indigo-600/5 pointer-events-none" />
+    <footer className="mt-auto border-t border-zinc-800 dark:border-zinc-700 bg-zinc-950 text-zinc-400">
+      <Container className="py-12 sm:py-16">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
+          {/* Brand */}
+          <div>
+            <Link
+              to="/"
+              className="inline-block rounded focus-visible:ring-2 focus-visible:ring-zinc-100/20"
+            >
+              <img src="/zurii-logo.png" alt="Zurii" className="h-9 w-auto rounded-md" />
+            </Link>
 
-          <div className="relative max-content section-padding">
-            {/* Top Section — 4 columns */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+            <p className="mt-4 max-w-xs text-sm leading-relaxed">
+              Curated holidays and travel experiences, planned by hand and priced up front.
+            </p>
 
-              {/* Column 1: Brand */}
-              <div className="flex flex-col items-center md:items-start text-center md:text-left">
-                <div className="flex items-center justify-center md:justify-start gap-2.5 mb-5">
-                  <img
-                    src="/zurii-logo.png"
-                    alt="Zurii Travels"
-                    className="h-16 w-auto object-contain rounded-lg"
-                    style={{ filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.15))' }}
-                  />
-                </div>
-                <p className="text-sm text-gray-400 leading-relaxed mb-6 max-w-sm">
-                  Your trusted travel partner crafting unforgettable journeys. From weekend getaways to grand international tours — we make every trip extraordinary.
-                </p>
-                {/* Social Icons */}
-                <div className="flex items-center gap-2">
-                  {[
-                    {
-                      name: 'Instagram',
-                      href: 'https://www.instagram.com/zurii_travels?igsh=MWs5MzZya242ZTRzdA%3D%3D&utm_source=qr',
-                      hoverClass: 'hover:bg-gradient-to-br hover:from-purple-500 hover:via-pink-500 hover:to-orange-400',
-                      icon: (
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
-                        </svg>
-                      ),
-                    },
-                    {
-                      name: 'Facebook',
-                      href: '#',
-                      hoverClass: 'hover:bg-blue-600',
-                      icon: (
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                        </svg>
-                      ),
-                    },
-                    {
-                      name: 'Twitter',
-                      href: '#',
-                      hoverClass: 'hover:bg-sky-500',
-                      icon: (
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                        </svg>
-                      ),
-                    },
-                    {
-                      name: 'YouTube',
-                      href: '#',
-                      hoverClass: 'hover:bg-red-600',
-                      icon: (
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                        </svg>
-                      ),
-                    },
-                  ].map((social) => (
+            {SITE.socials.length > 0 && (
+              <ul className="mt-5 flex items-center gap-2">
+                {SITE.socials.map((social) => (
+                  <li key={social.name}>
                     <a
-                      key={social.name}
                       href={social.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="touch-target w-11 h-11 rounded-[14px] flex items-center justify-center text-gray-400 hover:text-white transition-all duration-300 bg-slate-800/60 hover:scale-105 active:scale-95 shadow-2xs"
-                      title={social.name}
+                      aria-label={`Zurii on ${social.name}`}
+                      className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-800/80 text-zinc-300 transition-colors duration-200 hover:bg-violet-600 hover:text-white focus-visible:ring-2 focus-visible:ring-zinc-100/20"
                     >
-                      {social.icon}
+                      <InstagramIcon />
                     </a>
-                  ))}
-                </div>
-              </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
-              {/* Column 2: Explore */}
-              <div className="border-b border-slate-800/60 md:border-none">
-                <button
-                  onClick={() => toggleSection('explore')}
-                  className="w-full md:cursor-default py-4 md:py-0 flex items-center justify-between md:justify-start text-sm font-bold text-white tracking-wider uppercase mb-0 md:mb-5 gap-2"
+          {/* Link columns */}
+          {COLUMNS.map((column) => (
+            <nav key={column.title} aria-label={column.title}>
+              <h2 className="mb-3.5 text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-200">
+                {column.title}
+              </h2>
+              <ul className="space-y-2">
+                {column.links.map((link) => (
+                  <li key={link.to}>
+                    <Link
+                      to={link.to}
+                      className="rounded text-sm transition-colors duration-150 hover:text-white focus-visible:ring-2 focus-visible:ring-zinc-100/20"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
+        </div>
+
+        {/* Contact strip */}
+        <div className="mt-12 grid gap-8 border-t border-zinc-800/80 pt-8 sm:grid-cols-3">
+          <div>
+            <h2 className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-200">Get in touch</h2>
+            <ul className="space-y-1">
+              {SITE.phones.map((phone) => (
+                <li key={phone.href}>
+                  <a
+                    href={phone.href}
+                    className="rounded text-sm transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-zinc-100/20"
+                  >
+                    {phone.label}
+                  </a>
+                </li>
+              ))}
+              <li>
+                <a
+                  href={SITE.email.href}
+                  className="rounded text-sm transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-zinc-100/20"
                 >
-                  <span className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-violet-500" />
-                    Explore
-                  </span>
-                  <svg className={`w-3.5 h-3.5 transition-transform duration-300 md:hidden ${expandedSection === 'explore' ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                
-                <ul className={`space-y-3 transition-all duration-300 ease-out overflow-hidden md:max-h-full ${
-                  expandedSection === 'explore' ? 'max-h-40 pb-4 mt-2' : 'max-h-0 md:max-h-full'
-                }`}>
-                  {exploreLinks.map((link, i) => (
-                    <li key={i}>
-                      <a
-                        href={link.href}
-                        className="group flex items-center gap-2.5 text-sm text-gray-400 hover:text-violet-400 transition-all duration-200 py-1"
-                        onMouseEnter={() => setHoveredLink(`explore-${i}`)}
-                        onMouseLeave={() => setHoveredLink(null)}
-                      >
-                        <span
-                          className={`text-base transition-transform duration-200 ${
-                            hoveredLink === `explore-${i}` ? 'scale-125' : ''
-                          }`}
-                        >
-                          {link.icon}
-                        </span>
-                        <span className="relative">
-                          {link.label}
-                          <span
-                            className={`absolute -bottom-0.5 left-0 h-px bg-violet-400 transition-all duration-300 ${
-                              hoveredLink === `explore-${i}` ? 'w-full' : 'w-0'
-                            }`}
-                          />
-                        </span>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Column 3: Support */}
-              <div className="border-b border-slate-800/60 md:border-none">
-                <button
-                  onClick={() => toggleSection('support')}
-                  className="w-full md:cursor-default py-4 md:py-0 flex items-center justify-between md:justify-start text-sm font-bold text-white tracking-wider uppercase mb-0 md:mb-5 gap-2"
-                >
-                  <span className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                    Support
-                  </span>
-                  <svg className={`w-3.5 h-3.5 transition-transform duration-300 md:hidden ${expandedSection === 'support' ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                
-                <ul className={`space-y-3 transition-all duration-300 ease-out overflow-hidden md:max-h-full ${
-                  expandedSection === 'support' ? 'max-h-40 pb-4 mt-2' : 'max-h-0 md:max-h-full'
-                }`}>
-                  {supportLinks.map((link, i) => (
-                    <li key={i}>
-                      <a
-                        href={link.href}
-                        className="group flex items-center gap-2.5 text-sm text-gray-400 hover:text-indigo-400 transition-all duration-200 py-1"
-                        onMouseEnter={() => setHoveredLink(`support-${i}`)}
-                        onMouseLeave={() => setHoveredLink(null)}
-                      >
-                        <span
-                          className={`text-base transition-transform duration-200 ${
-                            hoveredLink === `support-${i}` ? 'scale-125' : ''
-                          }`}
-                        >
-                          {link.icon}
-                        </span>
-                        <span className="relative">
-                          {link.label}
-                          <span
-                            className={`absolute -bottom-0.5 left-0 h-px bg-indigo-400 transition-all duration-300 ${
-                              hoveredLink === `support-${i}` ? 'w-full' : 'w-0'
-                            }`}
-                          />
-                        </span>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Column 4: Legal */}
-              <div className="border-b border-slate-800/60 md:border-none">
-                <button
-                  onClick={() => toggleSection('legal')}
-                  className="w-full md:cursor-default py-4 md:py-0 flex items-center justify-between md:justify-start text-sm font-bold text-white tracking-wider uppercase mb-0 md:mb-5 gap-2"
-                >
-                  <span className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-                    Legal
-                  </span>
-                  <svg className={`w-3.5 h-3.5 transition-transform duration-300 md:hidden ${expandedSection === 'legal' ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                
-                <ul className={`space-y-3 transition-all duration-300 ease-out overflow-hidden md:max-h-full ${
-                  expandedSection === 'legal' ? 'max-h-40 pb-4 mt-2' : 'max-h-0 md:max-h-full'
-                }`}>
-                  {legalLinks.map((link, i) => (
-                    <li key={i}>
-                      <a
-                        href={link.href}
-                        className="group flex items-center gap-2.5 text-sm text-gray-400 hover:text-purple-400 transition-all duration-200 py-1"
-                        onMouseEnter={() => setHoveredLink(`legal-${i}`)}
-                        onMouseLeave={() => setHoveredLink(null)}
-                      >
-                        <span
-                          className={`text-base transition-transform duration-200 ${
-                            hoveredLink === `legal-${i}` ? 'scale-125' : ''
-                          }`}
-                        >
-                          {link.icon}
-                        </span>
-                        <span className="relative">
-                          {link.label}
-                          <span
-                            className={`absolute -bottom-0.5 left-0 h-px bg-purple-400 transition-all duration-300 ${
-                              hoveredLink === `legal-${i}` ? 'w-full' : 'w-0'
-                            }`}
-                          />
-                        </span>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {/* Contact Info Bar */}
-            <div className="mt-14 pt-8 border-t border-slate-800/80">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {/* Address */}
-                <div className="flex items-start gap-4 group">
-                  <div className="w-11 h-11 rounded-[14px] bg-slate-800/80 flex items-center justify-center shrink-0 group-hover:bg-violet-500/15 transition-colors duration-300">
-                    <svg className="w-4.5 h-4.5 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-semibold text-gray-300 tracking-wide uppercase mb-1">Office Address</h4>
-                    <p className="text-sm text-gray-500 leading-relaxed">
-                      Office, Bemina, hamdaniya colony,<br />
-                      Sector D, 190018
-                    </p>
-                  </div>
-                </div>
-
-                {/* Business Hours */}
-                <div className="flex items-start gap-4 group">
-                  <div className="w-11 h-11 rounded-[14px] bg-slate-800/80 flex items-center justify-center shrink-0 group-hover:bg-indigo-500/15 transition-colors duration-300">
-                    <svg className="w-4.5 h-4.5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-semibold text-gray-300 tracking-wide uppercase mb-1">Business Hours</h4>
-                    <p className="text-sm text-gray-500 leading-relaxed">
-                      Mon – Sat: 9:00 AM – 7:00 PM<br />
-                      Sunday: 10:00 AM – 4:00 PM
-                    </p>
-                  </div>
-                </div>
-
-                {/* Phone */}
-                <div className="flex items-start gap-4 group">
-                  <div className="w-11 h-11 rounded-[14px] bg-slate-800/80 flex items-center justify-center shrink-0 group-hover:bg-purple-500/15 transition-colors duration-300">
-                    <svg className="w-4.5 h-4.5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-semibold text-gray-300 tracking-wide uppercase mb-1">Call Us</h4>
-                    <p className="text-sm text-gray-500 leading-relaxed">
-                      <a href="tel:+919906892984" className="hover:text-violet-400 transition-colors">+91 99068 92984</a><br />
-                      <a href="tel:+919929618966" className="hover:text-violet-400 transition-colors">+91 99296 18966</a>
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Bar */}
-            <div className="mt-12 pt-6 border-t border-slate-800/40 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex flex-col sm:flex-row items-center gap-3">
-                <p className="text-xs text-gray-500 font-medium">
-                  © {new Date().getFullYear()} Zurii. All rights reserved. Made with 💜 in India.
-                </p>
-                <a href="/admin/insights" className="text-xs text-gray-600 hover:text-violet-400 font-semibold border-l border-slate-800 pl-3 ml-1 transition-colors">
-                  Admin Panel &rarr;
+                  {SITE.email.label}
                 </a>
-              </div>
-              <div className="flex items-center gap-4">
-                <span className="text-xs text-gray-600 font-medium">Trusted by 10,000+ travelers</span>
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <svg key={i} className="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                  <span className="text-xs text-gray-500 ml-1 font-bold">4.9</span>
-                </div>
-              </div>
-            </div>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h2 className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-200">Office</h2>
+            <address className="text-sm not-italic leading-relaxed">
+              {SITE.address.map((line) => (
+                <span key={line} className="block">
+                  {line}
+                </span>
+              ))}
+            </address>
+          </div>
+
+          <div>
+            <h2 className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-200">Hours</h2>
+            <p className="text-sm leading-relaxed">
+              {SITE.hours.map((line) => (
+                <span key={line} className="block">
+                  {line}
+                </span>
+              ))}
+            </p>
           </div>
         </div>
-      </footer>
 
-      {/* Floating WhatsApp Button */}
-      <a
-        href="https://wa.me/919906892984"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-50 group"
-        title="Chat on WhatsApp"
-        id="whatsapp-widget"
-      >
-        {/* Pulse ring */}
-        <div className="absolute inset-0 rounded-full bg-violet-500 animate-ping opacity-15" />
-        {/* Button */}
-        <div className="relative w-13 h-13 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/25 group-hover:scale-105 active:scale-[0.96] transition-all duration-300">
-          <svg className="w-6.5 h-6.5 text-white" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-          </svg>
+        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-zinc-800/80 pt-6 sm:flex-row">
+          <p className="text-xs text-zinc-500">
+            © {new Date().getFullYear()} {SITE.legalName}. All rights reserved.
+          </p>
+          <a
+            href={whatsappLink()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded text-xs font-semibold text-emerald-400 transition-colors hover:text-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+          >
+            Chat with a travel expert on WhatsApp →
+          </a>
         </div>
-        {/* Tooltip */}
-        <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-slate-800 text-white text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none shadow-lg">
-          Chat with us!
-          <div className="absolute left-full top-1/2 -translate-y-1/2 w-0 h-0 border-t-[5px] border-t-transparent border-b-[5px] border-b-transparent border-l-[5px] border-l-slate-800" />
-        </div>
-      </a>
-    </>
+      </Container>
+    </footer>
   );
-};
-
-export default Footer;
+}

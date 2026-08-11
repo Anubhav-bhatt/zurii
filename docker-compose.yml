@@ -33,6 +33,15 @@ services:
       # refresh-token cookie Secure, so browsers drop it and admin login breaks.
       # Set to production only once you terminate TLS in front of the stack.
       NODE_ENV: ${NODE_ENV:-development}
+      # The only route in is nginx, so without this every visitor arrives as the
+      # nginx container's IP and the analytics rate limiter (120 events/min per
+      # IP) throttles the whole site as if it were one caller. 1 = trust one hop.
+      TRUST_PROXY: 1
+      # Browser origins allowed to make credentialed API calls. Empty is correct
+      # for this stack — nginx proxies /api on the same origin, so the browser
+      # sends no Origin header and CORS never applies. Set it only when the SPA
+      # is served from a different domain than the API.
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS-}
     depends_on:
       db:
         condition: service_healthy

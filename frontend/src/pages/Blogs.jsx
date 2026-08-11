@@ -7,16 +7,16 @@ const Blogs = () => {
   const rest = guides.filter(g => !g.featured);
 
   return (
-    <section className="min-h-screen bg-gray-50 pt-28 pb-20 px-6">
+    <section className="min-h-screen bg-gray-50 dark:bg-zinc-950 pt-28 pb-20 px-6">
       <div className="max-w-6xl mx-auto">
 
         {/* Header */}
         <div className="text-center mb-14">
-          <span className="inline-block text-xs font-semibold uppercase tracking-widest text-violet-500 bg-violet-50 px-3 py-1 rounded-full mb-3">
+          <span className="inline-block text-xs font-semibold uppercase tracking-widest text-violet-500 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 px-3 py-1 rounded-full mb-3">
             Blog
           </span>
-          <h1 className="text-4xl sm:text-5xl font-black text-gray-900 mb-4">Travel Guides & Stories</h1>
-          <p className="text-gray-500 text-lg max-w-xl mx-auto leading-relaxed">
+          <h1 className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-zinc-50 mb-4">Travel Guides & Stories</h1>
+          <p className="text-gray-500 dark:text-zinc-400 text-lg max-w-xl mx-auto leading-relaxed">
             Real stories, honest tips, and insider guides from our travels around India and the world.
           </p>
         </div>
@@ -60,7 +60,7 @@ const Blogs = () => {
             <div
               key={blog.slug}
               onClick={() => navigate(`/blog/${blog.slug}`)}
-              className="group bg-white rounded-[28px] overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer h-full flex flex-col"
+              className="group bg-white dark:bg-zinc-900 rounded-[28px] overflow-hidden border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer h-full flex flex-col"
             >
               <div className="relative h-52 overflow-hidden">
                 <img src={blog.image} alt={blog.title} className="w-full h-full object-cover group-hover:scale-110 transition duration-1000" />
@@ -73,24 +73,24 @@ const Blogs = () => {
                 </div>
               </div>
               <div className="p-6 flex flex-col flex-1">
-                <div className="flex items-center gap-2 text-xs text-gray-400 mb-3">
-                  <span className="font-semibold text-violet-500">{blog.author}</span>
-                  <span className="w-1 h-1 bg-gray-300 rounded-full" />
+                <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-zinc-500 mb-3">
+                  <span className="font-semibold text-violet-500 dark:text-violet-400">{blog.author}</span>
+                  <span className="w-1 h-1 bg-gray-300 dark:bg-zinc-700 rounded-full" />
                   <span>{blog.date}</span>
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 leading-snug group-hover:text-violet-600 transition">{blog.title}</h3>
-                <p className="text-sm text-gray-500 mt-2 leading-relaxed line-clamp-2 flex-1">{blog.subtitle}</p>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-zinc-50 leading-snug group-hover:text-violet-600 transition">{blog.title}</h3>
+                <p className="text-sm text-gray-500 dark:text-zinc-400 mt-2 leading-relaxed line-clamp-2 flex-1">{blog.subtitle}</p>
                 {blog.tags && (
                   <div className="flex flex-wrap gap-2 mt-4">
                     {blog.tags.slice(0, 3).map(tag => (
-                      <span key={tag} className="px-2.5 py-1 bg-gray-100 text-[10px] font-semibold text-gray-500 rounded-full">{tag}</span>
+                      <span key={tag} className="px-2.5 py-1 bg-gray-100 dark:bg-zinc-800 text-[10px] font-semibold text-gray-500 dark:text-zinc-400 rounded-full">{tag}</span>
                     ))}
                   </div>
                 )}
-                <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
-                  <span className="text-sm font-bold text-gray-900 group-hover:text-violet-600 transition">Read Article</span>
-                  <span className="w-8 h-8 bg-gray-100 group-hover:bg-violet-600 rounded-full flex items-center justify-center transition">
-                    <span className="text-gray-400 group-hover:text-white text-sm transition">→</span>
+                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-zinc-800 flex items-center justify-between">
+                  <span className="text-sm font-bold text-gray-900 dark:text-zinc-50 group-hover:text-violet-600 transition">Read Article</span>
+                  <span className="w-8 h-8 bg-gray-100 dark:bg-zinc-800 group-hover:bg-violet-600 rounded-full flex items-center justify-center transition">
+                    <span className="text-gray-400 dark:text-zinc-500 group-hover:text-white text-sm transition">→</span>
                   </span>
                 </div>
               </div>

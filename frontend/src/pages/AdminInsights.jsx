@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { API_BASE_URL } from '../config/api';
+import ChangePasswordForm from '../components/admin/ChangePasswordForm';
 
 // Relative Time Helper
 const getRelativeTime = (dateString) => {
@@ -25,8 +27,14 @@ const AdminInsights = () => {
   const [loginError, setLoginError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  // Set on login/refresh but not rendered anywhere, so only the setter is bound.
+  // The value was previously discarded (only the setter was used). It is read
+  // now so the forced password screen can name the signed-in admin.
   const [adminUser, setAdminUser] = useState(null);
   const [isRestoringSession, setIsRestoringSession] = useState(true);
+  // Set when the signed-in account still holds a temporary password. The CRM is
+  // not rendered in that state; the backend refuses its data regardless.
+  const [mustChangePassword, setMustChangePassword] = useState(false);
   const accessTokenRef = useRef(null);
 
   // Data State
@@ -172,7 +180,9 @@ const AdminInsights = () => {
       if (res.ok && data.success) {
         accessTokenRef.current = data.accessToken;
         setAdminUser(data.admin);
-        setIsAuthenticated(true);
+        // Temporary password: the CRM stays closed until it is replaced.
+        if (data.admin?.mustChangePassword) setMustChangePassword(true);
+        else setIsAuthenticated(true);
       } else {
         setLoginError(data.error || 'Invalid username or password.');
       }
@@ -205,7 +215,11 @@ const AdminInsights = () => {
           const data = await res.json();
           accessTokenRef.current = data.accessToken;
           setAdminUser(data.admin);
-          setIsAuthenticated(true);
+          // An account still holding an operator-issued temporary password can
+          // authenticate but reaches no CRM data (the backend answers 403), so
+          // it is sent to the password screen instead of an empty dashboard.
+          if (data.admin?.mustChangePassword) setMustChangePassword(true);
+          else setIsAuthenticated(true);
         }
       } catch { /* no valid session */ }
       setIsRestoringSession(false);
@@ -561,6 +575,33 @@ const AdminInsights = () => {
     );
   }
 
+  // ─── FORCED FIRST-LOGIN PASSWORD CHANGE ───
+  //
+  // Placed before the login gate and before the CRM: an account holding a
+  // temporary password is authenticated, so the login form would be wrong, but
+  // it must not see the CRM either. The same component and endpoint serve the
+  // analytics dashboard, so there is one password flow in the product.
+  if (mustChangePassword) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-6 py-16"
+           style={{ background: 'linear-gradient(135deg, #090d16 0%, #111322 50%, #090d16 100%)' }}>
+        <div className="w-full max-w-md">
+          <ChangePasswordForm
+            forced
+            username={adminUser?.username}
+            onDone={() => {
+              // The change revoked this session server-side.
+              accessTokenRef.current = null;
+              setMustChangePassword(false);
+              setAdminUser(null);
+              setIsAuthenticated(false);
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
   // ─── LOGIN GATE VIEW ───
   if (!isAuthenticated) {
     return (
@@ -675,6 +716,15 @@ const AdminInsights = () => {
           </div>
 
           <div className="flex items-center gap-3">
+            <Link
+              to="/admin/analytics"
+              className="px-4 py-2.5 bg-violet-600 hover:bg-violet-700 text-white font-semibold text-xs rounded-xl transition-all shadow-xs active:scale-95 flex items-center gap-1.5"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              Analytics Dashboard
+            </Link>
             <button
               onClick={fetchContacts}
               disabled={loading}

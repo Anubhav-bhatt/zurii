@@ -2,7 +2,7 @@ const baliImg = 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=
 const parisImg = 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800';
 const santoriniImg = 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800';
 const tokyoImg = 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800';
-const swissImg = 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800';
+const swissImg = 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800';
 const japanImg = 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800';
 const dubaiImg = 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800';
 const keralaImg = 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=800';
@@ -30,10 +30,10 @@ export const internationalFallback = [
     countries: [
       { country: 'Italy', cities: ['Milan', 'Rome', 'Florence', 'Venice'], thumbnail: 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=800' },
       { country: 'France', cities: ['Paris', 'Nice'], thumbnail: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800' },
-      { country: 'Switzerland', cities: ['Zurich', 'Lucerne', 'Interlaken', 'Zermatt'], thumbnail: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800' },
+      { country: 'Switzerland', cities: ['Zurich', 'Lucerne', 'Interlaken', 'Zermatt'], thumbnail: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800' },
       { country: 'Netherlands', cities: ['Amsterdam'], thumbnail: 'https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=800' },
       { country: 'Germany', cities: ['Berlin', 'Munich', 'Hamburg', 'Frankfurt'], thumbnail: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800' },
-      { country: 'Belgium', cities: ['Brussels'], thumbnail: 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800' },
+      { country: 'Belgium', cities: ['Brussels'], thumbnail: 'https://images.unsplash.com/photo-1491557345352-5929e343eb89?w=800' },
       { country: 'Luxembourg', cities: ['Luxembourg City'], thumbnail: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800' },
       { country: 'Greece', cities: ['Mykonos', 'Santorini', 'Athens'], thumbnail: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800' },
     ]
@@ -50,14 +50,14 @@ export const internationalFallback = [
     region: 'South Asia',
     countries: [
       { country: 'Sri Lanka', cities: ['Colombo', 'Kandy', 'Ella', 'Galle'], thumbnail: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800' },
-      { country: 'Bhutan', cities: ['Thimphu', 'Paro', 'Punakha'], thumbnail: 'https://images.unsplash.com/photo-1553856622-d1b352e9a211?w=800' },
+      { country: 'Bhutan', cities: ['Thimphu', 'Paro', 'Punakha'], thumbnail: 'https://images.unsplash.com/photo-1571401835393-8c5f35328320?w=800' },
     ]
   },
   {
     region: 'Central Asia',
     countries: [
-      { country: 'Kazakhstan', cities: ['Almaty', 'Nur-Sultan', 'Charyn Canyon'], thumbnail: 'https://images.unsplash.com/photo-1605101100278-5d1deb2b6498?w=800' },
-      { country: 'Mongolia', cities: ['Ulaanbaatar', 'Gobi Desert', 'Khuvsgul Lake'], thumbnail: 'https://images.unsplash.com/photo-1614531341773-3bff8b7cb3fc?w=800' },
+      { country: 'Kazakhstan', cities: ['Almaty', 'Nur-Sultan', 'Charyn Canyon'], thumbnail: 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=800' },
+      { country: 'Mongolia', cities: ['Ulaanbaatar', 'Gobi Desert', 'Khuvsgul Lake'], thumbnail: 'https://images.unsplash.com/photo-1579193219623-8ef5f1baa518?w=800' },
     ]
   },
   {
@@ -246,7 +246,7 @@ export const bestSellerTrips = [
     originalPrice: '₹15,000',
     price: '₹11,999',
     save: '₹3,001',
-    image: 'https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=800',
+    image: 'https://images.unsplash.com/photo-1571536802807-30451e3955d8?w=800',
     badge: 'Cultural',
   },
 ];
@@ -357,7 +357,7 @@ export const tripDetails = {
       { id: 2, date: 'May 20 – May 24, 2026', slots: 10, price: '₹1,52,999', status: 'available' },
       { id: 3, date: 'Jun 10 – Jun 14, 2026', slots: 8, price: '₹1,69,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800', 'https://images.unsplash.com/photo-1431274172761-fca41d930114?w=800', 'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=800', 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1491557345352-5929e343eb89?w=800', 'https://images.unsplash.com/photo-1431274172761-fca41d930114?w=800', 'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=800', 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800'],
   },
   'santorini': {
     heroImage: santoriniImg,
@@ -402,7 +402,7 @@ export const tripDetails = {
       { id: 2, date: 'Jun 8 – Jun 13, 2026', slots: 8, price: '₹1,99,999', status: 'available' },
       { id: 3, date: 'Sep 15 – Sep 20, 2026', slots: 10, price: '₹1,79,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?w=800', 'https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800', 'https://images.unsplash.com/photo-1504214208698-ea1916a2195a?w=800', 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?w=800', 'https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800', 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800'],
   },
   'tokyo': {
     heroImage: tokyoImg,
@@ -496,7 +496,7 @@ export const tripDetails = {
       { id: 2, date: 'Jul 15 – Jul 20, 2026', slots: 8, price: '₹2,29,999', status: 'available' },
       { id: 3, date: 'Sep 5 – Sep 10, 2026', slots: 10, price: '₹1,99,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800', 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800', 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800', 'https://images.unsplash.com/photo-1585409677983-0f6c41ca9c3b?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800', 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800', 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800', 'https://images.unsplash.com/photo-1585409677983-0f6c41ca9c3b?w=800'],
   },
   'japan-cherry': {
     heroImage: japanImg,
@@ -588,7 +588,7 @@ export const tripDetails = {
       { id: 2, date: 'May 15 – May 19, 2026', slots: 3, price: '₹79,999', status: 'filling' },
       { id: 3, date: 'Nov 1 – Nov 5, 2026', slots: 12, price: '₹94,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800', 'https://images.unsplash.com/photo-1518684079-3c830dcef090?w=800', 'https://images.unsplash.com/photo-1512632578888-169bbbc64f33?w=800', 'https://images.unsplash.com/photo-1546587348-d12660c30c50?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800', 'https://images.unsplash.com/photo-1518684079-3c830dcef090?w=800', 'https://images.unsplash.com/photo-1512632578888-169bbbc64f33?w=800', 'https://plus.unsplash.com/premium_photo-1661962428918-6a57ab674e23?w=800'],
   },
   'kerala-backwaters': {
     heroImage: keralaImg,
@@ -767,7 +767,7 @@ export const tripDetails = {
       { id: 2, date: 'Jun 1 – Jun 5, 2026', slots: 8, price: '₹1,69,999', status: 'available' },
       { id: 3, date: 'Sep 10 – Sep 14, 2026', slots: 6, price: '₹1,49,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800', 'https://images.unsplash.com/photo-1431274172761-fca41d930114?w=800', 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800', 'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800', 'https://images.unsplash.com/photo-1431274172761-fca41d930114?w=800', 'https://images.unsplash.com/photo-1491557345352-5929e343eb89?w=800', 'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=800'],
   },
   'ladakh-circuit': {
     heroImage: 'https://images.unsplash.com/photo-1581793745862-99fde7fa73d2?w=800',
@@ -813,7 +813,7 @@ export const tripDetails = {
       { id: 2, date: 'Jul 10 – Jul 18, 2026', slots: 8, price: '₹52,999', status: 'available' },
       { id: 3, date: 'Aug 5 – Aug 13, 2026', slots: 12, price: '₹48,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1544085311-11a028465b03?w=800', 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1626621331169-5f34be280ed9?w=800', 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
   },
   'kedarnath-spiritual': {
     heroImage: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800',
@@ -853,10 +853,10 @@ export const tripDetails = {
       { id: 2, date: 'May 25 – May 30, 2026', slots: 5, price: '₹19,999', status: 'filling' },
       { id: 3, date: 'Sep 15 – Sep 20, 2026', slots: 20, price: '₹17,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800', 'https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
   },
   'varanasi-heritage': {
-    heroImage: 'https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1571536802807-30451e3955d8?w=800',
     title: 'Varanasi Heritage Walk',
     subtitle: 'The Eternal City',
     tagline: 'Experience the world\'s oldest living city',
@@ -889,7 +889,7 @@ export const tripDetails = {
       { id: 1, date: 'Nov 12 – Nov 14, 2026', slots: 10, price: '₹11,999', status: 'available' },
       { id: 2, date: 'Dec 4 – Dec 6, 2026', slots: 5, price: '₹12,499', status: 'filling' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=800', 'https://images.unsplash.com/photo-1571536802807-30451e3955d8?w=800', 'https://images.unsplash.com/photo-1571536802807-30451e3955d8?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1571536802807-30451e3955d8?w=800'],
   },
   'spiti-valley': {
     heroImage: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800',
@@ -943,10 +943,10 @@ export const tripDetails = {
     inclusions: ['4-star Hotels & Houseboat', 'Private Vehicle', 'Breakfast & Dinner', 'Local Guide'],
     exclusions: ['Flights', 'Gondola Tickets', 'Lunch'],
     batches: [{ id: 1, date: 'May 5 – May 10, 2026', slots: 10, price: '₹24,999', status: 'available' }],
-    gallery: ['https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800', 'https://images.unsplash.com/photo-1566837945700-30057527ade0?w=800', 'https://images.unsplash.com/photo-1587474260584-136574528ed5?w=800', 'https://images.unsplash.com/photo-1551882547-ff40c63fe2b0?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800', 'https://images.unsplash.com/photo-1595815771614-ade9d652a65d?w=800', 'https://images.unsplash.com/photo-1587474260584-136574528ed5?w=800', 'https://images.unsplash.com/photo-1598091383021-15ddea10925d?w=800'],
   },
   'manali-weekend': {
-    heroImage: 'https://images.unsplash.com/photo-1512470876302-972faa2aa9a4?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800',
     title: 'Manali Weekend Escape',
     subtitle: 'Himalayan Retreat',
     tagline: 'Best for a quick mountain getaway',
@@ -967,7 +967,7 @@ export const tripDetails = {
     inclusions: ['Hotels', 'Breakfast', 'Transport'],
     exclusions: ['Volvo tickets', 'Rohtang Pass permits'],
     batches: [{ id: 1, date: 'May 1 – May 4, 2026', slots: 15, price: '₹8,999', status: 'available' }],
-    gallery: ['https://images.unsplash.com/photo-1512470876302-972faa2aa9a4?w=800', 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800', 'https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800', 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1512470876302-972faa2aa9a4?w=800', 'https://images.unsplash.com/photo-1593181629936-11c609b8db9b?w=800', 'https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800', 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800'],
   },
   'rishikesh-adventure': {
     heroImage: 'https://plus.unsplash.com/premium_photo-1697730398251-40cd8dc57e0b?w=800',
@@ -990,7 +990,7 @@ export const tripDetails = {
     inclusions: ['Camping', 'All Meals', '16km Rafting'],
     exclusions: ['Bungee Jumping', 'Transport to Rishikesh'],
     batches: [{ id: 1, date: 'May 15 – May 17, 2026', slots: 20, price: '₹5,999', status: 'available' }],
-    gallery: ['https://plus.unsplash.com/premium_photo-1697730398251-40cd8dc57e0b?w=800', 'https://images.unsplash.com/photo-1592639296346-560c37a0f711?w=800', 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?w=800'],
+    gallery: ['https://plus.unsplash.com/premium_photo-1697730398251-40cd8dc57e0b?w=800', 'https://images.unsplash.com/photo-1592639296346-560c37a0f711?w=800', 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=800'],
   },
   'jaisalmer-desert-safari': {
     heroImage: 'https://plus.unsplash.com/premium_photo-1661962428918-6a57ab674e23?w=800',
@@ -1013,7 +1013,7 @@ export const tripDetails = {
     inclusions: ['Boutique Haveli & Tent', 'Desert Activities', 'Private Guide'],
     exclusions: ['Lunches', 'Monuments fees'],
     batches: [{ id: 1, date: 'Oct 20 – Oct 22, 2026', slots: 10, price: '₹12,499', status: 'available' }],
-    gallery: ['https://plus.unsplash.com/premium_photo-1661962428918-6a57ab674e23?w=800', 'https://images.unsplash.com/photo-1574267432553-4b4628081c31?w=800', 'https://images.unsplash.com/photo-1587474260584-136574528ed5?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
+    gallery: ['https://plus.unsplash.com/premium_photo-1661962428918-6a57ab674e23?w=800', 'https://images.unsplash.com/photo-1579193219623-8ef5f1baa518?w=800', 'https://images.unsplash.com/photo-1587474260584-136574528ed5?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
   },
   'kasol-kheerganga': {
     heroImage: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800',
@@ -1036,7 +1036,7 @@ export const tripDetails = {
     gallery: ['https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800', 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800', 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800', 'https://images.unsplash.com/photo-1502126324834-38f8e02d7160?w=800'],
   },
   'munnar-tea-gardens': {
-    heroImage: 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1559628233-100c798642d4?w=800',
     title: 'Munnar Tea Garden Retreat',
     subtitle: 'Highlands & Spices',
     tagline: 'Wander through emerald tea estates and spice forests',
@@ -1052,7 +1052,7 @@ export const tripDetails = {
       { day: 4, title: 'Departure', description: 'Transfer to Kochi airport/station.' }
     ],
     inclusions: ['Plantation Stay', 'Private SUV', 'Breakfast', 'Guide'],
-    gallery: ['https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800', 'https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?w=800', 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800', 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800', 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800', 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800', 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800'],
   },
   'pushkar-cultural': {
     heroImage: 'https://images.unsplash.com/photo-1583261429112-e0e7fe037a49?w=800',
@@ -1067,10 +1067,10 @@ export const tripDetails = {
       { day: 1, title: 'Pushkar Lake & Arti', description: 'Arrival. Witness the evening Aarti at Pushkar Ghat.' },
       { day: 2, title: 'Temple Trail & Savitri Mata', description: 'Visit the Brahma Temple and take the ropeway to Savitri Mata temple for panoramic views.' }
     ],
-    gallery: ['https://images.unsplash.com/photo-1583261429112-e0e7fe037a49?w=800', 'https://images.unsplash.com/photo-1590075865003-e48277faa558?w=800', 'https://images.unsplash.com/photo-1548013146-72479768bada?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1583261429112-e0e7fe037a49?w=800', 'https://images.unsplash.com/photo-1477587458883-47145ed94245?w=800', 'https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
   },
   'udaipur-lakes-palaces': {
-    heroImage: 'https://images.unsplash.com/photo-1565967511849-76a60a516170?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800',
     title: 'Udaipur: City of Lakes',
     subtitle: 'Royal Rajasthan',
     rating: '4.9',
@@ -1082,7 +1082,7 @@ export const tripDetails = {
       { day: 1, title: 'City Palace & Crystal Gallery', description: 'Explore the grand architecture of the Mewar Dynasty.' },
       { day: 2, title: 'Lake Pichola & Jagmandir', description: 'Exclusive boat ride and lunch at Jagmandir island palace.' }
     ],
-    gallery: ['https://images.unsplash.com/photo-1565967511849-76a60a516170?w=800', 'https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=800', 'https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800', 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1565967511849-76a60a516170?w=800', 'https://images.unsplash.com/photo-1583261429112-e0e7fe037a49?w=800', 'https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800', 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800'],
   },
 
   // ── Thailand ──
@@ -1140,7 +1140,7 @@ export const tripDetails = {
     ],
   },
   'thailand-beach-bliss': {
-    heroImage: 'https://images.unsplash.com/photo-1559628233-100c798642d4?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1504214208698-ea1916a2195a?w=800',
     title: 'Thailand Beach Bliss',
     subtitle: 'Island Hopping Paradise',
     tagline: 'Crystal waters, white sands, and island sunsets',
@@ -1244,7 +1244,7 @@ export const tripDetails = {
     ],
   },
   'vietnam-halong-bay': {
-    heroImage: 'https://images.unsplash.com/photo-1562408590-e32931084e23?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1528127269322-539801943592?w=800',
     title: 'Ha Long Bay Luxury Cruise',
     subtitle: 'Wonder of the World',
     tagline: 'Sail through 1,900 limestone islands and emerald waters',
@@ -1284,7 +1284,7 @@ export const tripDetails = {
       { id: 3, date: 'Sep 22 – Sep 25, 2026', slots: 14, price: '₹36,999', status: 'available' },
     ],
     gallery: [
-      'https://images.unsplash.com/photo-1562408590-e32931084e23?w=800',
+      'https://images.unsplash.com/photo-1528127269322-539801943592?w=800',
       'https://images.unsplash.com/photo-1528127269322-539801943592?w=800',
       'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800',
       'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800',
@@ -1293,7 +1293,7 @@ export const tripDetails = {
 
   // ── Singapore ──
   'singapore-highlights': {
-    heroImage: 'https://images.unsplash.com/photo-1525596662741-e94ff9f26de1?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800',
     title: 'Singapore Highlights',
     subtitle: 'The Lion City',
     tagline: 'Futuristic skylines, garden domes, and chilli crab',
@@ -1337,14 +1337,14 @@ export const tripDetails = {
       { id: 3, date: 'Dec 20 – Dec 24, 2026', slots: 8, price: '₹72,999', status: 'available' },
     ],
     gallery: [
-      'https://images.unsplash.com/photo-1525596662741-e94ff9f26de1?w=800',
+      'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800',
       'https://images.unsplash.com/photo-1518391846015-55a9cc003b25?w=800',
       'https://images.unsplash.com/photo-1565018054866-968e244671af?w=800',
       'https://images.unsplash.com/photo-1516815231560-8f41ec531527?w=800',
     ],
   },
   'singapore-family': {
-    heroImage: 'https://images.unsplash.com/photo-1565018054866-968e244671af?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1565967511849-76a60a516170?w=800',
     title: 'Singapore Family Fun',
     subtitle: 'Kid-Friendly Adventure',
     tagline: 'Adventure for every age — from 5 to 85!',
@@ -1383,9 +1383,8 @@ export const tripDetails = {
       { id: 3, date: 'Dec 26 – Dec 29, 2026', slots: 4, price: '₹62,999', status: 'filling' },
     ],
     gallery: [
-      'https://images.unsplash.com/photo-1565018054866-968e244671af?w=800',
-      'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=800',
-      'https://images.unsplash.com/photo-1525596662741-e94ff9f26de1?w=800',
+      'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800',
+      'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800',
       'https://images.unsplash.com/photo-1518391846015-55a9cc003b25?w=800',
     ],
   },
@@ -1436,13 +1435,13 @@ export const tripDetails = {
     ],
     gallery: [
       'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=800',
-      'https://images.unsplash.com/photo-1573843981267-be1999ff37cd?w=800',
+      'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800',
       'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800',
     ],
   },
   'maldives-budget-escape': {
-    heroImage: 'https://images.unsplash.com/photo-1573843981267-be1999ff37cd?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=1200&q=80',
     title: 'Maldives Budget Escape',
     subtitle: 'Maafushi Island',
     tagline: 'All the beauty of the Maldives, without the luxury price tag',
@@ -1482,7 +1481,7 @@ export const tripDetails = {
       { id: 3, date: 'Aug 20 – Aug 23, 2026', slots: 14, price: '₹49,999', status: 'available' },
     ],
     gallery: [
-      'https://images.unsplash.com/photo-1573843981267-be1999ff37cd?w=800',
+      'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=800',
       'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800',
       'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800',
@@ -1541,7 +1540,7 @@ export const tripDetails = {
     ],
     gallery: [
       'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=800',
-      'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800',
+      'https://images.unsplash.com/photo-1491557345352-5929e343eb89?w=800',
       'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
       'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800',
     ],
@@ -1597,13 +1596,13 @@ export const tripDetails = {
     gallery: [
       'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800',
       'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800',
-      'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800',
+      'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800',
       'https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=800',
     ],
   },
   // ── Kerala ──
   'kerala-heights': {
-    heroImage: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800',
     title: 'Keralan Heights & Hidden Falls',
     subtitle: 'Offbeat Kerala Adventure',
     tagline: 'Misty meadows, hidden waterfalls & sunset mangroves',
@@ -1689,7 +1688,7 @@ export const tripDetails = {
       { id: 1, date: 'Apr 20 – Apr 24, 2026', slots: 6, price: '₹24,999', status: 'available' },
       { id: 2, date: 'Nov 5 – Nov 9, 2026', slots: 10, price: '₹26,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800', 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=800', 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800', 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800', 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800', 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800', 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800'],
   },
   'andaman-heritage': {
     heroImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800',
@@ -1718,12 +1717,12 @@ export const tripDetails = {
       { id: 1, date: 'May 10 – May 15, 2026', slots: 8, price: '₹29,999', status: 'available' },
       { id: 2, date: 'Oct 15 – Oct 20, 2026', slots: 12, price: '₹28,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800', 'https://images.unsplash.com/photo-1558862107-d49ef2a04d72?w=800', 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800', 'https://images.unsplash.com/photo-1588416936097-41850ab3d86d?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800', 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800', 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800', 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800'],
   },
 
   // ── Kashmir ──
   'kashmir-family': {
-    heroImage: 'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1598091383021-15ddea10925d?w=800',
     title: 'Kashmir Family Grandeur',
     subtitle: 'Heaven on Earth — Family Edition',
     tagline: 'Houseboats, Gondola rides & snowy Gulmarg meadows',
@@ -1750,7 +1749,7 @@ export const tripDetails = {
       { id: 1, date: 'May 1 – May 7, 2026', slots: 10, price: '₹29,999', status: 'available' },
       { id: 2, date: 'Jun 10 – Jun 16, 2026', slots: 8, price: '₹32,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800', 'https://images.unsplash.com/photo-1566837945700-30057527ade0?w=800', 'https://images.unsplash.com/photo-1585409677983-0f6c41ca9c3b?w=800', 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800', 'https://images.unsplash.com/photo-1566837497312-7be7830ae9b1?w=800', 'https://images.unsplash.com/photo-1585409677983-0f6c41ca9c3b?w=800', 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=800'],
   },
 
   // ── Ladakh ──
@@ -1819,7 +1818,7 @@ export const tripDetails = {
 
   // ── Sikkim ──
   'sikkim-silk': {
-    heroImage: 'https://images.unsplash.com/photo-1600618528240-fb9fc964b853?w=1200',
+    heroImage: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=1200',
     title: 'Sikkim Silk Route & High Passes',
     subtitle: 'East Sikkim Adventure',
     tagline: 'Tsomgo Lake, Nathula Pass & the ancient Silk Route',
@@ -1875,12 +1874,12 @@ export const tripDetails = {
       { id: 1, date: 'May 20 – May 26, 2026', slots: 4, price: '₹29,999', status: 'filling' },
       { id: 2, date: 'Sep 15 – Sep 21, 2026', slots: 8, price: '₹28,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1600618528240-fb9fc964b853?w=800', 'https://images.unsplash.com/photo-1586611292717-f828b167408c?w=800', 'https://images.unsplash.com/photo-1569288052389-dac9b01c9c05?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800', 'https://images.unsplash.com/photo-1585409677983-0f6c41ca9c3b?w=800', 'https://images.unsplash.com/photo-1586611292717-f828b167408c?w=800', 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800'],
   },
 
   // ── Bhutan ──
   'bhutan-clouds': {
-    heroImage: 'https://images.unsplash.com/photo-1553856622-d1b352e9a211?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1571401835393-8c5f35328320?w=800',
     title: 'Bhutan: Kingdom of Clouds',
     subtitle: '8-Day Bhutan Circuit',
     tagline: 'Dzongs, valleys & the land of Gross National Happiness',
@@ -1908,7 +1907,7 @@ export const tripDetails = {
       { id: 1, date: 'Apr 15 – Apr 22, 2026', slots: 6, price: '₹45,000', status: 'filling' },
       { id: 2, date: 'Oct 10 – Oct 17, 2026', slots: 12, price: '₹43,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1553856622-d1b352e9a211?w=800', 'https://images.unsplash.com/photo-1571401835393-8c5f35328320?w=800', 'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=800', 'https://images.unsplash.com/photo-1609920658906-8223bd289001?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1571401835393-8c5f35328320?w=800', 'https://images.unsplash.com/photo-1571401835393-8c5f35328320?w=800', 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800', 'https://images.unsplash.com/photo-1609920658906-8223bd289001?w=800'],
   },
   'bhutan-happiness': {
     heroImage: 'https://images.unsplash.com/photo-1571401835393-8c5f35328320?w=800',
@@ -1936,7 +1935,7 @@ export const tripDetails = {
       { id: 1, date: 'May 5 – May 9, 2026', slots: 5, price: '₹54,999', status: 'available' },
       { id: 2, date: 'Sep 20 – Sep 24, 2026', slots: 10, price: '₹52,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1571401835393-8c5f35328320?w=800', 'https://images.unsplash.com/photo-1553856622-d1b352e9a211?w=800', 'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=800', 'https://images.unsplash.com/photo-1587922546307-776227941871?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1571401835393-8c5f35328320?w=800', 'https://images.unsplash.com/photo-1571401835393-8c5f35328320?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800', 'https://images.unsplash.com/photo-1587922546307-776227941871?w=800'],
   },
 
   // ── Spiti Valley ──
@@ -1968,10 +1967,10 @@ export const tripDetails = {
       { id: 1, date: 'Jun 25 – Jul 1, 2026', slots: 6, price: '₹19,999', status: 'available' },
       { id: 2, date: 'Aug 10 – Aug 16, 2026', slots: 10, price: '₹21,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800', 'https://images.unsplash.com/photo-1597074866923-dc0589150358?w=800', 'https://images.unsplash.com/photo-1614082242765-7c98ca0f3df3?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800', 'https://images.unsplash.com/photo-1597074866923-dc0589150358?w=800', 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
   },
   'spiti-gateway': {
-    heroImage: 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1491557345352-5929e343eb89?w=800',
     title: 'Himalayan Gateway: Shimla to Spiti',
     subtitle: '6 Nights / 7 Days',
     tagline: 'Kinnaur Valley, Chitkul & the mummy at Gue',
@@ -1998,7 +1997,7 @@ export const tripDetails = {
       { id: 1, date: 'Jun 20 – Jun 26, 2026', slots: 5, price: '₹21,999', status: 'available' },
       { id: 2, date: 'Aug 5 – Aug 11, 2026', slots: 8, price: '₹23,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800', 'https://images.unsplash.com/photo-1540202404-a2f29016b523?w=800', 'https://images.unsplash.com/photo-1597074866923-dc0589150358?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800', 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800', 'https://images.unsplash.com/photo-1597074866923-dc0589150358?w=800', 'https://images.unsplash.com/photo-1544085311-11a028465b03?w=800'],
   },
 
   // ── Sri Lanka ──
@@ -2031,12 +2030,12 @@ export const tripDetails = {
       { id: 2, date: 'Aug 10 – Aug 16, 2026', slots: 6, price: '₹42,999', status: 'filling' },
       { id: 3, date: 'Dec 15 – Dec 21, 2026', slots: 12, price: '₹47,999', status: 'available' },
     ],
-    gallery: ['https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800', 'https://images.unsplash.com/photo-1588416936097-41850ab3d86d?w=800', 'https://images.unsplash.com/photo-1439066615861-d1af74d74000?w=800', 'https://images.unsplash.com/photo-1494233892892-84542a694e72?w=800'],
+    gallery: ['https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800', 'https://images.unsplash.com/photo-1588416936097-41850ab3d86d?w=800', 'https://images.unsplash.com/photo-1494233892892-84542a694e72?w=800'],
   },
 
   // ── Family Packages ──
   'rishikesh-mussoorie-family': {
-    heroImage: 'https://images.unsplash.com/photo-1592639296346-560c37a0f711?w=800',
+    heroImage: 'https://plus.unsplash.com/premium_photo-1697730398251-40cd8dc57e0b?w=800',
     title: 'Rishikesh & Mussoorie Family Trip',
     subtitle: 'Spiritual Serenity & Hill Station Charm',
     tagline: 'Ganga Aarti, Kempty Falls & Mall Road — the perfect family escape',
@@ -2083,11 +2082,11 @@ export const tripDetails = {
       'https://images.unsplash.com/photo-1592639296346-560c37a0f711?w=800',
       'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800',
       'https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800',
-      'https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?w=800',
+      'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=800',
     ],
   },
   'shimla-manali-family': {
-    heroImage: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200',
+    heroImage: 'https://images.unsplash.com/photo-1626621331169-5f34be280ed9?w=800',
     title: 'Shimla & Manali Family Package',
     subtitle: 'Snow-Capped Mountains & Beautiful Lakes',
     tagline: 'Kufri adventures, Solang Valley thrills & Himalayan serenity',
@@ -2141,7 +2140,7 @@ export const tripDetails = {
     ],
   },
   'udaipur-mountabu-family': {
-    heroImage: 'https://images.unsplash.com/photo-1587474260584-136574528ed5?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1477587458883-47145ed94245?w=800',
     title: 'Udaipur & Mount Abu Family Tour',
     subtitle: 'City of Lakes & Rajasthan\'s Only Hill Station',
     tagline: 'Royal palaces, marble temples & serene Nakki Lake sunsets',
@@ -2187,14 +2186,14 @@ export const tripDetails = {
       { id: 3, date: 'Oct 1 – Oct 5, 2026', slots: 10, price: '₹60,000', status: 'available' },
     ],
     gallery: [
-      'https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=800',
+      'https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800',
       'https://images.unsplash.com/photo-1477587458883-47145ed94245?w=800',
       'https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800',
       'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800',
     ],
   },
   'mussoorie-nainital-rishikesh-family': {
-    heroImage: 'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1610715936287-6c2ad208cdbf?w=800',
     title: 'Mussoorie, Nainital & Rishikesh Family Tour',
     subtitle: 'Triple Hill Station Delight',
     tagline: 'Queen of Hills, City of Lakes & Yoga Capital in one epic trip',
@@ -2240,13 +2239,13 @@ export const tripDetails = {
       'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800',
       'https://images.unsplash.com/photo-1592639296346-560c37a0f711?w=800',
       'https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800',
-      'https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?w=800',
+      'https://plus.unsplash.com/premium_photo-1697730398251-40cd8dc57e0b?w=800',
     ],
   },
 
   // ── Turkey ──
   'turkey-cappadocia': {
-    heroImage: 'https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1641128324972-af3212f0f6bd?w=800',
     title: 'Turkey: Cappadocia & Istanbul Magic',
     subtitle: 'Where East Meets West',
     tagline: 'Hot air balloons, Ottoman grandeur & turquoise coasts',
@@ -2293,8 +2292,7 @@ export const tripDetails = {
     ],
     gallery: [
       'https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=800',
-      'https://images.unsplash.com/photo-1589561253831-b8421dd58261?w=800',
-      'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=800',
+      'https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=800',
       'https://images.unsplash.com/photo-1527838832700-5059252407fa?w=800',
     ],
   },
@@ -2400,7 +2398,7 @@ export const tripDetails = {
     ],
     gallery: [
       'https://images.unsplash.com/photo-1538669715315-155098f0fb1d?w=800',
-      'https://images.unsplash.com/photo-1534430480872-3498386e7856?w=800',
+      'https://images.unsplash.com/photo-1517154421773-0529f29ea451?w=800',
       'https://images.unsplash.com/photo-1583309219338-a582f1f9ca6b?w=800',
       'https://images.unsplash.com/photo-1526481280693-3bfa7568e0f3?w=800',
     ],
@@ -2461,7 +2459,7 @@ export const tripDetails = {
 
   // ── Singapore ──
   'singapore-city': {
-    heroImage: 'https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800',
     title: 'Singapore City Escape',
     subtitle: 'The Lion City in 5 Days',
     tagline: 'Gardens by the Bay, Sentosa thrills & Hawker Centre feasts',
@@ -2503,9 +2501,9 @@ export const tripDetails = {
       { id: 3, date: 'Dec 20 – Dec 24, 2026', slots: 8, price: '₹72,999', status: 'available' },
     ],
     gallery: [
-      'https://images.unsplash.com/photo-1525596662741-e94ff9f26de1?w=800',
+      'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800',
       'https://images.unsplash.com/photo-1518391846015-55a9cc003b25?w=800',
-      'https://images.unsplash.com/photo-1565018054866-968e244671af?w=800',
+      'https://images.unsplash.com/photo-1565967511849-76a60a516170?w=800',
       'https://images.unsplash.com/photo-1516815231560-8f41ec531527?w=800',
     ],
   },
@@ -2552,7 +2550,7 @@ export const tripDetails = {
     ],
     gallery: [
       'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=800',
-      'https://images.unsplash.com/photo-1573843981267-be1999ff37cd?w=800',
+      'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800',
       'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800',
     ],
@@ -2757,9 +2755,8 @@ export const tripDetails = {
     ],
     gallery: [
       'https://images.unsplash.com/photo-1476610182048-b716b8518aae?w=800',
-      'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800',
+      'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800',
       'https://images.unsplash.com/photo-1504893524553-b855bce32c67?w=800',
-      'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800',
     ],
   },
 
@@ -2811,13 +2808,13 @@ export const tripDetails = {
       'https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=800',
       'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800',
       'https://images.unsplash.com/photo-1512470876302-972faa2aa9a4?w=800',
-      'https://images.unsplash.com/photo-1576153192396-180ecef2a715?w=800',
+      'https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=800',
     ],
   },
 
   // ── Germany ──
   'germany-bavaria': {
-    heroImage: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800',
     title: 'Germany: Berlin, Bavaria & Neuschwanstein',
     subtitle: 'From Imperial Berlin to Fairy-Tale Castles',
     tagline: 'Cold War history, Oktoberfest, and the world\'s most famous castle',
@@ -2863,15 +2860,15 @@ export const tripDetails = {
     ],
     gallery: [
       'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800',
-      'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800',
+      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
       'https://images.unsplash.com/photo-1594563703937-fdc640497dcd?w=800',
-      'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800',
+      'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800',
     ],
   },
 
   // ── Belgium ──
   'belgium-bruges': {
-    heroImage: 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=1200',
+    heroImage: 'https://images.unsplash.com/photo-1491557345352-5929e343eb89?w=800',
     title: 'Belgium: Bruges, Brussels & Belgian Delights',
     subtitle: 'Medieval Canals & Chocolate Heaven',
     tagline: 'UNESCO old towns, world-class beer & the best chocolate on Earth',
@@ -2912,16 +2909,16 @@ export const tripDetails = {
       { id: 3, date: 'Dec 5 – Dec 9, 2026', slots: 8, price: '₹84,999', status: 'available' },
     ],
     gallery: [
-      'https://images.unsplash.com/photo-1592853625511-ad0edcc69c07?w=800',
-      'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=800',
-      'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800',
-      'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800',
+      'https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=800',
+      'https://images.unsplash.com/photo-1512470876302-972faa2aa9a4?w=800',
+      'https://images.unsplash.com/photo-1491557345352-5929e343eb89?w=800',
+      'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800',
     ],
   },
 
   // ── Kazakhstan ──
   'kazakhstan-almaty': {
-    heroImage: 'https://images.unsplash.com/photo-1605101100278-5d1deb2b6498?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=800',
     title: 'Kazakhstan: Almaty, Charyn Canyon & Tian Shan',
     subtitle: 'Central Asia\'s Crown Jewel',
     tagline: 'Silk Road city, Grand Canyon rival & soaring Tian Shan peaks',
@@ -2962,16 +2959,16 @@ export const tripDetails = {
       { id: 3, date: 'Sep 20 – Sep 24, 2026', slots: 12, price: '₹57,999', status: 'available' },
     ],
     gallery: [
-      'https://images.unsplash.com/photo-1605101100278-5d1deb2b6498?w=800',
-      'https://images.unsplash.com/photo-1584433144859-1fc3ab64a957?w=800',
+      'https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=800',
+      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800',
       'https://images.unsplash.com/photo-1504893524553-b855bce32c67?w=800',
-      'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=800',
+      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
     ],
   },
 
   // ── Mongolia ──
   'mongolia-gobi': {
-    heroImage: 'https://images.unsplash.com/photo-1614531341773-3bff8b7cb3fc?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1579193219623-8ef5f1baa518?w=800',
     title: 'Mongolia: Gobi Desert & Nomadic Steppes',
     subtitle: 'The Last Great Wilderness',
     tagline: 'Ger camps, Genghis Khan\'s legacy & endless golden steppes',
@@ -3016,10 +3013,9 @@ export const tripDetails = {
       { id: 3, date: 'Sep 5 – Sep 11, 2026', slots: 10, price: '₹82,999', status: 'available' },
     ],
     gallery: [
-      'https://images.unsplash.com/photo-1614531341773-3bff8b7cb3fc?w=800',
+      'https://images.unsplash.com/photo-1579193219623-8ef5f1baa518?w=800',
       'https://images.unsplash.com/photo-1520208422220-d12a3c588e6c?w=800',
       'https://images.unsplash.com/photo-1604580864964-0462f5d5b1a8?w=800',
-      'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=800',
     ],
   },
 
@@ -3080,7 +3076,7 @@ export const tripDetails = {
 
   // ── Luxembourg ──
   'luxembourg-vianden': {
-    heroImage: 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=800',
+    heroImage: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800',
     title: 'Luxembourg & Vianden Castle Explorer',
     subtitle: 'Europe\'s Hidden Grand Duchy',
     tagline: 'UNESCO fortresses, Moselle wines & the Ardennes forest',
@@ -3119,9 +3115,9 @@ export const tripDetails = {
     ],
     gallery: [
       'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800',
-      'https://images.unsplash.com/photo-1593978301851-40c1849d47d4?w=800',
-      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800',
-      'https://images.unsplash.com/photo-1563911892437-1feda0179e1b?w=800',
+      'https://images.unsplash.com/photo-1491557345352-5929e343eb89?w=800',
+      'https://images.unsplash.com/photo-1593181629936-11c609b8db9b?w=800',
+      'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800',
     ],
   },
 };
@@ -3199,7 +3195,7 @@ export const domesticDestinations = [
       { name: "Rishikesh & Mussoorie Family Trip", id: "rishikesh-mussoorie-family", detail: "A 4-day family getaway from Delhi covering the spiritual vibes of Rishikesh with Ganga Aarti and the hill station charm of Mussoorie with Kempty Falls, Mall Road, and Gun Hill." },
       { name: "Mussoorie, Nainital & Rishikesh Family Tour", id: "mussoorie-nainital-rishikesh-family", detail: "An epic 6-day triple hill station tour covering Rishikesh's spiritual vibes, Mussoorie's colonial charm, and Nainital's enchanting lakes — all in one seamless journey from Delhi." }
     ],
-    thumbnail: "https://images.unsplash.com/photo-1590523277543-a94d2e4eb00b?w=800"
+    thumbnail: "https://images.unsplash.com/photo-1610715936287-6c2ad208cdbf?w=800"
   },
   {
     state: "Himachal Pradesh",
@@ -3208,14 +3204,15 @@ export const domesticDestinations = [
     tours: [
       { name: "Shimla & Manali Family Package", id: "shimla-manali-family", detail: "A 6-day family escape from Shimla's Rashtrapati Niwas and Kufri to Manali's Solang Valley and Naggar Palace. Includes Deluxe rooms, daily breakfast & dinner, and all transfers by Swift Dzire." }
     ],
-    thumbnail: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800"
+    thumbnail: "https://images.unsplash.com/photo-1593181629936-11c609b8db9b?w=800"
   },
   {
     state: "Rajasthan",
     highlight: "Land of Kings & Palaces",
     about: "Rajasthan is India's most regal state — a land of magnificent palaces, golden deserts, vibrant bazaars, and timeless heritage. From the romantic lakes of Udaipur to the marble temples of Mount Abu, from the golden dunes of Jaisalmer to the pink walls of Jaipur, Rajasthan offers a royal experience unlike any other. Perfect for families seeking a blend of culture, history, and natural beauty.",
     tours: [
-      { name: "Udaipur & Mount Abu Family Tour", id: "udaipur-mountabu-family", detail: "A 5-day family tour combining the Venice of the East (Udaipur) with Rajasthan's only hill station (Mount Abu). Stay at Revaas Lake Boutique Hotel and Hotel Royal Palace with daily breakfast & dinner." }
+      { name: "Udaipur & Mount Abu Family Tour", id: "udaipur-mountabu-family", detail: "A 5-day family tour combining the Venice of the East (Udaipur) with Rajasthan's only hill station (Mount Abu). Stay at Revaas Lake Boutique Hotel and Hotel Royal Palace with daily breakfast & dinner." },
+      { name: "Jaisalmer Desert Safari", id: "jaisalmer-desert-safari", detail: "A 3-day Golden City escape — Jaisalmer Fort, Patwon-ki-Haveli, and a night in luxury tents on the Sam sand dunes with camel and jeep safaris." }
     ],
     thumbnail: "https://images.unsplash.com/photo-1477587458883-47145ed94245?w=800"
   }
@@ -3289,7 +3286,7 @@ export const internationalDestinations = [
     country: "Singapore",
     about: "Singapore is a dazzling city-state where gleaming skyscrapers, world-class theme parks, and a vibrant multicultural food scene come together in a compact, spotlessly clean package. Stroll through Gardens by the Bay under the iconic Supertrees, lose yourself in Universal Studios, explore Chinatown, Little India, and Kampong Glam, and sample everything from Michelin-starred hawker food to rooftop cocktails with a skyline view.",
     cities: ["Marina Bay", "Sentosa", "Orchard Road", "Chinatown", "Little India"],
-    thumbnail: "https://images.unsplash.com/photo-1525596662741-e94ff9f26de1?w=800",
+    thumbnail: "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800",
     tours: [
       { name: "Singapore City Escape", id: "singapore-city" },
       { name: "Singapore Highlights", id: "singapore-highlights" },
@@ -3361,7 +3358,7 @@ export const internationalDestinations = [
     country: "Switzerland",
     about: "Switzerland is the jewel of the Alps — a small but spectacular country of impossibly postcard-perfect landscapes, with snow-capped peaks, deep glacial lakes, chocolate-box villages, and some of Europe's finest ski resorts. Take the Glacier Express through dramatic mountain scenery, paraglide over Interlaken, marvel at the Matterhorn from Zermatt, and sample artisan cheese fondue in a mountain hut. Switzerland is the pinnacle of Alpine luxury and natural wonder.",
     cities: ["Zurich", "Lucerne", "Interlaken", "Zermatt"],
-    thumbnail: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800",
+    thumbnail: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800",
     tours: [
       { name: "Swiss Alps", id: "swiss-alps" },
     ],
@@ -3388,7 +3385,7 @@ export const internationalDestinations = [
     country: "Belgium",
     about: "Belgium is one of Europe's most underrated treasures — a compact country of extraordinary medieval cities, world-class chocolate and waffle artisans, over 1,500 varieties of locally brewed beer, and some of Europe's finest Art Nouveau architecture. Wander the canal-laced streets of Bruges, explore Brussels' ornate Grand Place (a UNESCO World Heritage Site), and discover the vibrant dining scene of Ghent. Belgium punches far above its weight in culture, gastronomy, and sheer charm.",
     cities: ["Brussels", "Bruges", "Ghent"],
-    thumbnail: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800",
+    thumbnail: "https://images.unsplash.com/photo-1491557345352-5929e343eb89?w=800",
     tours: [
       { name: "Belgium: Bruges, Brussels & Belgian Delights", id: "belgium-bruges" },
     ],
@@ -3426,7 +3423,7 @@ export const internationalDestinations = [
     country: "Bhutan",
     about: "Bhutan is a serene Himalayan kingdom known for its dramatic landscapes, ancient fortress-like Dzongs, and a unique philosophy of Gross National Happiness. As the 'Last Great Himalayan Kingdom,' it offers a mindful journey through lush valleys, cliffside monasteries, and vibrant cultural festivals. From the spiritual heights of Tiger's Nest to the rare black-necked cranes of Phobjikha Valley, it is a destination that blends natural beauty with deep-rooted Vajrayana Buddhist traditions.",
     cities: ["Thimphu", "Paro", "Punakha", "Phuentsholing"],
-    thumbnail: "https://images.unsplash.com/photo-1553856622-d1b352e9a211?w=800",
+    thumbnail: "https://images.unsplash.com/photo-1571401835393-8c5f35328320?w=800",
     tours: [
       { name: "Bhutan: Kingdom of Clouds (8 Days)", id: "bhutan-clouds" },
       { name: "Himalayan Happiness & Tiger's Nest Hike", id: "bhutan-happiness" },
@@ -3437,7 +3434,7 @@ export const internationalDestinations = [
     country: "Kazakhstan",
     about: "Kazakhstan is Central Asia's emerging powerhouse — a vast country of dramatic contrasts where futuristic architecture in Nur-Sultan meets the ancient Silk Road bazaars of Shymkent, the soaring Tian Shan mountains tower over the cosmopolitan café culture of Almaty, and the surreal Charyn Canyon rivals the American Grand Canyon. Kazakhstan is a frontier destination for the true explorer.",
     cities: ["Almaty", "Nur-Sultan", "Shymkent", "Charyn Canyon", "Big Almaty Lake"],
-    thumbnail: "https://images.unsplash.com/photo-1605101100278-5d1deb2b6498?w=800",
+    thumbnail: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=800",
     tours: [
       { name: "Kazakhstan: Almaty, Charyn Canyon & Tian Shan", id: "kazakhstan-almaty" },
     ],
@@ -3446,7 +3443,7 @@ export const internationalDestinations = [
     country: "Mongolia",
     about: "Mongolia is the last great wilderness — a country of boundless steppes, the legendary Gobi Desert, turquoise glacial lakes, and a nomadic culture unchanged for centuries. Ride horses across open grassland under skies more densely star-packed than almost anywhere on Earth, stay in traditional ger camps with herder families, and explore the legacy of Genghis Khan's vast empire. Mongolia is raw, real, and utterly unforgettable.",
     cities: ["Ulaanbaatar", "Gobi Desert", "Khuvsgul Lake", "Karakorum", "Terelj"],
-    thumbnail: "https://images.unsplash.com/photo-1614531341773-3bff8b7cb3fc?w=800",
+    thumbnail: "https://images.unsplash.com/photo-1579193219623-8ef5f1baa518?w=800",
     tours: [
       { name: "Mongolia: Gobi Desert & Nomadic Steppes", id: "mongolia-gobi" },
     ],
@@ -3455,7 +3452,9 @@ export const internationalDestinations = [
   {
     country: "Dubai",
     about: "Dubai is a city that turned the impossible into reality — the world's tallest building, man-made islands, indoor ski slopes, and a gold souk. This dazzling desert metropolis blends futuristic architecture with rich Emirati heritage, offering desert safaris under starlit skies, dhow cruises on the Creek, and shopping at gold-laden souks. An experience unlike anywhere else on Earth.",
-    cities: ["Dubai City", "Abu Dhabi", "Sharjah", "Desert Safari", "Palm Jumeirah"],
+    // "Desert Safari" is an activity, not a city — listing it here made the
+    // migration's city-in-title matcher link "Jaisalmer Desert Safari" to Dubai.
+    cities: ["Dubai City", "Abu Dhabi", "Sharjah", "Palm Jumeirah"],
     thumbnail: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800",
     tours: [
       { name: "Dubai Luxury Escape", id: "dubai-luxury" },

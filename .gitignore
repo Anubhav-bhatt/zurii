@@ -4,9 +4,19 @@ backend/node_modules/
 frontend/node_modules/
 
 # Environment variables
+#
+# The bare filenames alone were not enough: only `.env`, `backend/.env` and
+# `frontend/.env` were ignored, so any variant — .env.production, .env.local,
+# .env.prod.bak — was committable, which is exactly the file most likely to hold
+# a production credential. The wildcards cover every variant; the negation keeps
+# the placeholder-only example tracked.
 .env
+.env.*
+!.env.example
 backend/.env
+backend/.env.*
 frontend/.env
+frontend/.env.*
 
 # Build outputs
 dist/

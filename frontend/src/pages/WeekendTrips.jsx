@@ -1,53 +1,70 @@
-import { useState } from "react";
+import Container from '../components/ui/Container';
+import Breadcrumbs from '../components/ui/Breadcrumbs';
+import PackageCard from '../components/travel/PackageCard';
+import { DataBoundary } from '../components/ui/States';
+import { PackageCardSkeleton, SkeletonGrid } from '../components/ui/Skeleton';
+import { useAsyncData } from '../hooks/useAsyncData';
+import { getPackages } from '../services/packagesApi';
 
-const WeekendTrips = () => {
-  const [fullscreenImg, setFullscreenImg] = useState(null);
-  return (
-    <section className="py-20 px-6 max-w-4xl mx-auto min-h-screen">
-      <h1 className="text-3xl font-black mb-4">Weekend Trips</h1>
-      <p className="text-gray-600 mb-8">Discover curated weekend getaways for a quick escape from routine. Handpicked destinations, easy itineraries, and great value for your next short break.</p>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
-        {trips.map((trip, i) => (
-          <div key={i} className="bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden flex flex-col group cursor-pointer">
-            <div className="relative h-48 overflow-hidden">
-              <img src={trip.image} alt={trip.title} className="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <div className="absolute bottom-3 left-3 bg-white/80 px-3 py-1 rounded-full text-xs font-bold text-violet-700 shadow">Weekend</div>
-            </div>
-            <div className="p-5 flex-1 flex flex-col justify-between">
-              <h2 className="text-xl font-black text-gray-900 mb-2 group-hover:text-violet-600 transition">{trip.title}</h2>
-              <p className="text-gray-500 text-sm mb-4 flex-1">{trip.desc}</p>
-              <button className="mt-auto px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-full font-bold text-sm transition">View Details</button>
-            </div>
-          </div>
-        ))}
-      </div>
-      {fullscreenImg && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80" onClick={() => setFullscreenImg(null)}>
-          <img src={fullscreenImg} alt="Full screen" className="max-w-3xl max-h-[90vh] rounded-2xl shadow-2xl border-4 border-white cursor-zoom-out" />
-          <button className="absolute top-8 right-8 text-white text-3xl font-bold bg-black/60 rounded-full w-12 h-12 flex items-center justify-center hover:bg-black/80 transition" onClick={() => setFullscreenImg(null)}>&times;</button>
-        </div>
-      )}
-    </section>
+/**
+ * Weekend getaways: every published package that fits in a weekend.
+ *
+ * This page used to render a hardcoded array of three trips that existed
+ * nowhere in the database — their View Details buttons had nothing real to
+ * navigate to. It is now a filtered view over the same catalogue as
+ * /packages: the '1-3' duration bucket the API already understands. Cards,
+ * navigation, wishlist and the detail page are all the shared ones, so a
+ * weekend trip behaves exactly like any other trip in the product.
+ */
+
+const GRID = 'grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3';
+
+export default function WeekendTrips() {
+  const { data, loading, error, reload } = useAsyncData(
+    ({ signal }) => getPackages({ duration: '1-3', sort: 'price_asc' }, { signal }),
+    ['weekend-trips']
   );
-};
 
-export default WeekendTrips;
+  const trips = data?.packages ?? [];
 
-const trips = [
-  {
-    title: "Rishikesh Adventure",
-    desc: "White water rafting, camping by the Ganges, and yoga sessions for a rejuvenating weekend.",
-    image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800"
-  },
-  {
-    title: "Goa Beach Escape",
-    desc: "Sun, sand, and sea — unwind at Goa’s best beaches with curated nightlife and water sports.",
-    image: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800"
-  },
-  {
-    title: "Jaipur Heritage Walk",
-    desc: "Explore the Pink City’s forts, palaces, and vibrant bazaars in a quick royal getaway.",
-    image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800"
-  }
-];
+  return (
+    <div className="pt-16 sm:pt-[68px]">
+      {/* Page header */}
+      <div className="bg-zinc-50/70 dark:bg-zinc-900/60">
+        <Container className="py-8 sm:py-10">
+          <Breadcrumbs items={[{ label: 'Home', to: '/' }, { label: 'Weekend Trips' }]} />
+
+          <h1 className="mt-3 text-fluid-display font-bold text-zinc-950 dark:text-zinc-50">Weekend Trips</h1>
+
+          <p className="mt-2 max-w-2xl text-fluid-body text-zinc-600 dark:text-zinc-300">
+            Short escapes of three days or less — easy to plan, quick to reach, and back before Monday.
+          </p>
+        </Container>
+      </div>
+
+      {/* Results */}
+      <Container className="pt-6 pb-16 sm:pb-20">
+        <DataBoundary
+          loading={loading}
+          error={error}
+          onRetry={reload}
+          isEmpty={trips.length === 0}
+          empty={{
+            title: 'No weekend trips right now.',
+            description: 'New short escapes are added regularly — the full collection has plenty to explore meanwhile.',
+            action: { label: 'Browse all packages', to: '/packages' },
+          }}
+          skeleton={<SkeletonGrid count={6} className={GRID} Item={PackageCardSkeleton} />}
+        >
+          <ul className={GRID}>
+            {trips.map((pkg, index) => (
+              <li key={pkg.slug} className="h-full">
+                <PackageCard pkg={pkg} priority={index < 3} className="h-full" />
+              </li>
+            ))}
+          </ul>
+        </DataBoundary>
+      </Container>
+    </div>
+  );
+}

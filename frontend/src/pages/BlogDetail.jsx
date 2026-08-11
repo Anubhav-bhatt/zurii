@@ -1,6 +1,22 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { getGuideBySlug, guides } from '../data';
 
+/**
+ * Render `**bold**` as <strong>, and nothing else, as HTML.
+ *
+ * The three dangerouslySetInnerHTML calls below exist only to support that one
+ * markdown-ish flourish. Escaping first means any other markup in the source —
+ * a stray <script>, an onerror attribute — renders as visible text instead of
+ * executing. Today this content is developer-authored (src/data), so there is
+ * no live injection path; the escape is what keeps that true if guides ever
+ * become database- or admin-supplied.
+ */
+const ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+const boldOnly = (text) =>
+  String(text ?? '')
+    .replace(/[&<>"']/g, (c) => ESCAPES[c])
+    .replace(/\*\*(.*?)\*\*/g, '<strong class="text-gray-800 dark:text-zinc-50">$1</strong>');
+
 const BlogDetail = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -10,8 +26,8 @@ const BlogDetail = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <span className="text-5xl">📝</span>
-        <h1 className="text-2xl font-black text-gray-800">Blog not found</h1>
-        <p className="text-gray-500">The article you're looking for doesn't exist.</p>
+        <h1 className="text-2xl font-black text-gray-800 dark:text-zinc-50">Blog not found</h1>
+        <p className="text-gray-500 dark:text-zinc-400">The article you're looking for doesn't exist.</p>
         <button onClick={() => navigate('/blogs')} className="px-6 py-3 bg-violet-600 text-white rounded-xl font-bold">
           Back to Blogs
         </button>
@@ -25,7 +41,7 @@ const BlogDetail = () => {
     .slice(0, 3);
 
   return (
-    <article className="min-h-screen bg-gray-50">
+    <article className="min-h-screen bg-gray-50 dark:bg-zinc-950">
       {/* Hero */}
       <div className="relative h-[55vh] overflow-hidden">
         <img src={blog.image} alt={blog.title} className="w-full h-full object-cover" />
@@ -60,7 +76,7 @@ const BlogDetail = () => {
         {blog.tags && (
           <div className="flex flex-wrap gap-2 mb-8">
             {blog.tags.map(tag => (
-              <span key={tag} className="px-3 py-1.5 bg-violet-50 text-violet-700 rounded-full text-xs font-bold">
+              <span key={tag} className="px-3 py-1.5 bg-violet-50 dark:bg-violet-950/30 text-violet-700 dark:text-violet-400 rounded-full text-xs font-bold">
                 {tag}
               </span>
             ))}
@@ -68,23 +84,23 @@ const BlogDetail = () => {
         )}
 
         {/* Blog Body */}
-        <div className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-headings:font-black prose-p:text-gray-600 prose-p:leading-relaxed prose-li:text-gray-600 prose-strong:text-gray-800">
+        <div className="prose prose-lg max-w-none prose-headings:text-gray-900 dark:prose-headings:text-zinc-50 prose-headings:font-black prose-p:text-gray-600 dark:prose-p:text-zinc-300 prose-p:leading-relaxed prose-li:text-gray-600 dark:prose-li:text-zinc-300 prose-strong:text-gray-800 dark:prose-strong:text-zinc-50">
           {blog.content?.split('\n\n').map((block, i) => {
             const trimmed = block.trim();
             if (trimmed.startsWith('## ')) {
-              return <h2 key={i} className="text-2xl font-black text-gray-900 mt-10 mb-4">{trimmed.replace('## ', '')}</h2>;
+              return <h2 key={i} className="text-2xl font-black text-gray-900 dark:text-zinc-50 mt-10 mb-4">{trimmed.replace('## ', '')}</h2>;
             }
             if (trimmed.startsWith('### ')) {
-              return <h3 key={i} className="text-xl font-bold text-gray-800 mt-8 mb-3">{trimmed.replace('### ', '')}</h3>;
+              return <h3 key={i} className="text-xl font-bold text-gray-800 dark:text-zinc-50 mt-8 mb-3">{trimmed.replace('### ', '')}</h3>;
             }
             if (trimmed.startsWith('- ')) {
               const items = trimmed.split('\n').filter(l => l.startsWith('- '));
               return (
                 <ul key={i} className="space-y-2 my-4">
                   {items.map((item, j) => (
-                    <li key={j} className="flex gap-2 text-gray-600 leading-relaxed">
-                      <span className="text-violet-500 mt-1.5 flex-shrink-0">•</span>
-                      <span dangerouslySetInnerHTML={{ __html: item.replace('- ', '').replace(/\*\*(.*?)\*\*/g, '<strong class="text-gray-800">$1</strong>') }} />
+                    <li key={j} className="flex gap-2 text-gray-600 dark:text-zinc-300 leading-relaxed">
+                      <span className="text-violet-500 dark:text-violet-400 mt-1.5 flex-shrink-0">•</span>
+                      <span dangerouslySetInnerHTML={{ __html: boldOnly(item.replace('- ', '')) }} />
                     </li>
                   ))}
                 </ul>
@@ -95,12 +111,12 @@ const BlogDetail = () => {
               return (
                 <ol key={i} className="space-y-2 my-4 list-decimal list-inside">
                   {items.map((item, j) => (
-                    <li key={j} className="text-gray-600 leading-relaxed" dangerouslySetInnerHTML={{ __html: item.replace(/^\d+\.\s/, '').replace(/\*\*(.*?)\*\*/g, '<strong class="text-gray-800">$1</strong>') }} />
+                    <li key={j} className="text-gray-600 dark:text-zinc-300 leading-relaxed" dangerouslySetInnerHTML={{ __html: boldOnly(item.replace(/^\d+\.\s/, '')) }} />
                   ))}
                 </ol>
               );
             }
-            return <p key={i} className="text-gray-600 leading-relaxed my-4" dangerouslySetInnerHTML={{ __html: trimmed.replace(/\*\*(.*?)\*\*/g, '<strong class="text-gray-800">$1</strong>') }} />;
+            return <p key={i} className="text-gray-600 dark:text-zinc-300 leading-relaxed my-4" dangerouslySetInnerHTML={{ __html: boldOnly(trimmed) }} />;
           })}
         </div>
 
@@ -119,19 +135,19 @@ const BlogDetail = () => {
         {/* Related Blogs */}
         {related.length > 0 && (
           <div className="mt-16">
-            <h2 className="text-2xl font-black text-gray-900 mb-6">Related Articles</h2>
+            <h2 className="text-2xl font-black text-gray-900 dark:text-zinc-50 mb-6">Related Articles</h2>
             <div className="grid md:grid-cols-3 gap-6">
               {related.map(post => (
                 <div
                   key={post.slug}
                   onClick={() => navigate(`/blog/${post.slug}`)}
-                  className="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg cursor-pointer transition"
+                  className="group bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-lg cursor-pointer transition"
                 >
                   <img src={post.image} alt={post.title} className="h-40 w-full object-cover group-hover:scale-105 transition duration-500" />
                   <div className="p-5">
-                    <span className="text-[10px] font-bold text-violet-500 uppercase tracking-wider">{post.category}</span>
-                    <h3 className="text-sm font-bold text-gray-900 mt-1 line-clamp-2 group-hover:text-violet-600 transition">{post.title}</h3>
-                    <p className="text-xs text-gray-400 mt-2">{post.date} · {post.time}</p>
+                    <span className="text-[10px] font-bold text-violet-500 dark:text-violet-400 uppercase tracking-wider">{post.category}</span>
+                    <h3 className="text-sm font-bold text-gray-900 dark:text-zinc-50 mt-1 line-clamp-2 group-hover:text-violet-600 transition">{post.title}</h3>
+                    <p className="text-xs text-gray-400 dark:text-zinc-500 mt-2">{post.date} · {post.time}</p>
                   </div>
                 </div>
               ))}

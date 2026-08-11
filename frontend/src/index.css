@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ══════════════════════════════════════════════════════════
    ZURII TRAVELS — Apple-Inspired Design System
    Fluid Typography · Responsive Spacing · Motion Profiles
@@ -8,6 +10,7 @@
 /* ── Base Reset & Rendering ── */
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
@@ -16,6 +19,47 @@ html {
 
 body {
   overflow-x: hidden;
+  background-color: #ffffff;
+  color: #09090b;
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+html.dark body {
+  background-color: #09090b;
+  color: #f4f4f5;
+}
+
+/* ── Native control theming ──
+   `color-scheme` is what tells the browser to render the parts of the UI we
+   cannot style: <select> option lists, the date picker, number spinners,
+   scrollbars inside dark panels, and the default form-field chrome. Without it
+   a dark page opens a blinding white dropdown. One declaration fixes every
+   native control in the app, which no amount of per-component Tailwind can. */
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* ── Autofill ──
+   Chrome and Safari paint autofilled fields with their own near-white
+   background and dark text, ignoring the element's styles — so a saved name or
+   email lands as an unreadable bright block in a dark form. The background can
+   only be overridden with an inset shadow; the text needs -webkit-text-fill-color.
+   The absurd transition delay is the standard trick to stop the UA repainting
+   its own colour over ours. */
+html.dark input:-webkit-autofill,
+html.dark input:-webkit-autofill:hover,
+html.dark input:-webkit-autofill:focus,
+html.dark textarea:-webkit-autofill,
+html.dark select:-webkit-autofill {
+  -webkit-text-fill-color: #f4f4f5;
+  -webkit-box-shadow: 0 0 0 1000px #18181b inset;
+  box-shadow: 0 0 0 1000px #18181b inset;
+  caret-color: #f4f4f5;
+  transition: background-color 9999s ease-in-out 0s;
 }
 
 /* ── Fluid Typography Scale ── */
@@ -61,6 +105,27 @@ body {
 .section-gap-sm {
   padding-top: clamp(1.25rem, 2.5vw, 2.5rem);
   padding-bottom: clamp(1.25rem, 2.5vw, 2.5rem);
+}
+
+
+/* ── Card rail bleed ──
+   A mobile carousel must scroll to the viewport edge while its first card
+   stays aligned with the page container. These margins/paddings mirror
+   .section-padding exactly (same clamp), so the rail bleeds out of the padded
+   container and pads itself back — and scroll-snap aligns cards to the padded
+   edge, not the screen edge. */
+.rail-bleed {
+  margin-inline: calc(clamp(1rem, 4vw, 3rem) * -1);
+  padding-inline: clamp(1rem, 4vw, 3rem);
+  scroll-padding-inline: clamp(1rem, 4vw, 3rem);
+}
+
+@media (min-width: 640px) {
+  .rail-bleed {
+    margin-inline: 0;
+    padding-inline: 0;
+    scroll-padding-inline: 0;
+  }
 }
 
 /* ── Scrollbar Hide (preserves functionality) ── */
@@ -148,11 +213,30 @@ body {
   min-width: 44px;
 }
 
+/* ── Native Search Input Reset ── */
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+
 /* ── Accessibility Focus States ── */
 *:focus-visible {
-  outline: 2px solid #8b5cf6;
-  outline-offset: 2.5px;
+  outline: 2px solid #27272a;
+  outline-offset: 2px;
   border-radius: 8px;
+}
+
+html.dark *:focus-visible {
+  outline: 2px solid #e4e4e7;
+}
+
+/* Suppress outline on inputs inside containers that already manage focus-within */
+[data-search-input]:focus-visible {
+  outline: none !important;
 }
 
 /* ── Reduced Motion Compatibility ── */
