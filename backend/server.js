@@ -1,16 +1,36 @@
 require('dotenv').config();
+
+// Configuration is validated BEFORE anything else is required.
+//
+// Order matters: middleware/auth.js captures JWT_SECRET at module load, and
+// db/pool.js reads DATABASE_URL. Validating first means a misconfigured
+// deployment fails with one clear list of problems instead of surfacing later
+// as an undefined signing key or an unparseable connection string.
+const { loadConfig } = require('./config/env');
+
+let config;
+try {
+  config = loadConfig();
+} catch (err) {
+  // The message names variables and rules only — never values. See config/env.js.
+  console.error(err.message);
+  process.exit(1);
+}
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { getPool } = require('./db/pool');
+const { getPool, buildConfig, isUnverifiedTls } = require('./db/pool');
+const { ensureBaseSchema } = require('./db/baseSchema');
 const { requireAuth, requireAuthAllowPasswordChange } = require('./middleware/auth');
 const createTravelRouter = require('./routes/travel');
 const createBookingsRouter = require('./routes/bookings');
 const createAnalyticsRouter = require('./routes/analytics');
 const createAdminAnalyticsRouter = require('./routes/adminAnalytics');
+const createHealthRouter = require('./routes/health');
 const { extractAttribution } = require('./lib/validateEvent');
 const {
   corsOptions,
@@ -41,21 +61,17 @@ const app = express();
 // whole site as one caller. Opt-in via env (TRUST_PROXY=1 → one hop) because
 // trusting X-Forwarded-For on a directly-exposed server lets callers spoof
 // their bucket key instead.
-if (process.env.TRUST_PROXY) {
-  app.set('trust proxy', Number(process.env.TRUST_PROXY) || 1);
+if (config.trustProxy !== null) {
+  app.set('trust proxy', config.trustProxy);
 }
-const port = process.env.PORT || 5001;
+const port = config.port;
 
-// JWT Configuration
-const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
+// JWT Configuration. Both secrets are guaranteed present, long enough and
+// distinct by loadConfig() above, so there is no re-check here.
+const JWT_SECRET = config.jwtSecret;
+const JWT_REFRESH_SECRET = config.jwtRefreshSecret;
 const ACCESS_TOKEN_EXPIRY = '15m';   // 15 minutes
 const REFRESH_TOKEN_EXPIRY = '7d';   // 7 days
-
-if (!JWT_SECRET || !JWT_REFRESH_SECRET) {
-  console.error('ERROR: JWT_SECRET and JWT_REFRESH_SECRET must be set in .env');
-  process.exit(1);
-}
 
 // Middleware
 //
@@ -76,13 +92,22 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '32kb' }));
 app.use(cookieParser());
 
-// Database
-if (!process.env.DATABASE_URL) {
-  console.error('ERROR: DATABASE_URL is not set. Please create a .env file in the backend/ directory with your PostgreSQL connection string.');
-  process.exit(1);
-}
+// Database. Presence and shape of DATABASE_URL were checked by loadConfig().
 // Connection/TLS handling lives in db/pool.js so the migration scripts share it.
 const pool = getPool();
+
+// One warning, at startup, when production encrypts the database connection
+// but does not authenticate the server. That configuration stops passive
+// capture yet cannot detect an interceptor, and it is the default when
+// DATABASE_SSL is unset — so it is easy to reach without deciding to. Naming
+// the variable that fixes it is the whole point; nothing about the connection
+// itself is logged.
+if (config.isProduction && isUnverifiedTls(buildConfig())) {
+  console.warn(
+    '⚠ PostgreSQL TLS is not verifying the server certificate. Set DATABASE_SSL=verify ' +
+    '(with DATABASE_CA_CERT if your provider issues its own CA) to authenticate the database.'
+  );
+}
 
 // ══════════════════════════════════════════
 // DATABASE INITIALIZATION
@@ -90,93 +115,13 @@ const pool = getPool();
 
 const initDB = async () => {
   try {
-    // Contacts table
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS contacts (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        email VARCHAR(255) NOT NULL,
-        phone VARCHAR(50) NOT NULL,
-        interest VARCHAR(255),
-        message TEXT,
-        callback VARCHAR(50),
-        priority VARCHAR(20) DEFAULT 'normal',
-        status VARCHAR(30) DEFAULT 'pending',
-        source VARCHAR(50) DEFAULT 'Website',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    // CREATE TABLE IF NOT EXISTS is a no-op on a pre-existing table, so every
-    // column added after the first release needs its own ALTER to bring older
-    // databases up to date. interest/callback were missing here, which made
-    // POST /api/contact fail with Postgres 42703 on any older database.
-    await pool.query(`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS interest VARCHAR(255)`);
-    await pool.query(`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS callback VARCHAR(50)`);
-    await pool.query(`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS priority VARCHAR(20) DEFAULT 'normal'`);
-    await pool.query(`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS status VARCHAR(30) DEFAULT 'pending'`);
-    await pool.query(`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS source VARCHAR(50) DEFAULT 'Website'`);
-    // The lead INSERTs below write visitor_id/session_id unconditionally, so
-    // the columns must exist even when migrate:analytics has never run —
-    // otherwise attribution costs the lead itself (42703 → 500).
-    await pool.query(`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS visitor_id VARCHAR(64)`);
-    await pool.query(`ALTER TABLE contacts ADD COLUMN IF NOT EXISTS session_id VARCHAR(64)`);
-
-    // Widen the text columns to the sizes CREATE TABLE above declares.
-    //
-    // This database predates that declaration and still had name VARCHAR(100),
-    // email VARCHAR(150) and phone VARCHAR(20) — CREATE TABLE IF NOT EXISTS is a
-    // no-op on an existing table, so the declared widths were fiction. Validation
-    // trusted them (CONTACT_LIMITS), so a 21–50 character phone number passed
-    // validation and then died in Postgres as 22001, which the handler reported
-    // as a generic 500: the visitor saw "something went wrong" and a real lead
-    // was lost. Reproduced with a 25-character phone and a 150-character name.
-    //
-    // Increasing a varchar length is a catalogue-only change in Postgres — no
-    // table rewrite and no data loss — but ALTER COLUMN still takes an ACCESS
-    // EXCLUSIVE lock on the table, and issuing it unconditionally means every
-    // boot briefly blocks all reads and writes of `contacts` (and queues behind
-    // any in-flight insert). So the current width is checked first and the ALTER
-    // only runs when it is actually too narrow: a real no-op after the first
-    // application, and no lock at all on subsequent restarts.
-    const TARGET_WIDTHS = { name: 255, email: 255, phone: 50 };
-    const { rows: contactWidths } = await pool.query(
-      `SELECT column_name, character_maximum_length AS len
-         FROM information_schema.columns
-        WHERE table_schema = 'public' AND table_name = 'contacts'
-          AND column_name = ANY($1)`,
-      [Object.keys(TARGET_WIDTHS)]
-    );
-    for (const { column_name: column, len } of contactWidths) {
-      const target = TARGET_WIDTHS[column];
-      if (len !== null && len < target) {
-        // Column names come from the constant above, never from a request.
-        await pool.query(`ALTER TABLE contacts ALTER COLUMN ${column} TYPE VARCHAR(${target})`);
-        console.log(`✓ Widened contacts.${column} from ${len} to ${target}.`);
-      }
-    }
-    console.log("✓ Contacts table ready.");
-
-    // bookings is created by migrate:bookings, not here — heal its attribution
-    // columns only when the table exists, for the same 42703 reason as above.
-    await pool.query(`
-      DO $$ BEGIN
-        IF to_regclass('public.bookings') IS NOT NULL THEN
-          ALTER TABLE bookings ADD COLUMN IF NOT EXISTS visitor_id VARCHAR(64);
-          ALTER TABLE bookings ADD COLUMN IF NOT EXISTS session_id VARCHAR(64);
-        END IF;
-      END $$;
-    `);
-
-    // Admins table
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS admins (
-        id SERIAL PRIMARY KEY,
-        username VARCHAR(100) UNIQUE NOT NULL,
-        password_hash VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    console.log("✓ Admins table ready.");
+    // contacts + admins, and every column added to them since the first
+    // release. Extracted to db/baseSchema.js so docker-entrypoint.sh can create
+    // these tables BEFORE the migrations that depend on them — see the header
+    // there for the restart loop this ordering bug caused on a fresh database.
+    // Idempotent, so running it here as well costs nothing and keeps a
+    // directly-started server (npm start) self-healing.
+    await ensureBaseSchema(pool);
 
     // Seed admin accounts from the environment, never from source.
     // Format: ADMIN_SEED="alice:s3cret,bob:otherpass"
@@ -184,7 +129,13 @@ const initDB = async () => {
     // Credentials previously lived in this file, which meant they were readable
     // by anyone with access to the repository. Existing accounts are left
     // untouched — rotate with `node create-admin.js reset <user> <newpass>`.
-    const seed = (process.env.ADMIN_SEED || '').trim();
+    //
+    // This path is BOOTSTRAP ONLY and optional. create-admin.js is the
+    // documented way to create an admin, because it prompts without echo and
+    // keeps the password out of the environment entirely; ADMIN_SEED has to
+    // hold the password in a variable that every process on the host can read
+    // via /proc, and in whatever file or secret store supplied it.
+    const seed = config.adminSeed.trim();
 
     if (!seed) {
       const { rows } = await pool.query('SELECT COUNT(*)::int AS n FROM admins');
@@ -222,21 +173,43 @@ const initDB = async () => {
         const exists = await pool.query('SELECT id FROM admins WHERE username = $1', [username]);
         if (exists.rows.length === 0) {
           const hash = await bcrypt.hash(password, 12);
+          // must_change_password = TRUE, matching `create-admin.js add`.
+          //
+          // This used to be omitted, so the column defaulted to FALSE and a
+          // seeded account kept its bootstrap password indefinitely — the one
+          // password most likely to be shared, pasted into a deploy config and
+          // committed by accident. The two creation paths now behave
+          // identically: whatever an operator types is temporary, and the
+          // account can reach nothing but the password-change endpoint until
+          // it is replaced (see middleware/auth.js).
           await pool.query(
-            'INSERT INTO admins (username, password_hash) VALUES ($1, $2)',
+            'INSERT INTO admins (username, password_hash, must_change_password) VALUES ($1, $2, TRUE)',
             [username, hash]
           );
-          console.log(`  → Seeded admin: ${username}`);
+          console.log(`  → Seeded admin: ${username} (must change password at first login)`);
         }
       }
     }
 
     console.log("✓ Admin accounts ready.");
   } catch (err) {
-    console.error("DB Initialization Error:", err);
+    // Rethrown, not swallowed.
+    //
+    // This used to log and continue, and initDB() was never awaited — so a
+    // backend whose database was unreachable, or whose credentials were wrong,
+    // still reached app.listen() and reported itself up. Every request then
+    // failed with a 500 while the container looked healthy, which is the
+    // hardest kind of deployment failure to diagnose. Startup now stops here
+    // and start() below exits non-zero, so the orchestrator reports a failed
+    // container and the operator reads the reason on the first attempt.
+    //
+    // `err.message` from pg is a driver message ("password authentication
+    // failed for user ...", "connection refused"), which is diagnostic without
+    // being a credential. The connection string is never included — see the
+    // sanitising in start().
+    throw err;
   }
 };
-initDB();
 
 // ══════════════════════════════════════════
 // HELPER: Generate Tokens
@@ -633,6 +606,12 @@ app.post('/api/auth/logout', async (req, res) => {
 // PUBLIC ROUTES (No auth required)
 // ══════════════════════════════════════════
 
+// Liveness + readiness. Registered before everything else so a probe still
+// answers while the rest of the app is busy, and deliberately outside any
+// limiter — throttling a healthcheck makes an orchestrator kill a container
+// that was only being polled too often. Neither route reveals configuration.
+app.use('/api', createHealthRouter(pool));
+
 // Travel content: destinations + packages, read from PostgreSQL.
 // Schema and data come from scripts/migrateTravelSchema.mjs + migrateTravelData.mjs.
 app.use('/api', createTravelRouter(pool));
@@ -668,25 +647,62 @@ app.post('/api/contact', leadLimiter, async (req, res) => {
     // are spam/lead-hiding vectors. They now come from the column defaults
     // ('pending', 'normal', 'Website'), matching how routes/bookings.js refuses
     // the same fields.
-    const { name, email, phone, interest, message, callback } = req.body ?? {};
+    const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {};
 
-    const text = (value) => (typeof value === 'string' ? value.trim() : '');
     const fields = {};
+
+    // NORMALISE ONCE, THEN VALIDATE AND INSERT THE SAME VALUE.
+    //
+    // The previous version validated `text(value)` — which silently turned an
+    // array, an object or a boolean into '' — and then inserted the RAW body
+    // value. The two disagreed, in the direction that matters: a structured
+    // `interest` passed the 255-character check as an empty string and was then
+    // handed to pg, which serialises an object to JSON and an array to a
+    // Postgres array literal. So the column received text no validation had
+    // looked at, of a length no validation had bounded. Parameterisation meant
+    // it was never injectable, but the value could still overflow the column
+    // (22001) or store nonsense in the CRM.
+    //
+    // Now every field goes through `normalise` once. Its output is what gets
+    // length-checked and what gets bound, so the two can no longer diverge.
+    //
+    // Strings and finite numbers are accepted (a phone number typed into a
+    // JSON client can legitimately arrive unquoted, and lib/validateBooking.js
+    // makes the same allowance). Arrays, objects, booleans and null are
+    // rejected as a field error rather than coerced — a caller sending one has
+    // a broken client, and telling them so beats silently storing ''.
+    const normalise = (value, field) => {
+      if (value === undefined || value === null) return '';
+      if (typeof value === 'string') return value.trim();
+      if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+      fields[field] = 'Please enter a valid value.';
+      return '';
+    };
+
+    const clean = {
+      name: normalise(body.name, 'name'),
+      email: normalise(body.email, 'email'),
+      phone: normalise(body.phone, 'phone'),
+      interest: normalise(body.interest, 'interest'),
+      message: normalise(body.message, 'message'),
+      callback: normalise(body.callback, 'callback'),
+    };
 
     // These three are NOT NULL in the schema; without this check an empty body
     // binds NULL and Postgres raises 23502, which the catch below reports as a
-    // 500 the visitor cannot act on.
-    if (!text(name)) fields.name = 'Please enter your name.';
-    if (!text(email)) fields.email = 'Please enter your email address.';
-    if (!text(phone)) fields.phone = 'Please enter your phone number.';
+    // 500 the visitor cannot act on. Skipped where normalise already objected,
+    // so one bad field yields one message rather than two contradictory ones.
+    if (!fields.name && !clean.name) fields.name = 'Please enter your name.';
+    if (!fields.email && !clean.email) fields.email = 'Please enter your email address.';
+    if (!fields.phone && !clean.phone) fields.phone = 'Please enter your phone number.';
 
     for (const [field, max] of Object.entries(CONTACT_LIMITS)) {
-      if (text(req.body?.[field]).length > max) {
+      if (!fields[field] && clean[field].length > max) {
         fields[field] = `Please keep this under ${max} characters.`;
       }
     }
 
-    if (text(message).length > CONTACT_MESSAGE_MAX) {
+    if (!fields.message && clean.message.length > CONTACT_MESSAGE_MAX) {
       fields.message = `Please keep this under ${CONTACT_MESSAGE_MAX} characters.`;
     }
 
@@ -710,7 +726,11 @@ app.post('/api/contact', leadLimiter, async (req, res) => {
                              visitor_id, session_id)
        VALUES ($1, $2, $3, $4, $5, $6, 'pending', 'normal', 'Website', $7, $8)
        RETURNING id, status, created_at`,
-      [text(name), text(email), text(phone), interest ?? null, message ?? null, callback ?? null,
+      // Exactly the values that were validated above. The optional three are
+      // stored as NULL rather than '' when empty, so "not supplied" stays
+      // distinguishable from "supplied blank" in the CRM.
+      [clean.name, clean.email, clean.phone,
+       clean.interest || null, clean.message || null, clean.callback || null,
        visitorId, sessionId]
     );
 
@@ -1031,6 +1051,51 @@ app.use((err, req, res, next) => {
 // START SERVER
 // ══════════════════════════════════════════
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+/**
+ * Bring the schema up to date, then listen. In that order, and only in that
+ * order: accepting traffic before the tables the handlers query exist would
+ * serve 500s for the first seconds of every deploy.
+ *
+ * Any failure exits non-zero. Under Docker's `restart: unless-stopped` that
+ * still produces a restart loop — deliberately. A loop with a clear, repeated
+ * reason in the logs is a correct signal that the deployment is broken; the
+ * alternative, a process that stays up while unable to serve, hides it.
+ */
+async function start() {
+  try {
+    await initDB();
+  } catch (err) {
+    // Only the driver's message, never the error object: a pg error can carry
+    // the full connection configuration on properties that a bare
+    // `console.error(err)` would print, credentials included.
+    console.error(`Database initialization failed: ${err.message}`);
+    if (err.code) console.error(`  PostgreSQL error code: ${err.code}`);
+    console.error(
+      '  Check DATABASE_URL (host, database, user, password) and that PostgreSQL is\n' +
+      '  reachable from this container. Inside Docker, `localhost` means the container\n' +
+      '  itself — use the Compose service name. Run `npm run check:env` to verify config.'
+    );
+    process.exit(1);
+  }
+
+  const server = app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
+
+  // Without this the container is SIGKILLed after Docker's 10s grace period on
+  // every deploy, cutting in-flight requests. tini forwards the signal (see
+  // the Dockerfile); this is the half that acts on it.
+  const shutdown = (signal) => {
+    console.log(`${signal} received — shutting down.`);
+    server.close(() => {
+      pool.end().finally(() => process.exit(0));
+    });
+    // A client holding a keep-alive connection open must not be able to
+    // postpone shutdown indefinitely.
+    setTimeout(() => process.exit(0), 10_000).unref();
+  };
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
+}
+
+start();

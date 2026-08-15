@@ -25,6 +25,25 @@
 set -e
 
 echo "→ Applying schema migrations…"
+
+# ORDER IS LOAD-BEARING.
+#
+# initBaseSchema creates `contacts` and `admins`. Both must exist before the
+# two migrations that extend them:
+#
+#   migrateAnalyticsSchema     adds attribution columns to `contacts`
+#   migrateAdminSecuritySchema adds lockout/revocation columns to `admins`,
+#                              and an audit table whose FK references it
+#
+# Those two used to run here while the ONLY thing that created the base tables
+# was server.js — which starts after this script finishes. On an existing
+# database that worked by accident. On a fresh one it was a guaranteed,
+# permanent restart loop: `set -e` aborted the entrypoint at the first failing
+# migration, the container exited 1, `restart: unless-stopped` started it
+# again, and the step that would have created `contacts` was never reached.
+#
+# Do not reorder these without checking each script's prerequisites.
+node scripts/initBaseSchema.mjs
 node scripts/migrateTravelSchema.mjs
 node scripts/migrateBookingsSchema.mjs
 node scripts/migrateAnalyticsSchema.mjs

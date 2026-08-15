@@ -30,6 +30,10 @@
 
 Zurii Travels is a curated travel platform offering domestic and international tour packages. Users can browse destinations, view detailed itineraries, read travel blogs, and submit trip inquiries. An admin dashboard provides insights into customer submissions.
 
+> **Deploying this?** Read **[DEPLOYMENT.md](DEPLOYMENT.md)** instead of this file.
+> It covers environment variables, secret generation, database topologies, admin
+> bootstrap, verification and troubleshooting. This README covers local development.
+
 ---
 
 ## Tech Stack
@@ -240,12 +244,31 @@ Visit **[http://localhost:5173](http://localhost:5173)** in your browser.
 
 ## Environment Variables
 
-| Variable       | Required | Description                          | Default |
-|---------------|----------|--------------------------------------|---------|
-| `DATABASE_URL` | ✅ Yes   | PostgreSQL connection string         | —       |
-| `PORT`         | No       | Backend server port                  | `5001`  |
+Copy `backend/.env.example` to `backend/.env` and fill it in. The server
+validates everything at startup and refuses to boot with a message naming any
+variable that is missing or malformed — run `npm run check:env` to see the same
+report without starting anything.
 
-> ⚠️ **Never commit your `.env` file.** It is already in `.gitignore`.
+| Variable | Required | Description | Default |
+|---|---|---|---|
+| `DATABASE_URL` | ✅ Yes | PostgreSQL connection string | — |
+| `JWT_SECRET` | ✅ Yes | Signs 15-minute access tokens (min 32 chars) | — |
+| `JWT_REFRESH_SECRET` | ✅ Yes | Signs 7-day refresh tokens. Must differ from `JWT_SECRET` | — |
+| `ALLOWED_ORIGINS` | Production only | Comma-separated allowed browser origins. Never `*` | dev ports |
+| `DATABASE_SSL` | No | `verify` \| `no-verify` \| `disable` | see `db/pool.js` |
+| `PORT` | No | Backend server port | `5001` |
+| `TRUST_PROXY` | No | Trusted reverse-proxy hops | unset |
+| `ADMIN_SEED` | No | Bootstrap admin `user:password`. Prefer the CLI | unset |
+
+Generate each secret separately:
+
+```bash
+openssl rand -hex 48
+```
+
+> ⚠️ **Never commit your `.env` file.** It is gitignored — do not override that
+> with `git add -f`. Real credentials were committed to this repository's
+> history once already; see [DEPLOYMENT.md](DEPLOYMENT.md#security-notes).
 
 ---
 
@@ -312,10 +335,48 @@ Visit **[http://localhost:5173](http://localhost:5173)** in your browser.
 
 ## API Endpoints
 
-| Method | Endpoint        | Description                     | Body                                                                 |
-|--------|----------------|---------------------------------|----------------------------------------------------------------------|
-| `POST` | `/api/contact` | Submit a contact/trip inquiry   | `{ name, email, phone, interest, message, callback, priority }`     |
-| `GET`  | `/api/contact` | Fetch all submissions (admin)   | —                                                                    |
+**Health**
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/api/health` | — | Liveness. Does not touch the database |
+| `GET` | `/api/ready` | — | Readiness. 503 when PostgreSQL is unreachable |
+
+**Public**
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/api/destinations` | — | Active destinations with package counts |
+| `GET` | `/api/destinations/:slug` | — | One destination plus its published packages |
+| `GET` | `/api/packages` | — | Published packages; filter/sort/paginate |
+| `GET` | `/api/packages/:slug` | — | One published package |
+| `POST` | `/api/contact` | — | Contact/trip enquiry. Rate limited |
+| `POST` | `/api/bookings` | — | Trip enquiry against a package. Rate limited |
+| `POST` | `/api/analytics/events` | — | Anonymous analytics event |
+
+**Auth**
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/api/auth/login` | — | Rate limited; locks out after 5 failures |
+| `POST` | `/api/auth/refresh` | cookie | Exchange refresh cookie for an access token |
+| `POST` | `/api/auth/logout` | cookie/bearer | Revokes every session for that admin |
+
+**Admin** — all require `Authorization: Bearer <token>`
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/admin/session` | Current admin; reachable with a temporary password |
+| `POST` | `/api/admin/change-password` | Replace own password; revokes all sessions |
+| `GET` | `/api/contact` | Lead list (paginated) |
+| `PATCH` | `/api/contact/:id/complete` | Mark a lead completed |
+| `PATCH` | `/api/contact/:id/reopen` | Reopen a completed lead |
+| `DELETE` | `/api/contact/:id` | Delete a lead |
+| `GET` | `/api/admin/analytics/*` | overview, searches, destinations, packages, funnel |
+| `GET` | `/api/admin/bookings` | Enquiry list |
+| `GET` | `/api/admin/bookings/:id` | One enquiry, full detail |
+| `GET` | `/api/admin/bookings/:id/journey` | Anonymous journey behind a lead |
+| `GET` | `/api/admin/security/audit` | Admin authentication audit trail |
 
 ---
 

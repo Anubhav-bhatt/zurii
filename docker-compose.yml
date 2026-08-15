@@ -1,6 +1,35 @@
 name: zurii
 
+# Zurii Travels — full stack.
+#
+# Configuration comes entirely from the `.env` file beside this one (copy
+# .env.example). No secret is written here, and no value in this file needs
+# editing to deploy: every environment-specific setting is interpolated.
+#
+# ── Two database topologies, one file ────────────────────────────────
+#
+#   A. BUNDLED PostgreSQL (default). Leave DATABASE_URL unset in .env and the
+#      backend is pointed at the `db` service below, whose password comes from
+#      POSTGRES_PASSWORD.
+#
+#        docker compose up -d --build
+#
+#   B. EXTERNAL / managed PostgreSQL (Aiven, Neon, Supabase, RDS). Set
+#      DATABASE_URL in .env to the provider's connection string; it overrides
+#      the composed value and the bundled `db` is not needed:
+#
+#        docker compose up -d --build --no-deps backend frontend
+#
+#      `--no-deps` is what keeps the unused `db` container from starting.
+#
+# Either way the application source is identical — the difference is one
+# environment variable. See DEPLOYMENT.md.
+
 services:
+  # ── Optional local infrastructure ─────────────────────────────────
+  # Only used in topology A. Not a production database manager: there is no
+  # backup, no failover and no upgrade path here. For anything with real
+  # customer data prefer topology B and let the provider handle durability.
   db:
     build: ./db
     environment:
@@ -16,32 +45,60 @@ services:
       retries: 12
       start_period: 10s
     restart: unless-stopped
-    # Uncomment to inspect the DB from the host with psql.
+    # Deliberately not published to the host. Uncomment only to inspect the
+    # database with psql from your workstation, and never in production.
     # ports: ["5432:5432"]
 
+  # ── Application ───────────────────────────────────────────────────
   backend:
     build: ./backend
     environment:
-      # Host is `db`, so the driver negotiates TLS — see db/Dockerfile.
-      DATABASE_URL: postgres://${POSTGRES_USER:-zurii}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-zurii}
-      JWT_SECRET:         ${JWT_SECRET:?JWT_SECRET is required}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET is required}
-      # Creates admin logins on first boot. Format: user:pass,user:pass
+      # Topology A composes this from POSTGRES_*; topology B overrides it
+      # wholesale with the provider's URL. Host `db` is the Compose service
+      # name — inside a container `localhost` means the container itself, so a
+      # localhost URL here can never reach the database.
+      DATABASE_URL: ${DATABASE_URL:-postgres://${POSTGRES_USER:-zurii}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-zurii}}
+
+      # TLS mode for the database connection: verify | no-verify | disable.
+      # Unset keeps the compatible default (TLS on, certificate unverified) —
+      # the bundled db/Dockerfile serves a self-signed certificate, so `verify`
+      # there needs its CA. Managed providers should use `verify` plus their
+      # CA bundle. See backend/db/pool.js.
+      DATABASE_SSL: ${DATABASE_SSL-}
+      DATABASE_CA_CERT: ${DATABASE_CA_CERT-}
+
+      # Required, no default, never committed. The backend refuses to start
+      # without them and the `:?` here fails the deploy even earlier, with a
+      # message naming the variable instead of a container that exits 1.
+      # Quoted because the `: ` inside the error message would otherwise be
+      # read by YAML as a nested mapping.
+      JWT_SECRET:         "${JWT_SECRET:?JWT_SECRET is required — generate with openssl rand -hex 48}"
+      JWT_REFRESH_SECRET: "${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET is required — generate a DIFFERENT one with openssl rand -hex 48}"
+
+      # Browser origins allowed to make credentialed API calls. Required in
+      # production: the backend no longer trusts localhost dev origins there,
+      # so an unset value would refuse the real frontend. For this stack that
+      # is your public site URL, e.g. https://zurii.example.
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?ALLOWED_ORIGINS is required in production — e.g. https://your-domain.example}
+
+      # Optional bootstrap admin ("user:password"). Leave EMPTY and create the
+      # account with `docker compose exec backend node create-admin.js add
+      # <username>`, which prompts without echo and keeps the password out of
+      # the environment entirely. Any account created either way must change
+      # its password at first login.
       ADMIN_SEED: ${ADMIN_SEED-}
+
       PORT: 5001
+
       # Leave as development when serving over plain HTTP: production marks the
       # refresh-token cookie Secure, so browsers drop it and admin login breaks.
       # Set to production only once you terminate TLS in front of the stack.
       NODE_ENV: ${NODE_ENV:-development}
+
       # The only route in is nginx, so without this every visitor arrives as the
       # nginx container's IP and the analytics rate limiter (120 events/min per
       # IP) throttles the whole site as if it were one caller. 1 = trust one hop.
       TRUST_PROXY: 1
-      # Browser origins allowed to make credentialed API calls. Empty is correct
-      # for this stack — nginx proxies /api on the same origin, so the browser
-      # sends no Origin header and CORS never applies. Set it only when the SPA
-      # is served from a different domain than the API.
-      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS-}
     depends_on:
       db:
         condition: service_healthy
@@ -54,14 +111,20 @@ services:
     build:
       context: ./frontend
       args:
-        # Empty → same-origin /api/* calls, proxied by nginx.
+        # Empty → same-origin /api/* calls, proxied by nginx. Baked in at BUILD
+        # time by Vite, so changing it requires `docker compose build frontend`.
+        # Never put a secret in a VITE_* variable: it ends up in the browser
+        # bundle, readable by anyone who loads the page.
         VITE_API_URL: ${VITE_API_URL-}
     environment:
       BACKEND_URL: http://backend:5001
     ports:
       - "${WEB_PORT:-8080}:80"
     depends_on:
-      - backend
+      # Waits for readiness (GET /api/ready), not merely for the process to
+      # start — the backend healthcheck now verifies the database too.
+      backend:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:

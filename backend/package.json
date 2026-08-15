@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
+    "check:env": "node scripts/check-env.mjs",
     "test": "node --test scripts/ tests/",
     "db:migrate": "node scripts/migrate-zurii-v1.mjs",
     "db:seed:demo": "node scripts/seed-zurii-demo.mjs",

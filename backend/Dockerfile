@@ -80,11 +80,23 @@ USER node
 
 EXPOSE 5001
 
-# This app exposes no dedicated /health route, so we probe a real endpoint.
-# GET /api/contact is auth-guarded and answers 401 unauthenticated; any HTTP
-# response proves the server is listening and the event loop is alive.
-HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||5001)+'/api/contact').then(()=>process.exit(0)).catch(()=>process.exit(1))"
+# Readiness, not merely liveness.
+#
+# This used to probe GET /api/contact and treat ANY HTTP response as healthy.
+# That route is auth-guarded, so it answers 401 without ever touching
+# PostgreSQL: a backend with an unreachable database reported healthy forever,
+# and `depends_on: service_healthy` happily started the frontend against it.
+#
+# GET /api/ready runs a bounded `SELECT 1` (result cached ~5s, so this probe
+# cannot generate load) and returns 503 when the database is unreachable. The
+# status code is now checked rather than assumed — the old promise-based form
+# resolved on a 500 exactly as it did on a 200.
+#
+# Under plain Compose an unhealthy container is reported and gates dependents;
+# it is not force-restarted, so a transient database blip surfaces without
+# turning into a restart loop.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||5001)+'/api/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
 ENTRYPOINT ["/sbin/tini", "--", "./docker-entrypoint.sh"]
 CMD ["node", "server.js"]

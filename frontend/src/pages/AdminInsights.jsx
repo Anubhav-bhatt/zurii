@@ -1,6 +1,14 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { API_BASE_URL } from '../config/api';
+import {
+  adminFetch,
+  adminLogin,
+  adminLogout,
+  bootstrapSession,
+  getAdminSession,
+  AdminApiError,
+  AdminAuthError,
+} from '../services/adminApi';
 import ChangePasswordForm from '../components/admin/ChangePasswordForm';
 
 // Relative Time Helper
@@ -35,7 +43,9 @@ const AdminInsights = () => {
   // Set when the signed-in account still holds a temporary password. The CRM is
   // not rendered in that state; the backend refuses its data regardless.
   const [mustChangePassword, setMustChangePassword] = useState(false);
-  const accessTokenRef = useRef(null);
+  // No local access-token ref. The token lives in services/adminApi.js, which
+  // is the single owner of the admin session for the whole app — see the note
+  // on the auth helpers below.
 
   // Data State
   const [contacts, setContacts] = useState([]);
@@ -77,86 +87,68 @@ const AdminInsights = () => {
   // Action Loading States (For optimistic rollbacks)
   const [actionInProgress, setActionInProgress] = useState(null); // 'delete-id' or 'complete-id'
 
-  // ── Auth Helper: make authenticated fetch requests ──
-  const authFetch = useCallback(async (url, options = {}) => {
-    const headers = { ...options.headers };
-    if (accessTokenRef.current) {
-      headers['Authorization'] = `Bearer ${accessTokenRef.current}`;
-    }
-    
-    let res = await fetch(url, { ...options, headers, credentials: 'include' });
-    
-    // If access token expired, attempt silent refresh
-    if (res.status === 401) {
-      try {
-        const refreshRes = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
-          method: 'POST',
-          credentials: 'include',
-        });
-        if (refreshRes.ok) {
-          const refreshData = await refreshRes.json();
-          accessTokenRef.current = refreshData.accessToken;
-          headers['Authorization'] = `Bearer ${refreshData.accessToken}`;
-          res = await fetch(url, { ...options, headers, credentials: 'include' });
-        } else {
-          // Refresh failed — session is truly expired
-          accessTokenRef.current = null;
-          setIsAuthenticated(false);
-          setAdminUser(null);
-          setContacts([]);
-          setSelectedLead(null);
-          return res;
-        }
-      } catch {
-        accessTokenRef.current = null;
-        setIsAuthenticated(false);
-        setAdminUser(null);
-        return res;
-      }
-    }
-    return res;
-  }, []);
-
-  // Logout handler
-  const handleLogout = useCallback(async () => {
-    try {
-      await fetch(`${API_BASE_URL}/api/auth/logout`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-    } catch { /* ignore logout errors */ }
-    accessTokenRef.current = null;
+  // ── Auth ────────────────────────────────────────────────────────
+  //
+  // All of it delegates to services/adminApi.js. This page used to carry its
+  // own copy — a token in a ref, its own refresh-on-401 retry, its own logout
+  // — duplicating the module that the analytics dashboard already used. Two
+  // implementations of one security-sensitive flow meant a fix to either
+  // silently missed the other, and they had already drifted in two ways that
+  // mattered:
+  //
+  //   1. ChangePasswordForm calls adminApi's changeAdminPassword(), which
+  //      signs requests with adminApi's token. This page kept its token
+  //      somewhere else, so that token was null here and the request went out
+  //      with no Authorization header — the FORCED first-login password change
+  //      answered 401 and could not be completed from this page at all.
+  //   2. The local version refreshed on every concurrent 401 independently.
+  //      adminApi deduplicates them into one in-flight refresh, so a dashboard
+  //      firing several requests at once no longer races itself.
+  //
+  // `clearSession` is the one piece that stays local: it resets THIS page's
+  // React state after adminApi has already dropped the token.
+  const clearSession = useCallback(() => {
     setIsAuthenticated(false);
     setAdminUser(null);
     setContacts([]);
     setSelectedLead(null);
   }, []);
 
+  // Logout handler. adminLogout revokes server-side (bumping token_version,
+  // which kills every session for this admin) and clears the local token.
+  const handleLogout = useCallback(async () => {
+    await adminLogout();
+    clearSession();
+  }, [clearSession]);
+
   // Fetch leads from PostgreSQL API (Authenticated)
   const fetchContacts = useCallback(async () => {
     setLoading(true);
     setFetchError('');
     try {
-      const response = await authFetch(`${API_BASE_URL}/api/contact`, {
-        signal: AbortSignal.timeout(10000)
+      // adminFetch unwraps the `{ success, data }` envelope and throws on
+      // failure, so the response-shape checks that used to live here are gone.
+      const data = await adminFetch('/api/contact', {
+        signal: AbortSignal.timeout(10000),
       });
-      if (!response.ok) {
-        if (response.status === 401) return; // handled by authFetch
-        throw new Error(`HTTP Error ${response.status}`);
-      }
-      const data = await response.json();
-      if (data.success) {
-        setContacts(data.data);
-      } else {
-        throw new Error(data.error || "Server returned failure response");
-      }
+      setContacts(data);
     } catch (err) {
-      console.error("Failed to fetch insights:", err);
+      // An expired session is not a fetch error to show in the table — it
+      // means the login gate should come back.
+      if (err instanceof AdminAuthError) {
+        clearSession();
+        return;
+      }
+      if (err.name === 'AbortError' || err.name === 'TimeoutError') {
+        setFetchError('The request timed out. Please try again.');
+        return;
+      }
+      console.error('Failed to fetch insights:', err);
       setFetchError(err.message || 'Database connection offline or API request timed out.');
     } finally {
       setLoading(false);
     }
-  }, [authFetch]);
+  }, [clearSession]);
 
   // Login handler — calls backend API
   const handleLogin = async (e) => {
@@ -165,30 +157,21 @@ const AdminInsights = () => {
     setLoginError('');
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          username: loginForm.username,
-          password: loginForm.password,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        accessTokenRef.current = data.accessToken;
-        setAdminUser(data.admin);
-        // Temporary password: the CRM stays closed until it is replaced.
-        if (data.admin?.mustChangePassword) setMustChangePassword(true);
-        else setIsAuthenticated(true);
-      } else {
-        setLoginError(data.error || 'Invalid username or password.');
-      }
+      // adminLogin stores the access token inside adminApi, so every later
+      // call from this page AND from ChangePasswordForm is signed with it.
+      const admin = await adminLogin(loginForm.username, loginForm.password);
+      setAdminUser(admin);
+      // Temporary password: the CRM stays closed until it is replaced.
+      if (admin?.mustChangePassword) setMustChangePassword(true);
+      else setIsAuthenticated(true);
     } catch (err) {
-      console.error('Login error:', err);
-      setLoginError('Unable to reach server. Please check your connection.');
+      // AdminApiError already carries the server's user-safe sentence
+      // ("Invalid username or password.", or the lockout message).
+      setLoginError(
+        err instanceof AdminApiError
+          ? err.message
+          : 'Unable to reach server. Please check your connection.'
+      );
     } finally {
       setIsLoggingIn(false);
     }
@@ -203,25 +186,26 @@ const AdminInsights = () => {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // Session restore on mount — attempt silent refresh
+  // Session restore on mount — exchange the httpOnly refresh cookie for a token.
   useEffect(() => {
     const restoreSession = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
-          method: 'POST',
-          credentials: 'include',
-        });
-        if (res.ok) {
-          const data = await res.json();
-          accessTokenRef.current = data.accessToken;
-          setAdminUser(data.admin);
-          // An account still holding an operator-issued temporary password can
-          // authenticate but reaches no CRM data (the backend answers 403), so
-          // it is sent to the password screen instead of an empty dashboard.
-          if (data.admin?.mustChangePassword) setMustChangePassword(true);
+        // bootstrapSession is the same call the analytics dashboard makes, so
+        // an admin signed in on either page is signed in on both.
+        if (await bootstrapSession()) {
+          // POST /api/auth/refresh does not report mustChangePassword, so the
+          // restored session is asked directly. GET /api/admin/session is one
+          // of only two endpoints an account holding a temporary password can
+          // reach — it answers where every dashboard call would 403.
+          //
+          // An account still holding an operator-issued temporary password is
+          // sent to the password screen rather than an empty dashboard.
+          const session = await getAdminSession();
+          setAdminUser(session);
+          if (session?.mustChangePassword) setMustChangePassword(true);
           else setIsAuthenticated(true);
         }
-      } catch { /* no valid session */ }
+      } catch { /* no valid session — fall through to the login gate */ }
       setIsRestoringSession(false);
     };
     restoreSession();
@@ -263,10 +247,7 @@ const AdminInsights = () => {
     }
     
     try {
-      const res = await authFetch(`${API_BASE_URL}/api/contact/${id}/complete`, {
-        method: 'PATCH'
-      });
-      if (!res.ok) throw new Error('API failure completing lead');
+      await adminFetch(`/api/contact/${id}/complete`, { method: 'PATCH' });
       
       showToast('Lead marked as completed.', 'success', {
         leadId: id,
@@ -297,10 +278,7 @@ const AdminInsights = () => {
     }
     
     try {
-      const res = await authFetch(`${API_BASE_URL}/api/contact/${id}/reopen`, {
-        method: 'PATCH'
-      });
-      if (!res.ok) throw new Error('API failure restoring lead');
+      await adminFetch(`/api/contact/${id}/reopen`, { method: 'PATCH' });
       
       showToast('Lead restored to pending status.', 'success', {
         leadId: id,
@@ -331,10 +309,7 @@ const AdminInsights = () => {
     }
     
     try {
-      const res = await authFetch(`${API_BASE_URL}/api/contact/${id}`, {
-        method: 'DELETE'
-      });
-      if (!res.ok) throw new Error('API failure deleting lead');
+      await adminFetch(`/api/contact/${id}`, { method: 'DELETE' });
       
       showToast('Lead deleted successfully.', 'success');
     } catch (err) {
@@ -590,11 +565,11 @@ const AdminInsights = () => {
             forced
             username={adminUser?.username}
             onDone={() => {
-              // The change revoked this session server-side.
-              accessTokenRef.current = null;
+              // The change revoked this session server-side (token_version was
+              // incremented), and changeAdminPassword already dropped the local
+              // token. Only this page's view state is left to reset.
               setMustChangePassword(false);
-              setAdminUser(null);
-              setIsAuthenticated(false);
+              clearSession();
             }}
           />
         </div>

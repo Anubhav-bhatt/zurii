@@ -41,11 +41,23 @@ const DEV_ORIGINS = [
   'http://127.0.0.1:8080',
 ];
 
+/**
+ * The effective allowlist.
+ *
+ * DEV_ORIGINS are folded in only OUTSIDE production. They used to be added
+ * unconditionally, which meant a production deployment permanently trusted
+ * http://localhost:5173 and five sibling ports: any page an admin could be
+ * induced to load from one of those origins — a locally running dev server, a
+ * malicious app bound to that port — was granted credentialed access to the
+ * live API. In production the allowlist is exactly what ALLOWED_ORIGINS says,
+ * which config/env.js requires to be set there for precisely this reason.
+ */
 function allowedOrigins() {
   const configured = (process.env.ALLOWED_ORIGINS || '')
     .split(',')
     .map((o) => o.trim())
     .filter(Boolean);
+  if (process.env.NODE_ENV === 'production') return new Set(configured);
   return new Set([...configured, ...DEV_ORIGINS]);
 }
 

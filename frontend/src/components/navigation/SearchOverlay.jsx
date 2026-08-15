@@ -63,7 +63,10 @@ export default function SearchOverlay({ open, onClose }) {
     () => (open ? getDestinationsCached() : Promise.resolve([])),
     ['spotlight-destinations', open]
   );
-  const destinationList = allDestinations ?? [];
+  // Memoised for identity, not for cost: `allDestinations ?? []` built a fresh
+  // array on every render while the fetch was pending, so the useMemo below
+  // that depends on it re-ran every render and memoised nothing.
+  const destinationList = useMemo(() => allDestinations ?? [], [allDestinations]);
 
   // Load recently viewed package details
   const { data: recentlyViewedPkgs } = useAsyncData(
@@ -81,7 +84,12 @@ export default function SearchOverlay({ open, onClose }) {
   const trimmed = query.trim();
   const shouldSearch = trimmed.length >= MIN_QUERY;
   const loading = shouldSearch && state.query !== trimmed;
-  const packageResults = state.query === trimmed ? state.packages : [];
+  // Same reason as destinationList: the `: []` branch returned a new array
+  // each render, which flowed into flatItems' dependency list.
+  const packageResults = useMemo(
+    () => (state.query === trimmed ? state.packages : []),
+    [state.query, state.packages, trimmed]
+  );
 
   // ── Match Destinations ──
   const destinationResults = useMemo(() => {
