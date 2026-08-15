@@ -8,15 +8,27 @@ frontend/node_modules/
 # The bare filenames alone were not enough: only `.env`, `backend/.env` and
 # `frontend/.env` were ignored, so any variant — .env.production, .env.local,
 # .env.prod.bak — was committable, which is exactly the file most likely to hold
-# a production credential. The wildcards cover every variant; the negation keeps
-# the placeholder-only example tracked.
+# a production credential. The wildcards cover every variant; the negations keep
+# the placeholder-only examples tracked.
+#
+# Each directory needs its OWN negation. `!.env.example` alone does not rescue
+# `backend/.env.example`: gitignore applies the LAST matching pattern, and the
+# anchored `backend/.env.*` below it wins — so the template would be silently
+# untrackable, which is how a setup file goes missing without anyone noticing.
+#
+# NOTE: ignoring a path does nothing once the file is already tracked. These
+# four were committed with `git add -f` in 426bcb6 and stayed tracked despite
+# matching every rule here. If a secret lands in the index again, `git rm
+# --cached <file>` is what actually stops it — not another line in this file.
 .env
 .env.*
 !.env.example
 backend/.env
 backend/.env.*
+!backend/.env.example
 frontend/.env
 frontend/.env.*
+!frontend/.env.example
 
 # Build outputs
 dist/
