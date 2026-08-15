@@ -367,7 +367,7 @@ openssl rand -hex 48
 | Method | Endpoint | Description |
 |---|---|---|
 | `GET` | `/api/admin/session` | Current admin; reachable with a temporary password |
-| `POST` | `/api/admin/change-password` | Replace own password; revokes all sessions |
+| `POST` | `/api/admin/change-password` | Replace own password; revokes every earlier session and issues a fresh one |
 | `GET` | `/api/contact` | Lead list (paginated) |
 | `PATCH` | `/api/contact/:id/complete` | Mark a lead completed |
 | `PATCH` | `/api/contact/:id/reopen` | Reopen a completed lead |

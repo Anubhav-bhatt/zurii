@@ -10,7 +10,34 @@
  */
 
 /** Below this, online guessing is realistic even against a rate limit. */
-const MIN_LENGTH = 16;
+const MIN_LENGTH = 20;
+
+/**
+ * The ONLY relaxation of the policy above, and it is deliberately narrow.
+ *
+ * An operator provisioning a new admin has to transmit that first password to a
+ * human being — read down a phone line, typed from a note, carried across a room
+ * — and a 20-character passphrase survives none of that intact. So a temporary
+ * credential may be shorter.
+ *
+ * What makes this safe is not the number. It is that a password validated at
+ * this length can only ever be written by a code path that sets
+ * `must_change_password = TRUE` in the same statement (create-admin.js
+ * `add-temporary` / `reset-temporary`). Such an account authenticates, and then
+ * middleware/auth.js refuses it every route except reading its own session and
+ * replacing the password. It cannot reach one row of business data.
+ *
+ * The replacement it is forced into runs `validateAdminPassword` — the full
+ * 20-character policy. So the short password is never the account's password
+ * for longer than one sign-in, and there is no path by which a permanent
+ * password reaches this shorter bar.
+ *
+ * Every OTHER rule below — the block-list, the 72-byte cap, the whitespace and
+ * username checks, the distinct-character floor — applies identically to both.
+ * The two policies differ by exactly this one integer, which is why they share
+ * one implementation rather than being copied apart and left to drift.
+ */
+const BOOTSTRAP_MIN_LENGTH = 10;
 
 /**
  * bcrypt hashes at most 72 BYTES and silently ignores everything after — so a
@@ -45,20 +72,24 @@ const WEAK_PASSWORDS = [
 ];
 
 /**
+ * The shared implementation. `minLength` is the single knob the two exported
+ * policies differ by; everything else is identical for both by construction.
+ *
  * @param {string} password
- * @param {string} [username] compared case-insensitively when supplied
+ * @param {string} username compared case-insensitively when supplied
+ * @param {number} minLength
  * @returns {{ valid: boolean, error: string|null }} `error` is safe to print —
  *   it never contains the submitted password.
  */
-function validateAdminPassword(password, username = '') {
+function check(password, username, minLength) {
   if (typeof password !== 'string' || password.length === 0) {
     return { valid: false, error: 'A password is required.' };
   }
 
-  if (password.length < MIN_LENGTH) {
+  if (password.length < minLength) {
     return {
       valid: false,
-      error: `Admin password must be at least ${MIN_LENGTH} characters and must not be a common/default password.`,
+      error: `Admin password must be at least ${minLength} characters and must not be a common/default password.`,
     };
   }
 
@@ -88,14 +119,14 @@ function validateAdminPassword(password, username = '') {
   // and digits catches all of them with one comparison.
   const normalized = lowered.replace(/[^a-z0-9]/g, '');
 
-  // `contains`, not `equals`: the 16-character minimum means a weak password is
+  // `contains`, not `equals`: the length minimum means a weak password is
   // usually padded ("admin123admin123") rather than used bare, and that is no
   // stronger than the weak seed it repeats.
   const matched = WEAK_PASSWORDS.find((weak) => lowered.includes(weak) || normalized.includes(weak));
   if (matched) {
     return {
       valid: false,
-      error: `Admin password must be at least ${MIN_LENGTH} characters and must not be a common/default password.`,
+      error: `Admin password must be at least ${minLength} characters and must not be a common/default password.`,
     };
   }
 
@@ -111,4 +142,32 @@ function validateAdminPassword(password, username = '') {
   return { valid: true, error: null };
 }
 
-module.exports = { validateAdminPassword, MIN_LENGTH, MAX_BYTES };
+/**
+ * The policy for every password an admin chooses for themselves: the forced
+ * first-login replacement, and every rotation after it. This is the one the
+ * change-password endpoint uses, and the only one that can produce a password
+ * an account keeps.
+ */
+function validateAdminPassword(password, username = '') {
+  return check(password, username, MIN_LENGTH);
+}
+
+/**
+ * The policy for an operator-issued TEMPORARY password — see the long note on
+ * BOOTSTRAP_MIN_LENGTH above before calling this.
+ *
+ * Callers must set `must_change_password = TRUE` in the same write. There are
+ * exactly two: the `add-temporary` and `reset-temporary` commands in
+ * create-admin.js, both of which do. Nothing on the HTTP surface calls it.
+ */
+function validateBootstrapPassword(password, username = '') {
+  return check(password, username, BOOTSTRAP_MIN_LENGTH);
+}
+
+module.exports = {
+  validateAdminPassword,
+  validateBootstrapPassword,
+  MIN_LENGTH,
+  BOOTSTRAP_MIN_LENGTH,
+  MAX_BYTES,
+};

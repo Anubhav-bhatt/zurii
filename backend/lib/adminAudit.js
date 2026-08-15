@@ -49,6 +49,10 @@ const FAILURE_REASONS = {
   // A valid session reaching a business route before its temporary password has
   // been replaced. Not an attack, but worth seeing in the trail.
   PASSWORD_CHANGE_REQUIRED: 'password_change_required',
+  // Correct credentials presented for an account an operator has deactivated.
+  // Worth its own category: unlike a bad password it means someone still holds
+  // a working credential for an account that is supposed to be closed.
+  ACCOUNT_DISABLED: 'account_disabled',
 };
 
 const IP_MAX = 64;

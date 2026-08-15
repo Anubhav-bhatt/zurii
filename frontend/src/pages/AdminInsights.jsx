@@ -30,19 +30,35 @@ const getRelativeTime = (dateString) => {
 
 const AdminInsights = () => {
   // Authentication & Session
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  //
+  // ONE state, not three booleans.
+  //
+  //   'checkingSession'    — the refresh cookie is being exchanged on mount.
+  //   'login'              — no session; show the credentials form.
+  //   'mustChangePassword' — authenticated, but the account still holds an
+  //                          operator-issued temporary password.
+  //   'authenticated'      — full access; render the CRM.
+  //
+  // This used to be `isRestoringSession`, `mustChangePassword` and
+  // `isAuthenticated` held separately, which made states representable that the
+  // product does not have — every combination of three booleans is eight
+  // states, and only four of them mean anything. The render path below happened
+  // to check them in an order that hid the rest, so the bug it invited was not a
+  // wrong screen but a silent dependency on `if` ordering: moving one block, or
+  // adding a fourth screen above it, would have shown the CRM to an account
+  // that had not finished authenticating. A single value cannot drift out of
+  // step with itself, and the ordering of the returns below stops being
+  // load-bearing.
+  //
+  // Login failures are NOT a state here. They leave the page in 'login' with a
+  // message beside the form, which is where the admin has to act.
+  const [authState, setAuthState] = useState('checkingSession');
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [loginError, setLoginError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  // Set on login/refresh but not rendered anywhere, so only the setter is bound.
-  // The value was previously discarded (only the setter was used). It is read
-  // now so the forced password screen can name the signed-in admin.
+  // Read by the forced password screen so it can name the signed-in admin.
   const [adminUser, setAdminUser] = useState(null);
-  const [isRestoringSession, setIsRestoringSession] = useState(true);
-  // Set when the signed-in account still holds a temporary password. The CRM is
-  // not rendered in that state; the backend refuses its data regardless.
-  const [mustChangePassword, setMustChangePassword] = useState(false);
   // No local access-token ref. The token lives in services/adminApi.js, which
   // is the single owner of the admin session for the whole app — see the note
   // on the auth helpers below.
@@ -108,7 +124,7 @@ const AdminInsights = () => {
   // `clearSession` is the one piece that stays local: it resets THIS page's
   // React state after adminApi has already dropped the token.
   const clearSession = useCallback(() => {
-    setIsAuthenticated(false);
+    setAuthState('login');
     setAdminUser(null);
     setContacts([]);
     setSelectedLead(null);
@@ -139,6 +155,18 @@ const AdminInsights = () => {
         clearSession();
         return;
       }
+      // An operator can reset this admin's password while they are working, and
+      // the backend then answers 403 on every business route. Without this the
+      // dashboard would sit there reporting a database error it cannot explain,
+      // while the actual remedy — replace the temporary password — is one
+      // screen away. The server has already refused the data; this only picks
+      // the screen that tells the truth about why.
+      if (err instanceof AdminApiError && err.code === 'PASSWORD_CHANGE_REQUIRED') {
+        setContacts([]);
+        setSelectedLead(null);
+        setAuthState('mustChangePassword');
+        return;
+      }
       if (err.name === 'AbortError' || err.name === 'TimeoutError') {
         setFetchError('The request timed out. Please try again.');
         return;
@@ -161,9 +189,12 @@ const AdminInsights = () => {
       // call from this page AND from ChangePasswordForm is signed with it.
       const admin = await adminLogin(loginForm.username, loginForm.password);
       setAdminUser(admin);
-      // Temporary password: the CRM stays closed until it is replaced.
-      if (admin?.mustChangePassword) setMustChangePassword(true);
-      else setIsAuthenticated(true);
+      // Credentials cleared the moment they are no longer needed, so the
+      // temporary password does not sit in React state behind the next screen.
+      setLoginForm({ username: '', password: '' });
+      // Temporary password: the CRM stays closed until it is replaced. The
+      // backend refuses its data either way — this only picks the screen.
+      setAuthState(admin?.mustChangePassword ? 'mustChangePassword' : 'authenticated');
     } catch (err) {
       // AdminApiError already carries the server's user-safe sentence
       // ("Invalid username or password.", or the lockout message).
@@ -188,6 +219,7 @@ const AdminInsights = () => {
 
   // Session restore on mount — exchange the httpOnly refresh cookie for a token.
   useEffect(() => {
+    let cancelled = false;
     const restoreSession = async () => {
       try {
         // bootstrapSession is the same call the analytics dashboard makes, so
@@ -201,22 +233,27 @@ const AdminInsights = () => {
           // An account still holding an operator-issued temporary password is
           // sent to the password screen rather than an empty dashboard.
           const session = await getAdminSession();
+          if (cancelled) return;
           setAdminUser(session);
-          if (session?.mustChangePassword) setMustChangePassword(true);
-          else setIsAuthenticated(true);
+          setAuthState(session?.mustChangePassword ? 'mustChangePassword' : 'authenticated');
+          return;
         }
       } catch { /* no valid session — fall through to the login gate */ }
-      setIsRestoringSession(false);
+      // Reached only when there is no usable session. Written last and exactly
+      // once, so the page never sits in 'checkingSession' after this resolves
+      // and never lands in 'login' having already restored one.
+      if (!cancelled) setAuthState('login');
     };
     restoreSession();
+    return () => { cancelled = true; };
   }, []);
 
   // Trigger fetch on auth state
   useEffect(() => {
-    if (isAuthenticated) {
+    if (authState === 'authenticated') {
       fetchContacts();
     }
-  }, [isAuthenticated, fetchContacts]);
+  }, [authState, fetchContacts]);
 
   // Copy to clipboard helper
   const handleCopy = (text, key) => {
@@ -538,7 +575,12 @@ const AdminInsights = () => {
   }, []);
 
   // ─── SESSION RESTORING SPINNER ───
-  if (isRestoringSession) {
+  //
+  // Every branch below is keyed off `authState` alone, and the CRM is the
+  // fall-through of an exhaustive switch rather than "whatever is left". No
+  // protected markup exists in the tree until the state says 'authenticated',
+  // so there is no frame in which admin content is painted and then withdrawn.
+  if (authState === 'checkingSession') {
     return (
       <div className="min-h-screen flex items-center justify-center"
            style={{ background: 'linear-gradient(135deg, #090d16 0%, #111322 50%, #090d16 100%)' }}>
@@ -556,7 +598,7 @@ const AdminInsights = () => {
   // temporary password is authenticated, so the login form would be wrong, but
   // it must not see the CRM either. The same component and endpoint serve the
   // analytics dashboard, so there is one password flow in the product.
-  if (mustChangePassword) {
+  if (authState === 'mustChangePassword') {
     return (
       <div className="min-h-screen flex items-center justify-center px-6 py-16"
            style={{ background: 'linear-gradient(135deg, #090d16 0%, #111322 50%, #090d16 100%)' }}>
@@ -565,11 +607,14 @@ const AdminInsights = () => {
             forced
             username={adminUser?.username}
             onDone={() => {
-              // The change revoked this session server-side (token_version was
-              // incremented), and changeAdminPassword already dropped the local
-              // token. Only this page's view state is left to reset.
-              setMustChangePassword(false);
-              clearSession();
+              // The change revoked every token issued before it — including the
+              // temporary-password session that reached this screen — and the
+              // server handed back a fresh one, which adminApi is already
+              // holding. So this goes straight to the dashboard: the admin has
+              // just proved the current password and chosen the new one, and
+              // sending them to a login form to retype something they set ten
+              // seconds ago is what makes people pick memorable passwords.
+              setAuthState('authenticated');
             }}
           />
         </div>
@@ -578,7 +623,7 @@ const AdminInsights = () => {
   }
 
   // ─── LOGIN GATE VIEW ───
-  if (!isAuthenticated) {
+  if (authState === 'login') {
     return (
       <div className="min-h-screen flex items-center justify-center px-6 relative" 
            style={{ background: 'linear-gradient(135deg, #090d16 0%, #111322 50%, #090d16 100%)' }}>

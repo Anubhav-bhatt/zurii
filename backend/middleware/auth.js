@@ -100,7 +100,7 @@ function createRequireAuth(pool, options = {}) {
 
     try {
       const { rows } = await db.query(
-        'SELECT id, username, token_version, must_change_password FROM admins WHERE id = $1',
+        'SELECT id, username, token_version, must_change_password, active FROM admins WHERE id = $1',
         [decoded.id]
       );
       const admin = rows[0];
@@ -113,6 +113,30 @@ function createRequireAuth(pool, options = {}) {
           success: false,
           req,
           metadata: { reason: FAILURE_REASONS.ADMIN_GONE, route: req.originalUrl },
+        });
+        return res.status(401).json({ success: false, error: GENERIC_REJECTION });
+      }
+
+      // Checked before token_version, and on EVERY request rather than only at
+      // login: deactivating an admin has to end the sessions they already hold,
+      // not merely stop the next sign-in. Otherwise revoking someone's access
+      // would leave them working for the remaining life of their access token,
+      // with a refresh cookie good for another seven days.
+      //
+      // No dedicated response code, unlike PASSWORD_CHANGE_REQUIRED: there is
+      // nothing the client can usefully do about it, and the generic rejection
+      // avoids confirming to a token-holder that the account merely sleeps.
+      if (admin.active === false) {
+        recordAuditEvent(db, {
+          adminId: admin.id,
+          eventType: AUDIT_EVENTS.TOKEN_REJECTED,
+          success: false,
+          req,
+          metadata: {
+            reason: FAILURE_REASONS.ACCOUNT_DISABLED,
+            username: admin.username,
+            route: req.originalUrl,
+          },
         });
         return res.status(401).json({ success: false, error: GENERIC_REJECTION });
       }

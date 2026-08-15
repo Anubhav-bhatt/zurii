@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 
 import { changeAdminPassword } from '../../services/adminApi';
 
@@ -12,13 +12,20 @@ import { changeAdminPassword } from '../../services/adminApi';
  *     entire admin surface until then.
  *   - routine rotation from the dashboard.
  *
- * A successful change revokes the current session server-side (token_version is
- * incremented), so `onDone` must send the admin back to the login screen. That
- * is not a limitation to work around — it is the proof the old credential is
- * dead, including the temporary one the operator knows.
+ * A successful change revokes every token issued before it — including the one
+ * that authorised the request, and the temporary password the operator knows —
+ * and the server then issues a fresh session for the same admin. So `onDone`
+ * runs with a live, fully privileged session in hand: the forced flow continues
+ * into the dashboard, and the routine one returns to it.
  */
 
-const MIN_LENGTH = 16;
+/**
+ * Mirrors MIN_LENGTH in backend/lib/validateAdminPassword.js. Duplicated rather
+ * than fetched because it only decides when to show a message before a round
+ * trip — the server re-checks every rule and remains the authority, so the two
+ * drifting costs a slightly late error message, never a weak password.
+ */
+const MIN_LENGTH = 20;
 
 export default function ChangePasswordForm({ forced = false, username, onDone, onCancel }) {
   const uid = useId();
@@ -27,6 +34,29 @@ export default function ChangePasswordForm({ forced = false, username, onDone, o
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState('idle'); // idle | saving | done
   const [message, setMessage] = useState('');
+
+  /**
+   * `onDone` hands control back to the page, which unmounts this component. The
+   * ref makes that a one-way door: the confirmation panel below can be dismissed
+   * either by the timer or by the button, and without this guard a click landing
+   * in the same tick as the timeout would fire the transition twice.
+   */
+  const finished = useRef(false);
+  const finish = () => {
+    if (finished.current) return;
+    finished.current = true;
+    onDone?.();
+  };
+
+  // Show the confirmation long enough to read, then continue. The session is
+  // already live at this point — the server issued a fresh token as part of the
+  // change — so there is nothing to wait for but the reader.
+  useEffect(() => {
+    if (status !== 'done') return undefined;
+    const timer = setTimeout(finish, 1200);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
 
   const set = (field) => (event) => {
     setValues((prev) => ({ ...prev, [field]: event.target.value }));
@@ -65,7 +95,7 @@ export default function ChangePasswordForm({ forced = false, username, onDone, o
     setStatus('saving');
     setMessage('');
     try {
-      const note = await changeAdminPassword(values.currentPassword, values.newPassword);
+      const { message: note } = await changeAdminPassword(values.currentPassword, values.newPassword);
       // Cleared immediately so nothing sits in component state afterwards.
       setValues({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setStatus('done');
@@ -108,17 +138,16 @@ export default function ChangePasswordForm({ forced = false, username, onDone, o
   if (status === 'done') {
     return (
       <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 text-center">
-        <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-50">Password changed</h2>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">{message}</p>
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-          Every earlier session, including this one, has been signed out.
+        <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-50">{message}</h2>
+        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">
+          Your temporary password no longer works, and every earlier session has been signed out.
         </p>
         <button
           type="button"
-          onClick={onDone}
+          onClick={finish}
           className="mt-5 w-full rounded-xl bg-zinc-900 dark:bg-zinc-100 px-4 py-2.5 text-sm font-bold text-white dark:text-zinc-900"
         >
-          Go to sign in
+          Continue to dashboard
         </button>
       </div>
     );
@@ -131,12 +160,12 @@ export default function ChangePasswordForm({ forced = false, username, onDone, o
       noValidate
     >
       <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-50">
-        {forced ? 'Set your private password' : 'Change your password'}
+        {forced ? 'Create a new password' : 'Change your password'}
       </h2>
       <p className="mt-1.5 text-sm text-zinc-600 dark:text-zinc-300">
         {forced
-          ? 'For security, replace the temporary password before continuing. Only you should know your new password.'
-          : 'You will be signed out on every device after changing it.'}
+          ? 'For security, you must replace your temporary password before accessing the admin dashboard. Only you should know your new password.'
+          : 'You will be signed out on every other device after changing it.'}
       </p>
       {username && (
         <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
@@ -146,6 +175,9 @@ export default function ChangePasswordForm({ forced = false, username, onDone, o
 
       <div className="mt-5 space-y-4">
         {field('currentPassword', forced ? 'Temporary password' : 'Current password', 'current-password')}
+        {/* autocomplete="new-password" on both: it stops the browser filling
+            these with the password being replaced, and prompts a password
+            manager to offer a generated one — which is the outcome we want. */}
         {field('newPassword', 'New password', 'new-password')}
         {field('confirmPassword', 'Confirm new password', 'new-password')}
       </div>
@@ -177,7 +209,7 @@ export default function ChangePasswordForm({ forced = false, username, onDone, o
           disabled={status === 'saving'}
           className="flex-1 rounded-xl bg-zinc-900 dark:bg-zinc-100 px-4 py-2.5 text-sm font-bold text-white dark:text-zinc-900 disabled:opacity-60"
         >
-          {status === 'saving' ? 'Saving…' : 'Set New Password'}
+          {status === 'saving' ? 'Updating…' : 'Update password'}
         </button>
         {/* No way out of the forced version: there is nothing else to reach. */}
         {!forced && onCancel && (

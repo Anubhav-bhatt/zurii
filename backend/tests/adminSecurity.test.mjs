@@ -30,7 +30,7 @@ import validatorModule from '../lib/validateAdminPassword.js';
 import auditModule from '../lib/adminAudit.js';
 
 const { getPool } = poolModule;
-const { validateAdminPassword } = validatorModule;
+const { validateAdminPassword, validateBootstrapPassword, MIN_LENGTH, BOOTSTRAP_MIN_LENGTH } = validatorModule;
 const { sanitizeMetadata, USER_AGENT_MAX } = auditModule;
 
 const RUN = crypto.randomBytes(4).toString('hex');
@@ -159,21 +159,38 @@ describe('admin password policy', () => {
   });
 
   it('rejects a weak seed padded out to the length minimum', () => {
-    // Long enough to pass a naive length check, no stronger than "admin123".
-    assert.equal(validateAdminPassword('admin123admin123', 'someadmin').valid, false);
+    // Long enough to clear MIN_LENGTH on its own, so this can only be caught by
+    // the block-list — which is the point. Kept at/above the minimum
+    // deliberately: shortened, it would pass for the wrong reason and stop
+    // testing anything.
+    assert.ok('admin123admin123admin123'.length >= MIN_LENGTH);
+    assert.equal(validateAdminPassword('admin123admin123admin123', 'someadmin').valid, false);
   });
 
   it('rejects anything shorter than the minimum', () => {
-    assert.equal(validateAdminPassword('Short-Pass-12', 'someadmin').valid, false);
+    const justShort = 'Coastal-Ferry-Ledger-9x'.slice(0, MIN_LENGTH - 1);
+    assert.equal(validateAdminPassword(justShort, 'someadmin').valid, false);
+  });
+
+  it('accepts at exactly the minimum, so the boundary is not off by one', () => {
+    const exact = 'Coastal-Ferry-Ledger-9x'.slice(0, MIN_LENGTH);
+    assert.equal(exact.length, MIN_LENGTH);
+    assert.equal(validateAdminPassword(exact, 'someadmin').valid, true);
   });
 
   it('rejects a password equal to the username', () => {
-    const name = 'averylongadminname';
+    // Long enough, and free of any block-listed term, so the username rule is
+    // the only thing that can reject it.
+    const name = 'a-very-long-operator-name';
+    assert.ok(name.length >= MIN_LENGTH, 'must fail on the username rule, not on length');
     assert.equal(validateAdminPassword(name, name).valid, false);
   });
 
   it('rejects low-entropy repetition that passes on length alone', () => {
-    assert.equal(validateAdminPassword('aaaaaaaaaaaaaaaaaa', 'someadmin').valid, false);
+    for (const repeated of ['a'.repeat(MIN_LENGTH + 4), 'abcabcabcabcabcabcabcabc']) {
+      assert.ok(repeated.length >= MIN_LENGTH, 'must fail on entropy, not on length');
+      assert.equal(validateAdminPassword(repeated, 'someadmin').valid, false, `must reject ${repeated}`);
+    }
   });
 
   it('rejects a password beyond what bcrypt can hash (72 bytes)', () => {
@@ -182,7 +199,10 @@ describe('admin password policy', () => {
 
   it('rejects a weak word padded with separators to reach the length minimum', () => {
     // The placeholder this repo shipped in .env.example, plus the general trick.
-    for (const padded of ['CHANGE_ME_please', 'admin.123.admin.123', 'p-a-s-s-w-o-r-d-1234']) {
+    // Each is at least MIN_LENGTH long, so only the separator-stripping
+    // normalisation can catch them.
+    for (const padded of ['CHANGE_ME_please_now_ok', 'admin.123.admin.123.admin', 'p-a-s-s-w-o-r-d-1234']) {
+      assert.ok(padded.length >= MIN_LENGTH, `${padded} must be long enough to isolate the block-list`);
       assert.equal(validateAdminPassword(padded, 'someadmin').valid, false, `must reject ${padded}`);
     }
   });
@@ -198,6 +218,53 @@ describe('admin password policy', () => {
     const { error } = validateAdminPassword(secret, 'someadmin');
     assert.ok(error);
     assert.ok(!error.includes(secret), 'error text must not contain the password');
+  });
+
+  it('requires a permanent password of at least 20 characters', () => {
+    assert.equal(MIN_LENGTH, 20);
+  });
+});
+
+// ── bootstrap (temporary) password policy ───────────────────────────
+//
+// The relaxation exists so an operator can hand a first credential to a person
+// over a channel a 20-character passphrase does not survive. These tests pin
+// what it may NOT relax — because a bug that widened it further would be
+// invisible: everything would keep working, just with weaker passwords allowed
+// somewhere they should not be.
+
+describe('bootstrap password policy', () => {
+  it('is shorter than the permanent minimum, but not by an unbounded amount', () => {
+    assert.ok(BOOTSTRAP_MIN_LENGTH < MIN_LENGTH);
+    assert.ok(BOOTSTRAP_MIN_LENGTH >= 10, 'a bootstrap password must still resist casual guessing');
+  });
+
+  it('accepts a short operator-issued credential the full policy would refuse', () => {
+    const temp = 'Harbour@41x';
+    assert.ok(temp.length < MIN_LENGTH);
+    assert.equal(validateAdminPassword(temp, 'someadmin').valid, false);
+    assert.equal(validateBootstrapPassword(temp, 'someadmin').valid, true);
+  });
+
+  it('still rejects everything on the common-password block-list', () => {
+    for (const weak of ['admin123456', 'password1234', 'zurii123456', 'changeme1234', 'welcome12345']) {
+      assert.ok(weak.length >= BOOTSTRAP_MIN_LENGTH, `${weak} must clear the length rule first`);
+      assert.equal(validateBootstrapPassword(weak, 'someadmin').valid, false, `must reject ${weak}`);
+    }
+  });
+
+  it('still applies every non-length rule', () => {
+    assert.equal(validateBootstrapPassword('aaaaaaaaaaaa', 'someadmin').valid, false, 'distinct-character floor');
+    assert.equal(validateBootstrapPassword('  Harbour@41x', 'someadmin').valid, false, 'leading whitespace');
+    assert.equal(validateBootstrapPassword('Harbour@41x  ', 'someadmin').valid, false, 'trailing whitespace');
+    assert.equal(validateBootstrapPassword('x1y2z3'.repeat(20), 'someadmin').valid, false, '72-byte bcrypt cap');
+    assert.equal(validateBootstrapPassword('operator-one', 'operator-one').valid, false, 'equal to username');
+  });
+
+  it('is still too strict for the passwords people actually reach for', () => {
+    for (const weak of ['admin', 'password', 'admin123', 'qwerty', '12345678', 'letmein']) {
+      assert.equal(validateBootstrapPassword(weak, 'someadmin').valid, false, `must reject ${weak}`);
+    }
   });
 });
 

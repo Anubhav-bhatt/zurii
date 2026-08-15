@@ -21,22 +21,41 @@ import path from 'node:path';
 import bcrypt from 'bcrypt';
 
 import poolModule from '../db/pool.js';
+import baseSchemaModule from '../db/baseSchema.js';
+import validatorModule from '../lib/validateAdminPassword.js';
 
 const { getPool } = poolModule;
+const { ensureBaseSchema } = baseSchemaModule;
+const { validateAdminPassword, validateBootstrapPassword, MIN_LENGTH } = validatorModule;
 
 const RUN = crypto.randomBytes(4).toString('hex');
 const ALICE = `zzfl-alice-${RUN}`;
 const BOB = `zzfl-bob-${RUN}`;
+/** Provisioned the way `create-admin.js add-temporary` does: short bootstrap password. */
+const CARA = `zzfl-cara-${RUN}`;
+/** Used only for the deactivation tests. */
+const DAN = `zzfl-dan-${RUN}`;
 /** Policy-compliant, unique per run, in-process only. */
 const TEMP_PASSWORD = `temporary-vault-${crypto.randomBytes(6).toString('hex')}`;
 const PRIVATE_PASSWORD = `private-vault-${crypto.randomBytes(6).toString('hex')}`;
 const BOB_PASSWORD = `bob-private-vault-${crypto.randomBytes(6).toString('hex')}`;
+/**
+ * Deliberately too short for the permanent policy and long enough for the
+ * bootstrap one — the exact shape of the credential an operator reads to a new
+ * admin over the phone. The assertions in `before` pin that, so this stops being
+ * a magic string if either minimum moves.
+ */
+const CARA_TEMP = `Harbour@${crypto.randomBytes(2).toString('hex')}`;
+const CARA_PRIVATE = `cara-private-vault-${crypto.randomBytes(6).toString('hex')}`;
+const DAN_PASSWORD = `dan-private-vault-${crypto.randomBytes(6).toString('hex')}`;
 
 const pool = getPool();
 let server;
 let base;
 let aliceId;
 let bobId;
+let caraId;
+let danId;
 
 async function waitForServer(url, attempts = 60) {
   for (let i = 0; i < attempts; i += 1) {
@@ -52,19 +71,32 @@ async function waitForServer(url, attempts = 60) {
 }
 
 /** Insert an admin the way `create-admin.js add` does: temporary password. */
-async function createAdmin(username, password, mustChange) {
+async function createAdmin(username, password, mustChange, active = true) {
   const hash = await bcrypt.hash(password, 12);
   const { rows } = await pool.query(
-    `INSERT INTO admins (username, password_hash, must_change_password)
-     VALUES ($1, $2, $3) RETURNING id`,
-    [username, hash, mustChange]
+    `INSERT INTO admins (username, password_hash, must_change_password, active)
+     VALUES ($1, $2, $3, $4) RETURNING id`,
+    [username, hash, mustChange, active]
   );
   return rows[0].id;
 }
 
 before(async () => {
+  // These fixtures are inserted BEFORE server.js boots, so its own call to
+  // ensureBaseSchema has not run yet. Without this the INSERTs below would hit
+  // a database missing the newest admins columns and fail with 42703 — the
+  // tests would report a schema problem as an authentication bug. Idempotent
+  // and non-destructive, so calling it here costs nothing.
+  await ensureBaseSchema(pool, () => {});
+
+  // The premise of the bootstrap fixture, asserted rather than assumed.
+  assert.equal(validateAdminPassword(CARA_TEMP, CARA).valid, false, 'the temp password must fail the permanent policy');
+  assert.equal(validateBootstrapPassword(CARA_TEMP, CARA).valid, true, 'and pass the bootstrap one');
+
   aliceId = await createAdmin(ALICE, TEMP_PASSWORD, true);
   bobId = await createAdmin(BOB, BOB_PASSWORD, false);
+  caraId = await createAdmin(CARA, CARA_TEMP, true);
+  danId = await createAdmin(DAN, DAN_PASSWORD, false);
 
   const port = 5700 + Math.floor(Math.random() * 250);
   base = `http://127.0.0.1:${port}`;
@@ -78,17 +110,19 @@ before(async () => {
 
 after(async () => {
   server?.kill('SIGTERM');
+  const ids = [aliceId, bobId, caraId, danId];
+  const names = [ALICE, BOB, CARA, DAN];
   await pool.query(
     `DELETE FROM admin_audit_logs
       WHERE admin_id = ANY($1::int[])
          OR metadata->>'username' = ANY($2::text[])
          OR metadata->>'attemptedUsername' = ANY($2::text[])`,
-    [[aliceId, bobId], [ALICE, BOB]]
+    [ids, names]
   );
-  await pool.query('DELETE FROM admins WHERE username = ANY($1::text[])', [[ALICE, BOB]]);
+  await pool.query('DELETE FROM admins WHERE username = ANY($1::text[])', [names]);
 
   const leftover = await pool.query('SELECT COUNT(*)::int AS n FROM admins WHERE username = ANY($1::text[])', [
-    [ALICE, BOB],
+    names,
   ]);
   assert.equal(leftover.rows[0].n, 0, 'test admins must not survive the run');
   await pool.end();
@@ -126,6 +160,23 @@ const changePassword = (token, currentPassword, newPassword) =>
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ currentPassword, newPassword }),
   });
+
+/** Like changePassword, but keeps the credentials the endpoint hands back. */
+const changePasswordFull = async (token, currentPassword, newPassword) => {
+  const res = await fetch(`${base}/api/admin/change-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+  const body = await res.json().catch(() => ({}));
+  return {
+    status: res.status,
+    message: body.message,
+    token: body.accessToken ?? null,
+    mustChange: body.admin?.mustChangePassword,
+    refresh: /zurii_refresh_token=([^;]+)/.exec(res.headers.get('set-cookie') || '')?.[1] ?? null,
+  };
+};
 
 const adminRow = (id) =>
   pool
@@ -335,6 +386,182 @@ describe('operator password reset', () => {
     assert.equal(fresh.status, 200);
     assert.equal(fresh.mustChange, true, 'the reset must force another replacement');
     assert.equal((await call('/api/contact', fresh.token)).status, 403);
+  });
+});
+
+// ── the journey a bootstrap-provisioned admin actually takes ────────
+//
+// Alice above starts from a policy-length temporary password. Cara starts from
+// a SHORT one, the way `create-admin.js add-temporary` provisions a real first
+// admin — which is the case where the relaxed policy could go wrong, so it gets
+// walked end to end rather than assumed equivalent.
+
+describe('bootstrap-provisioned admin: short temporary password to permanent', () => {
+  let firstSession;
+
+  it('signs in with the short temporary password', async () => {
+    firstSession = await login(CARA, CARA_TEMP);
+    assert.equal(firstSession.status, 200);
+    assert.equal(firstSession.mustChange, true, 'a bootstrap account must owe a change');
+  });
+
+  it('reaches nothing but its own session while the temporary password stands', async () => {
+    for (const route of ['/api/contact', '/api/admin/analytics/overview', '/api/admin/bookings']) {
+      const res = await call(route, firstSession.token);
+      assert.equal(res.status, 403, `${route} must be refused`);
+      assert.equal(res.code, 'PASSWORD_CHANGE_REQUIRED');
+      assert.equal(res.data, undefined);
+    }
+    assert.equal((await call('/api/admin/session', firstSession.token)).status, 200);
+  });
+
+  it('will NOT accept another short password as the permanent one', async () => {
+    // The whole point of the isolation: the shorter minimum got this account
+    // created, and it must not follow the account into the replacement.
+    const alsoShort = 'Seawall@77z';
+    assert.ok(alsoShort.length < MIN_LENGTH);
+    assert.equal(validateBootstrapPassword(alsoShort, CARA).valid, true, 'accepted by the bootstrap policy');
+
+    const res = await changePassword(firstSession.token, CARA_TEMP, alsoShort);
+    assert.equal(res.status, 400, 'but the endpoint must apply the permanent policy');
+    assert.equal((await adminRow(caraId)).must_change_password, true, 'and leave the account still owing');
+  });
+
+  it('accepts a permanent password and hands back a working session', async () => {
+    const changed = await changePasswordFull(firstSession.token, CARA_TEMP, CARA_PRIVATE);
+    assert.equal(changed.status, 200);
+    assert.equal(changed.message, 'Password updated successfully.');
+    assert.ok(changed.token, 'a fresh access token must be issued');
+    assert.ok(changed.refresh, 'a fresh refresh cookie must be issued');
+    assert.equal(changed.mustChange, false);
+
+    // The point of issuing it: the admin continues into the dashboard without
+    // signing in again.
+    assert.equal((await call('/api/contact', changed.token)).status, 200);
+    assert.equal((await call('/api/admin/analytics/overview', changed.token)).status, 200);
+
+    const refreshed = await fetch(`${base}/api/auth/refresh`, {
+      method: 'POST',
+      headers: { Cookie: `zurii_refresh_token=${changed.refresh}` },
+    });
+    assert.equal(refreshed.status, 200, 'the new refresh cookie must work too');
+  });
+
+  it('kills the session that made the change, despite issuing a new one', async () => {
+    // The new token is not the old one surviving: everything minted before the
+    // change is dead, including the token that authorised it.
+    assert.equal((await call('/api/admin/session', firstSession.token)).status, 401);
+
+    const stale = await fetch(`${base}/api/auth/refresh`, {
+      method: 'POST',
+      headers: { Cookie: `zurii_refresh_token=${firstSession.refresh}` },
+    });
+    assert.equal(stale.status, 401, 'the pre-change refresh cookie must be dead');
+  });
+
+  it('makes the short temporary password stop authenticating', async () => {
+    assert.equal((await login(CARA, CARA_TEMP)).status, 401);
+  });
+
+  it('signs in normally with the permanent password', async () => {
+    const session = await login(CARA, CARA_PRIVATE);
+    assert.equal(session.status, 200);
+    assert.equal(session.mustChange, false);
+    assert.equal((await call('/api/contact', session.token)).status, 200);
+  });
+
+  it('stores a bcrypt hash and never the password itself', async () => {
+    const { rows } = await pool.query('SELECT password_hash, active FROM admins WHERE id = $1', [caraId]);
+    assert.match(rows[0].password_hash, /^\$2[aby]\$/, 'must be a bcrypt hash');
+    assert.ok(!rows[0].password_hash.includes(CARA_PRIVATE));
+    assert.ok(!rows[0].password_hash.includes(CARA_TEMP));
+    assert.equal(rows[0].active, true);
+  });
+});
+
+// ── deactivation ────────────────────────────────────────────────────
+
+describe('a deactivated admin is refused everywhere', () => {
+  let liveSession;
+
+  it('works normally before being disabled', async () => {
+    liveSession = await login(DAN, DAN_PASSWORD);
+    assert.equal(liveSession.status, 200);
+    assert.equal((await call('/api/contact', liveSession.token)).status, 200);
+  });
+
+  it('loses its live session the moment the account is disabled', async () => {
+    // `create-admin.js disable` performs exactly this.
+    await pool.query(
+      'UPDATE admins SET active = FALSE, token_version = token_version + 1 WHERE id = $1',
+      [danId]
+    );
+    assert.equal((await call('/api/contact', liveSession.token)).status, 401);
+    assert.equal((await call('/api/admin/session', liveSession.token)).status, 401);
+  });
+
+  it('cannot mint a new token from the refresh cookie it still holds', async () => {
+    const res = await fetch(`${base}/api/auth/refresh`, {
+      method: 'POST',
+      headers: { Cookie: `zurii_refresh_token=${liveSession.refresh}` },
+    });
+    assert.equal(res.status, 401);
+  });
+
+  it('cannot sign in again, with the correct password, and is told nothing extra', async () => {
+    const res = await fetch(`${base}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: DAN, password: DAN_PASSWORD }),
+    });
+    assert.equal(res.status, 401);
+    const body = await res.json();
+    assert.equal(body.error, 'Invalid username or password.', 'must not reveal that the account is disabled');
+    assert.equal(body.accessToken, undefined);
+  });
+
+  it('works again once re-enabled', async () => {
+    await pool.query('UPDATE admins SET active = TRUE WHERE id = $1', [danId]);
+    const session = await login(DAN, DAN_PASSWORD);
+    assert.equal(session.status, 200);
+    assert.equal((await call('/api/contact', session.token)).status, 200);
+  });
+});
+
+// ── the generic failure contract ────────────────────────────────────
+
+describe('failed authentication says the same thing every time', () => {
+  it('answers identically for an unknown username and a wrong password', async () => {
+    const unknown = await fetch(`${base}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: `zzfl-nobody-${RUN}`, password: 'whatever-this-is-not' }),
+    });
+    const wrong = await fetch(`${base}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: BOB, password: 'definitely-not-the-password' }),
+    });
+
+    assert.equal(unknown.status, 401);
+    assert.equal(wrong.status, 401);
+    assert.deepEqual(await unknown.json(), await wrong.json(), 'the two must be indistinguishable');
+
+    await pool.query('UPDATE admins SET failed_login_attempts = 0, locked_until = NULL WHERE id = $1', [bobId]);
+  });
+
+  it('never returns a password hash on a successful login', async () => {
+    const res = await fetch(`${base}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: BOB, password: BOB_PASSWORD }),
+    });
+    const body = await res.json();
+    const serialized = JSON.stringify(body);
+    assert.equal(res.status, 200);
+    assert.ok(!serialized.includes('$2b$'), 'no bcrypt hash may reach the client');
+    assert.ok(!serialized.includes('password_hash'));
+    assert.ok(!serialized.includes(BOB_PASSWORD), 'nor the password just submitted');
   });
 });
 

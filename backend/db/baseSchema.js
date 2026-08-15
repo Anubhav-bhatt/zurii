@@ -144,6 +144,16 @@ async function ensureBaseSchema(pool, log = console.log) {
   await pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS locked_until TIMESTAMPTZ`);
   await pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS must_change_password BOOLEAN NOT NULL DEFAULT FALSE`);
   await pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS password_changed_at TIMESTAMPTZ`);
+
+  // active DEFAULT TRUE, for the same reason must_change_password defaults
+  // FALSE: applying this to a live database must not change what any existing
+  // account can do. It gives an operator a way to revoke someone's access
+  // without deleting the row — deletion also erases the audit trail's link to
+  // them (admin_id is ON DELETE SET NULL), which is exactly the history you
+  // want to keep when someone leaves. Login, refresh and requireAuth all check
+  // it, so clearing the flag ends live sessions rather than merely preventing
+  // the next sign-in.
+  await pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS active BOOLEAN NOT NULL DEFAULT TRUE`);
   log('✓ Admins table ready.');
 }
 

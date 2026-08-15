@@ -219,20 +219,40 @@ never enters your shell history, the process list, or any file:
 docker compose exec backend node create-admin.js add <username>
 ```
 
-You will be prompted twice. The password must be at least 16 characters and
+You will be prompted twice. The password must be at least 20 characters and
 must not be a common default.
 
 The account is created with `must_change_password` set, so the new admin must
 replace your temporary password at first login and can reach nothing else until
-they do.
+they do — every admin API answers `403 PASSWORD_CHANGE_REQUIRED` until it is
+replaced, and the replacement must meet the full 20-character policy.
+
+**When you have to read the password to someone**, 20 characters does not
+survive the phone call. Use the bootstrap variant instead:
+
+```bash
+docker compose exec backend node create-admin.js add-temporary <username>
+```
+
+It accepts 10 characters or more — still block-listing the common defaults —
+and is deliberately narrow: it is only available on the two commands that
+*always* set `must_change_password`, so a short password can never become an
+account's permanent one. Use `reset-temporary <username>` for the same thing on
+an existing account.
 
 Other commands:
 
 ```bash
 docker compose exec backend node create-admin.js list
 docker compose exec backend node create-admin.js change-password <username>
+docker compose exec backend node create-admin.js disable <username>
+docker compose exec backend node create-admin.js enable <username>
 docker compose exec backend node create-admin.js remove <username>
 ```
+
+`disable` revokes every session and blocks sign-in while keeping the account and
+its audit history — prefer it to `remove` when someone leaves, because deleting
+the row also severs the audit trail's link to what they did.
 
 **Alternative — `ADMIN_SEED`.** For automated first-boot provisioning only. Set
 `ADMIN_SEED=username:password` in `.env` and the account is created at startup,

@@ -408,6 +408,30 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
       });
     }
 
+    // A deactivated account is turned away here, AFTER the password check, so
+    // the two facts stay separate in the trail: a wrong password on a disabled
+    // account is recorded as a bad password, and this row means someone
+    // presented a WORKING credential for an account that is supposed to be
+    // closed — which is the one worth a human looking at.
+    //
+    // The response is the same sentence as a wrong password, for the same
+    // reason it is the same for an unknown username and for a locked account:
+    // it must not confirm that the username exists.
+    if (admin.active === false) {
+      recordAuditEvent(pool, {
+        adminId: admin.id,
+        eventType: AUDIT_EVENTS.LOGIN_FAILURE,
+        success: false,
+        req,
+        metadata: {
+          reason: FAILURE_REASONS.ACCOUNT_DISABLED,
+          username: admin.username,
+          source: 'api',
+        },
+      });
+      return res.status(401).json({ success: false, error: 'Invalid username or password.' });
+    }
+
     // Success clears the throttle so a legitimate admin who mistyped twice is
     // not carrying those failures into their next session.
     if (admin.failed_login_attempts > 0 || admin.locked_until) {
@@ -472,7 +496,7 @@ app.post('/api/auth/refresh', refreshLimiter, async (req, res) => {
 
     // Confirm admin still exists in DB
     const result = await pool.query(
-      'SELECT id, username, token_version, must_change_password FROM admins WHERE id = $1',
+      'SELECT id, username, token_version, must_change_password, active FROM admins WHERE id = $1',
       [decoded.id]
     );
     if (result.rows.length === 0) {
@@ -484,6 +508,30 @@ app.post('/api/auth/refresh', refreshLimiter, async (req, res) => {
     }
 
     const admin = result.rows[0];
+
+    // Deactivation has to close this door too. requireAuth already refuses a
+    // disabled admin, but without this check the refresh cookie would keep
+    // minting fresh access tokens for seven days — each one immediately
+    // rejected, yet the account would never actually be logged out, and
+    // re-enabling would silently restore a session nobody expected to survive.
+    if (admin.active === false) {
+      recordAuditEvent(pool, {
+        adminId: admin.id,
+        eventType: AUDIT_EVENTS.TOKEN_REJECTED,
+        success: false,
+        req,
+        metadata: {
+          reason: FAILURE_REASONS.ACCOUNT_DISABLED,
+          username: admin.username,
+          route: '/api/auth/refresh',
+        },
+      });
+      res.clearCookie('zurii_refresh_token', { path: '/' });
+      return res.status(401).json({
+        success: false,
+        error: 'Session expired. Please log in again.'
+      });
+    }
 
     // The revocation check that makes logout mean something. Without it this
     // endpoint would happily mint a fresh 15-minute access token from a refresh
@@ -860,7 +908,7 @@ app.post('/api/admin/change-password', requireAuthAllowPasswordChange, async (re
     // bump that kills every existing session — including the temporary-password
     // session making this very request. There is no window in which the old
     // password still works or an old token is still valid.
-    await client.query(
+    const { rows: updated } = await client.query(
       `UPDATE admins
           SET password_hash = $1,
               must_change_password = FALSE,
@@ -868,7 +916,8 @@ app.post('/api/admin/change-password', requireAuthAllowPasswordChange, async (re
               token_version = token_version + 1,
               failed_login_attempts = 0,
               locked_until = NULL
-        WHERE id = $2`,
+        WHERE id = $2
+        RETURNING id, username, token_version, must_change_password`,
       [newHash, admin.id]
     );
 
@@ -882,13 +931,46 @@ app.post('/api/admin/change-password', requireAuthAllowPasswordChange, async (re
       metadata: { username: admin.username, source: 'api', mustChangePassword: false },
     });
 
-    // The refresh cookie belongs to a now-revoked token version; clearing it
-    // stops the client retrying with something guaranteed to fail.
-    res.clearCookie('zurii_refresh_token', { path: '/' });
+    // Hand back a session minted at the NEW token_version.
+    //
+    // The revocation above is unconditional and total: every token issued
+    // before this moment — including the one that authorised this very request,
+    // and the refresh cookie sitting in this browser — is now dead, because
+    // they all carry the old version. The temporary password is dead with them.
+    //
+    // What changes is only what happens next. This endpoint used to clear the
+    // cookie and tell the admin to sign in again, which meant the forced
+    // first-login flow ended by asking for a password the person had chosen
+    // fifteen seconds earlier and had not yet committed to memory — an
+    // invitation to write it down, or to pick something weaker next time so
+    // that it survives the round trip. Re-authenticating proves nothing here:
+    // the caller proved possession of the current password one query ago, and
+    // this token is issued to the same admin id, no more privileged than the
+    // one it replaces.
+    //
+    // So the old credentials are revoked AND a fresh pair is issued, letting
+    // the client continue straight into the dashboard.
+    const rotated = updated[0];
+    const accessToken = generateAccessToken(rotated);
+    const refreshToken = generateRefreshToken(rotated);
+
+    res.cookie('zurii_refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/',
+    });
 
     return res.status(200).json({
       success: true,
-      message: 'Password changed successfully. Please sign in again.',
+      message: 'Password updated successfully.',
+      accessToken,
+      admin: {
+        id: rotated.id,
+        username: rotated.username,
+        mustChangePassword: false,
+      },
     });
   } catch (err) {
     try {

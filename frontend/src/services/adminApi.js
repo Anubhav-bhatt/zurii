@@ -19,10 +19,18 @@ import { API_BASE_URL } from '../config/api';
  */
 
 export class AdminApiError extends Error {
-  constructor(message, { status = 0, cause } = {}) {
+  constructor(message, { status = 0, code = null, cause } = {}) {
     super(message);
     this.name = 'AdminApiError';
     this.status = status;
+    /**
+     * The server's machine-readable reason, when it sends one. Currently only
+     * `PASSWORD_CHANGE_REQUIRED` (403), which an authenticated page can receive
+     * mid-session if an operator resets that admin's password while they work.
+     * Callers route on this; nothing security-relevant depends on it, since the
+     * backend has already refused the request by the time it is read.
+     */
+    this.code = code;
     this.cause = cause;
   }
 }
@@ -114,9 +122,17 @@ export function getAdminSession(options = {}) {
  * The current password is required even though a valid session exists: a
  * borrowed laptop or a stolen token must not be enough to take over the account.
  *
- * On success the server increments token_version, which revokes THIS session
- * too — so the caller must send the admin back to the login screen rather than
- * carrying on. The local token is cleared here to make that unavoidable.
+ * On success the server increments token_version — which revokes the token that
+ * made this request, along with every other token that admin holds — and then
+ * issues a replacement pair minted at the new version. So the token swapped in
+ * below is not the old session surviving the change; the old one is dead, and
+ * this is a new one for the same admin.
+ *
+ * That is what lets the forced first-login flow continue straight into the
+ * dashboard instead of bouncing to a login form that would ask, seconds later,
+ * for a password the person has not yet committed to memory.
+ *
+ * @returns {Promise<{ message: string, admin: object|null }>}
  */
 export async function changeAdminPassword(currentPassword, newPassword) {
   let res;
@@ -141,9 +157,17 @@ export async function changeAdminPassword(currentPassword, newPassword) {
     throw error;
   }
 
-  // The session that made this request is now revoked server-side.
-  accessToken = null;
-  return body.message ?? 'Password changed successfully. Please sign in again.';
+  // Swap in the freshly issued token. Assigned unconditionally: if the server
+  // ever answers without one, the old token is still revoked server-side, so
+  // holding on to it would leave the page believing it has a session while
+  // every request 401s. Null is the honest state, and the caller's next
+  // adminFetch will try the (also new) refresh cookie before giving up.
+  accessToken = body.accessToken ?? null;
+
+  return {
+    message: body.message ?? 'Password updated successfully.',
+    admin: body.admin ?? null,
+  };
 }
 
 /** Clear the session locally and revoke the refresh cookie server-side. */
@@ -207,7 +231,10 @@ export async function adminFetch(path, { signal, headers, ...options } = {}) {
 
   const body = await res.json().catch(() => null);
   if (!res.ok) {
-    throw new AdminApiError(body?.error || `Request failed (${res.status})`, { status: res.status });
+    throw new AdminApiError(body?.error || `Request failed (${res.status})`, {
+      status: res.status,
+      code: body?.code ?? null,
+    });
   }
   if (!body?.success) {
     throw new AdminApiError(body?.error || 'Unexpected response from the server.', { status: res.status });

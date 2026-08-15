@@ -566,9 +566,12 @@ function Dashboard({ username, onAuthLost, onPasswordChangeRequired }) {
           <ChangePasswordForm
             username={username}
             onCancel={() => setShowPasswordForm(false)}
-            // Changing it revokes this session, so the only coherent next step
-            // is the login screen.
-            onDone={onAuthLost}
+            // The change revokes every token issued before it and the server
+            // hands back a fresh one, so this session continues. Closing the
+            // form is the whole of the cleanup — the admin stays where they
+            // were rather than being thrown out of a dashboard they are still
+            // entitled to for having rotated their own password.
+            onDone={() => setShowPasswordForm(false)}
           />
         </div>
       )}
@@ -822,10 +825,10 @@ export default function AdminAnalyticsPage() {
           forced
           username={sessionUser}
           onDone={() => {
-            // The change revoked this session server-side; the only correct
-            // next step is signing in again with the new password.
-            setSessionUser(null);
-            setAuth('login');
+            // The temporary password is dead and a fresh session was issued as
+            // part of the change, so this continues into the dashboard rather
+            // than asking for the password the admin chose seconds ago.
+            setAuth('ready');
           }}
         />
       </div>
