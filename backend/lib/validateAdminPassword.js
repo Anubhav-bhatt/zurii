@@ -124,9 +124,23 @@ function check(password, username, minLength) {
   // stronger than the weak seed it repeats.
   const matched = WEAK_PASSWORDS.find((weak) => lowered.includes(weak) || normalized.includes(weak));
   if (matched) {
+    // Name the term that matched.
+    //
+    // This used to return the same sentence as the length failure — "must be at
+    // least N characters and must not be a common/default password" — which is
+    // unusable feedback for the case it most often fires on: a long passphrase
+    // that happens to contain the brand name. Someone typing a 30-character
+    // password reads "must be at least 20 characters", concludes the rule is
+    // broken, and tries variations of the same rejected word.
+    //
+    // Echoing `matched` is safe and is not echoing the password: it is one of
+    // the fifteen fixed strings in WEAK_PASSWORDS above, never arbitrary input,
+    // and the block-list is public in this file. What must never appear is the
+    // submitted password itself, which is why the surrounding text is fixed and
+    // only the matched term is interpolated.
     return {
       valid: false,
-      error: `Admin password must be at least ${minLength} characters and must not be a common/default password.`,
+      error: `Admin password must not contain "${matched}" — it is a common or brand-related term attackers try first. Choose unrelated words.`,
     };
   }
 
