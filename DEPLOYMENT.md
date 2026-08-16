@@ -297,6 +297,44 @@ public entrypoint, sets `restart: always`, and never publishes the database.
 Point your reverse proxy at `127.0.0.1:${WEB_PORT}` and configure it to
 redirect HTTP to HTTPS and to send `X-Forwarded-Proto`.
 
+### Render (backend only)
+
+`render.yaml` at the repository root is a Blueprint for the API as a Docker web
+service. Apply it from **Blueprints → New Blueprint Instance**; Render reads the
+file from the repo, so the service's shape stays reviewed and versioned.
+
+Render prompts for every value marked `sync: false` — `DATABASE_URL`,
+`DATABASE_CA_CERT`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `ALLOWED_ORIGINS`. None
+of them is in the file, and none should ever be.
+
+Three settings that are specific to running behind Render's edge:
+
+- **`TRUST_PROXY=1`.** Render terminates TLS and forwards to the container, so
+  without this `req.ip` is Render's address for every request. The login rate
+  limiter would then bucket the whole internet into one key — a single attacker
+  could lock out every admin — and the audit trail would record the proxy's IP
+  on every event.
+- **`healthCheckPath: /api/health`, not `/api/ready`.** Render restarts a
+  service whose health check fails, and restarts cannot fix an unreachable
+  database — pointing it at the readiness probe turns a transient Aiven blip
+  into a flap. Boot-time database failure is already fatal: `server.js` awaits
+  `initDB()` and exits non-zero. Curl `/api/ready` yourself for the
+  database-backed answer.
+- **`DATABASE_SSL=verify` with `DATABASE_CA_CERT`.** Aiven issues its own CA;
+  paste the PEM from their console. Without it the connection is encrypted but
+  unauthenticated, and the startup log says so.
+
+The entrypoint applies all five idempotent migrations before the server starts,
+so a fresh Render deploy needs no manual migration step. That assumes **one
+instance** — see the note in `backend/docker-entrypoint.sh` before scaling up.
+
+> **Before you point a browser frontend at this API**, read the cross-site
+> cookie warning in `render.yaml`. The refresh cookie is `SameSite=Lax`, and two
+> `*.onrender.com` subdomains are different *sites* — `onrender.com` is on the
+> Public Suffix List — so the cookie will not be sent and admins will be signed
+> out when their 15-minute access token expires. Setting `ALLOWED_ORIGINS` fixes
+> CORS; it does not fix this.
+
 ---
 
 ## Verification

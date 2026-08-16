@@ -1,0 +1,110 @@
+# Render Blueprint — Zurii Travels API
+#
+# Deploys backend/ as a Docker web service. Apply it from the Render dashboard
+# (Blueprints → New Blueprint Instance) and Render reads this file from the
+# repository, so the service's shape is reviewed and versioned like the rest of
+# the code rather than living only in a web form.
+#
+# WHAT IS NOT HERE, DELIBERATELY: every secret. Each one below is marked
+# `sync: false`, which tells Render to prompt for it once and store it in the
+# service's own environment. A value written here would be committed, and the
+# whole point of the config validation in backend/config/env.js is that
+# credentials never live in the repository.
+#
+# The frontend is not part of this blueprint yet. See the note on
+# ALLOWED_ORIGINS below before you point a browser app at this API.
+
+services:
+  - type: web
+    name: zurii-api
+    runtime: docker
+
+    # Build context is backend/ only — matching docker-compose.yml, and the
+    # reason backend/.dockerignore can keep the image narrow.
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+
+    # Pick the region closest to the Aiven instance. Every request does at least
+    # one round trip to PostgreSQL, and requireAuth adds one more on every
+    # authenticated call, so a cross-continent hop here is felt on every page.
+    region: singapore
+
+    plan: starter
+    branch: main
+    autoDeploy: true
+
+    # Liveness, NOT readiness — a deliberate inversion of what the Dockerfile
+    # probes, because the two health checks answer to different consequences.
+    #
+    # Render restarts a service whose health check fails. /api/ready runs a real
+    # `SELECT 1`, so pointing Render at it would turn a transient Aiven blip
+    # into a restart loop: the restarts cannot fix a database that is down, and
+    # the service would flap until it recovered on its own. /api/health reports
+    # whether the process is alive, which is the only thing a restart can
+    # actually repair.
+    #
+    # Boot-time database failure is already covered without this: server.js
+    # awaits initDB() and exits non-zero when PostgreSQL is unreachable, so a
+    # genuinely broken deploy fails immediately and Render reports it.
+    #
+    # Curl /api/ready yourself when you want the database-backed answer.
+    healthCheckPath: /api/health
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      # Render terminates TLS at its edge and forwards to this container, so
+      # req.ip is the proxy's address unless Express is told how many hops to
+      # trust. Without it the login rate limiter buckets every visitor on the
+      # planet into one key — one attacker could lock out all admins — and the
+      # audit trail records Render's IP for every event instead of the client's.
+      # 1 = a single trusted hop, which is Render's topology.
+      - key: TRUST_PROXY
+        value: "1"
+
+      # Verify the Aiven certificate chain rather than merely encrypting to it.
+      # `no-verify` still encrypts but accepts any certificate, which leaves the
+      # connection open to an active man-in-the-middle — and this connection
+      # carries every lead, every admin hash and every audit row.
+      #
+      # Requires DATABASE_CA_CERT below. If you have not fetched the CA yet, set
+      # this to `no-verify` to get deployed, then come back and finish it.
+      - key: DATABASE_SSL
+        value: verify
+
+      # ── set by hand in the Render dashboard, never in this file ──
+
+      - key: DATABASE_URL
+        sync: false
+
+      # Aiven's CA certificate, from the service overview in their console.
+      # Accepts the PEM text directly.
+      - key: DATABASE_CA_CERT
+        sync: false
+
+      # Generate two DIFFERENT values, 32+ characters each:
+      #   openssl rand -hex 48
+      # Rotating either one invalidates every outstanding token of that kind,
+      # which is the intended emergency lever.
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+
+      # REQUIRED in production — backend/config/env.js refuses to start without
+      # it, and rejects '*' because this API serves credentialed admin requests.
+      # Comma-separated bare origins, no trailing path:
+      #   https://zurii.example.com,https://www.zurii.example.com
+      #
+      # CROSS-SITE COOKIE WARNING. The refresh cookie is SameSite=Lax. If the
+      # frontend ends up on a different *site* from this API — and note that
+      # onrender.com is on the Public Suffix List, so two *.onrender.com
+      # subdomains already count as different sites — the browser will not send
+      # that cookie, and admins will be signed out the moment their 15-minute
+      # access token expires. Listing the origin here fixes CORS; it does not
+      # fix the cookie. Serve the SPA behind the same origin (a Static Site with
+      # a /api/* rewrite to this service), or switch the cookie to
+      # SameSite=None; Secure in backend/server.js.
+      - key: ALLOWED_ORIGINS
+        sync: false
