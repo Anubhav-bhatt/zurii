@@ -161,6 +161,51 @@ describe('CORS allowlist', () => {
       done();
     });
   });
+
+  // The way this is actually mistyped in a dashboard. An Origin header is
+  // scheme + host + port and never carries a trailing slash, but the address
+  // bar shows one and copying the URL gives you one — and the config validator
+  // accepts it, because `new URL('https://x/').pathname` is '/' and the no-path
+  // rule is satisfied. Before the entries were canonicalised, that single
+  // character blocked every browser request while the server booted healthy and
+  // answered curl with 200: a production outage with nothing in the logs.
+  const equivalent = [
+    ['a trailing slash', 'https://zurii.example/'],
+    ['an uppercase host', 'https://ZURII.example'],
+    ['a redundant default port', 'https://zurii.example:443'],
+  ];
+
+  for (const [label, configured] of equivalent) {
+    it(`matches a browser Origin when configured with ${label}`, (t, done) => {
+      const previous = process.env.ALLOWED_ORIGINS;
+      process.env.ALLOWED_ORIGINS = configured;
+      corsOrigin('https://zurii.example', (err, allowed) => {
+        process.env.ALLOWED_ORIGINS = previous;
+        assert.equal(err, null);
+        assert.equal(allowed, true, `${configured} must match the origin a browser sends`);
+        done();
+      });
+    });
+  }
+
+  it('still refuses a genuinely different origin after canonicalisation', (t, done) => {
+    const previous = process.env.ALLOWED_ORIGINS;
+    process.env.ALLOWED_ORIGINS = 'https://zurii.example/';
+    // Normalising must not become "close enough is fine": a different host, a
+    // different scheme and a non-default port all remain separate origins.
+    const checks = ['https://evil.example', 'http://zurii.example', 'https://zurii.example:8443'];
+    let remaining = checks.length;
+    for (const origin of checks) {
+      corsOrigin(origin, (err, allowed) => {
+        assert.equal(allowed, false, `${origin} must stay refused`);
+        remaining -= 1;
+        if (remaining === 0) {
+          process.env.ALLOWED_ORIGINS = previous;
+          done();
+        }
+      });
+    }
+  });
 });
 
 describe('security headers', () => {

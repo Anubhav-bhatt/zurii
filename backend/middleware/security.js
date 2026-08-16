@@ -52,11 +52,42 @@ const DEV_ORIGINS = [
  * live API. In production the allowlist is exactly what ALLOWED_ORIGINS says,
  * which config/env.js requires to be set there for precisely this reason.
  */
+/**
+ * Reduce a configured entry to the exact string a browser puts in `Origin`.
+ *
+ * An Origin header is scheme + host + port and nothing else — never a trailing
+ * slash. But `https://zurii.vercel.app/` is what a person naturally writes,
+ * because it is what the address bar shows and what copying the URL gives you.
+ * The comparison below is a Set lookup on the exact string, so that one
+ * character used to be the difference between a working deployment and a site
+ * where every request is blocked.
+ *
+ * It failed in the worst possible way: the config validator accepts it, since
+ * `new URL('https://x/').pathname` is `'/'` and the no-path rule is satisfied;
+ * the server boots reporting healthy; the API answers 200 to curl; and only a
+ * real browser refuses, with a CORS error naming an origin that looks
+ * identical to the configured one. Nothing in the logs says which character is
+ * wrong.
+ *
+ * `new URL(o).origin` normalises all of it — trailing slash, an accidental
+ * path, uppercase in the host, a redundant :443 — to the canonical form.
+ * Malformed values are left as-is for the Set to simply not match, because
+ * config/env.js has already rejected them at startup.
+ */
+function canonicalOrigin(value) {
+  try {
+    return new URL(value).origin;
+  } catch {
+    return value;
+  }
+}
+
 function allowedOrigins() {
   const configured = (process.env.ALLOWED_ORIGINS || '')
     .split(',')
     .map((o) => o.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .map(canonicalOrigin);
   if (process.env.NODE_ENV === 'production') return new Set(configured);
   return new Set([...configured, ...DEV_ORIGINS]);
 }
