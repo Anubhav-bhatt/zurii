@@ -127,6 +127,34 @@ function validateDatabaseSsl(raw) {
  * @property {boolean} [secret]    true = never echo, even redacted
  */
 
+/**
+ * SameSite for the refresh cookie.
+ *
+ * `lax` is right whenever the browser reaches the API on the same site it
+ * loaded the app from — the Docker image (nginx proxies /api/ to the backend)
+ * and any single-domain deployment. The cookie is then never sent from a
+ * third-party context at all, which is the strongest position.
+ *
+ * `none` exists for one deployment shape: the SPA on one site and this API on
+ * another, e.g. Vercel plus Render. There the browser treats every API call as
+ * cross-site and refuses to attach a Lax cookie, so sessions silently die the
+ * moment the 15-minute access token expires. `none` is the only value that
+ * works, and the browser requires `Secure` alongside it — which is enforced in
+ * server.js rather than trusted to the operator.
+ *
+ * `strict` is deliberately not offered: it would break the ordinary case of an
+ * admin following a link into the dashboard from another site, for no gain
+ * over `lax` here.
+ */
+const SAMESITE_MODES = ['lax', 'none'];
+
+function validateCookieSameSite(raw) {
+  if (!SAMESITE_MODES.includes(raw.trim().toLowerCase())) {
+    return `must be one of: ${SAMESITE_MODES.join(', ')}.`;
+  }
+  return null;
+}
+
 /** @type {Record<string, VariableSpec>} */
 const SPEC = {
   DATABASE_URL: {
@@ -175,6 +203,12 @@ const SPEC = {
     required: false,
     secret: true,
     description: 'Optional bootstrap admin accounts, "user:password". Prefer create-admin.js.',
+  },
+  COOKIE_SAMESITE: {
+    required: false,
+    validate: validateCookieSameSite,
+    description:
+      "Refresh-cookie SameSite: lax (default, same-site deployments) | none (frontend on a different site; forces Secure).",
   },
   NODE_ENV: {
     required: false,
@@ -265,8 +299,9 @@ function loadConfig() {
     port: Number(process.env.PORT) || 5001,
     trustProxy: absent(process.env.TRUST_PROXY) ? null : Number(process.env.TRUST_PROXY),
     adminSeed: process.env.ADMIN_SEED || '',
+    cookieSameSite: (process.env.COOKIE_SAMESITE || 'lax').trim().toLowerCase(),
     isProduction: isProduction(),
   });
 }
 
-module.exports = { SPEC, inspectEnv, loadConfig, MIN_SECRET_LENGTH, SSL_MODES };
+module.exports = { SPEC, inspectEnv, loadConfig, MIN_SECRET_LENGTH, SSL_MODES, SAMESITE_MODES };

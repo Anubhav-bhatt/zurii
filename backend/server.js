@@ -73,6 +73,56 @@ const JWT_REFRESH_SECRET = config.jwtRefreshSecret;
 const ACCESS_TOKEN_EXPIRY = '15m';   // 15 minutes
 const REFRESH_TOKEN_EXPIRY = '7d';   // 7 days
 
+const REFRESH_COOKIE_NAME = 'zurii_refresh_token';
+
+/**
+ * The refresh cookie's attributes — ONE definition, used by every place that
+ * sets it and every place that clears it.
+ *
+ * They were previously written out at each `res.cookie` call and omitted at
+ * each `res.clearCookie`, which left the clears carrying only `path`. A cookie
+ * is cleared by overwriting it with an expired one, and a browser will only
+ * treat that as the same cookie when the attributes line up — so on the strict
+ * ones, and on `SameSite=None` in particular, logout could leave a live refresh
+ * cookie in the browser. Server-side revocation meant it was already useless
+ * (logout bumps token_version), but a dead credential that lingers in a browser
+ * is exactly the kind of thing that stops being harmless after the next
+ * refactor.
+ *
+ * SAMESITE. `lax` for same-site deployments; `none` when the SPA is on a
+ * different site from this API — Vercel plus Render, say, where the browser
+ * treats every API call as cross-site and silently refuses to attach a Lax
+ * cookie. The symptom is not an error: login succeeds, the dashboard works for
+ * fifteen minutes on the in-memory access token, and then the session dies with
+ * no way to renew it, and every page reload lands on the login screen.
+ *
+ * SECURE is forced true whenever SameSite is `none`, because browsers reject
+ * that combination outright otherwise — the cookie would simply never be
+ * stored. Leaving that to the operator to remember means a deployment that
+ * looks configured and does not work.
+ */
+const crossSiteCookie = config.cookieSameSite === 'none';
+const REFRESH_COOKIE_OPTIONS = Object.freeze({
+  httpOnly: true,                                  // Not accessible via JavaScript
+  secure: config.isProduction || crossSiteCookie,  // HTTPS only
+  sameSite: config.cookieSameSite,
+  path: '/',
+});
+
+/** Set options add the lifetime; the clear must not carry one. */
+const REFRESH_COOKIE_SET_OPTIONS = Object.freeze({
+  ...REFRESH_COOKIE_OPTIONS,
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
+});
+
+// A cross-site cookie that is not Secure is dropped by the browser, and a
+// deployment whose sessions silently fail is worse than one that refuses to
+// start. This can only trigger with NODE_ENV unset and COOKIE_SAMESITE=none —
+// i.e. someone testing the cross-site setup over plain HTTP.
+if (crossSiteCookie && !REFRESH_COOKIE_OPTIONS.secure) {
+  throw new Error('COOKIE_SAMESITE=none requires Secure cookies, which requires HTTPS.');
+}
+
 // Middleware
 //
 // Fingerprinting: Express advertises itself in X-Powered-By on every response.
@@ -454,13 +504,7 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     const refreshToken = generateRefreshToken(admin);
 
     // Set refresh token as HttpOnly cookie
-    res.cookie('zurii_refresh_token', refreshToken, {
-      httpOnly: true,       // Not accessible via JavaScript
-      secure: process.env.NODE_ENV === 'production',  // HTTPS only in production
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days in ms
-      path: '/',
-    });
+    res.cookie(REFRESH_COOKIE_NAME, refreshToken, REFRESH_COOKIE_SET_OPTIONS);
 
     res.status(200).json({
       success: true,
@@ -500,7 +544,7 @@ app.post('/api/auth/refresh', refreshLimiter, async (req, res) => {
       [decoded.id]
     );
     if (result.rows.length === 0) {
-      res.clearCookie('zurii_refresh_token', { path: '/' });
+      res.clearCookie(REFRESH_COOKIE_NAME, REFRESH_COOKIE_OPTIONS);
       return res.status(401).json({
         success: false,
         error: 'Admin account no longer exists.'
@@ -526,7 +570,7 @@ app.post('/api/auth/refresh', refreshLimiter, async (req, res) => {
           route: '/api/auth/refresh',
         },
       });
-      res.clearCookie('zurii_refresh_token', { path: '/' });
+      res.clearCookie(REFRESH_COOKIE_NAME, REFRESH_COOKIE_OPTIONS);
       return res.status(401).json({
         success: false,
         error: 'Session expired. Please log in again.'
@@ -553,7 +597,7 @@ app.post('/api/auth/refresh', refreshLimiter, async (req, res) => {
           route: '/api/auth/refresh',
         },
       });
-      res.clearCookie('zurii_refresh_token', { path: '/' });
+      res.clearCookie(REFRESH_COOKIE_NAME, REFRESH_COOKIE_OPTIONS);
       return res.status(401).json({
         success: false,
         error: 'Session expired. Please log in again.'
@@ -573,7 +617,7 @@ app.post('/api/auth/refresh', refreshLimiter, async (req, res) => {
     });
   } catch (err) {
     // If refresh token is expired or invalid, clear the cookie
-    res.clearCookie('zurii_refresh_token', { path: '/' });
+    res.clearCookie(REFRESH_COOKIE_NAME, REFRESH_COOKIE_OPTIONS);
     return res.status(401).json({ 
       success: false, 
       error: 'Session expired. Please log in again.' 
@@ -646,7 +690,7 @@ app.post('/api/auth/logout', async (req, res) => {
     }
   }
 
-  res.clearCookie('zurii_refresh_token', { path: '/' });
+  res.clearCookie(REFRESH_COOKIE_NAME, REFRESH_COOKIE_OPTIONS);
   res.status(200).json({ success: true, message: 'Logged out successfully.' });
 });
 
@@ -954,13 +998,7 @@ app.post('/api/admin/change-password', requireAuthAllowPasswordChange, async (re
     const accessToken = generateAccessToken(rotated);
     const refreshToken = generateRefreshToken(rotated);
 
-    res.cookie('zurii_refresh_token', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/',
-    });
+    res.cookie(REFRESH_COOKIE_NAME, refreshToken, REFRESH_COOKIE_SET_OPTIONS);
 
     return res.status(200).json({
       success: true,

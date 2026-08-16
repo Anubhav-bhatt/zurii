@@ -565,6 +565,79 @@ describe('failed authentication says the same thing every time', () => {
   });
 });
 
+// ── the refresh cookie's attributes ─────────────────────────────────
+//
+// These are the difference between a session that survives and one that dies
+// after fifteen minutes, and every one of them fails silently when wrong: the
+// browser simply declines to store or send the cookie, and the app reports
+// nothing worse than "please log in again". Pinned here because nothing else
+// would notice.
+
+describe('the refresh cookie is set with the attributes the session depends on', () => {
+  let setCookie;
+
+  it('is issued on login', async () => {
+    const res = await fetch(`${base}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: BOB, password: BOB_PASSWORD }),
+    });
+    assert.equal(res.status, 200);
+    setCookie = res.headers.get('set-cookie') || '';
+    assert.match(setCookie, /zurii_refresh_token=/);
+  });
+
+  it('is HttpOnly, so a stolen script cannot read it', () => {
+    assert.match(setCookie, /HttpOnly/i);
+  });
+
+  it('is scoped to the whole app, so every route can renew', () => {
+    assert.match(setCookie, /Path=\//i);
+  });
+
+  it('carries the configured SameSite, and Secure whenever that is None', () => {
+    const sameSite = /SameSite=(\w+)/i.exec(setCookie)?.[1]?.toLowerCase();
+    assert.ok(['lax', 'none'].includes(sameSite), `unexpected SameSite: ${sameSite}`);
+
+    // The combination browsers reject outright. Getting this wrong means the
+    // cookie is never stored at all — the exact silent failure this suite
+    // exists to catch.
+    if (sameSite === 'none') {
+      assert.match(setCookie, /Secure/i, 'SameSite=None is only accepted alongside Secure');
+    }
+  });
+
+  it('does not put the refresh token anywhere a script can reach it', async () => {
+    const res = await fetch(`${base}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: BOB, password: BOB_PASSWORD }),
+    });
+    const body = await res.json();
+    assert.ok(!('refreshToken' in body), 'the refresh token must live only in the HttpOnly cookie');
+    assert.ok(body.accessToken, 'the access token, by contrast, is returned for in-memory use');
+  });
+
+  it('is cleared on logout with attributes matching the ones it was set with', async () => {
+    const session = await login(BOB, BOB_PASSWORD);
+    const res = await fetch(`${base}/api/auth/logout`, {
+      method: 'POST',
+      headers: { Cookie: `zurii_refresh_token=${session.refresh}` },
+    });
+    const cleared = res.headers.get('set-cookie') || '';
+
+    // A cookie is deleted by overwriting it with an expired one, and the
+    // browser only treats that as the SAME cookie when the attributes line up.
+    // A clear that omits them can leave the original in place.
+    assert.match(cleared, /zurii_refresh_token=/);
+    assert.match(cleared, /Path=\//i, 'the clear must repeat Path');
+    assert.match(cleared, /HttpOnly/i, 'the clear must repeat HttpOnly');
+    const setSameSite = /SameSite=(\w+)/i.exec(setCookie)?.[1]?.toLowerCase();
+    const clearSameSite = /SameSite=(\w+)/i.exec(cleared)?.[1]?.toLowerCase();
+    assert.equal(clearSameSite, setSameSite, 'the clear must repeat SameSite');
+  });
+});
+
 describe('unauthenticated access is unaffected by any of this', () => {
   it('refuses the lifecycle endpoints without a token', async () => {
     assert.equal((await call('/api/admin/session', null)).status, 401);
