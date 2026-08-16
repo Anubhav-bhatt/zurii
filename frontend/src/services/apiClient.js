@@ -8,7 +8,31 @@ import { API_BASE_URL } from '../config/api';
  * `{ success: false, error }` on failure — see backend/routes/travel.js.
  */
 
-const DEFAULT_TIMEOUT_MS = 10000;
+/**
+ * Long enough to survive a backend cold start.
+ *
+ * 10s was the previous value, and it is a sensible number for a server that is
+ * already running — a warm response here takes about 300ms, so anything beyond
+ * a second means something is wrong. But the API is deployed on an instance
+ * that suspends after a period of inactivity, and the first request after that
+ * has to wait for the process to boot and reconnect to PostgreSQL: measured at
+ * 18.5s, and the platform allows longer.
+ *
+ * So the first visitor after a quiet spell got an aborted request and an empty
+ * page, while their request woke the server — meaning any reload a few seconds
+ * later worked perfectly. That is the worst shape a bug can have: it never
+ * reproduces for whoever is investigating, because loading the page is itself
+ * the thing that fixes it.
+ *
+ * 30s is chosen to cover that boot with margin. It costs nothing when the
+ * server is warm, since the timeout only matters when a request is already
+ * failing, and the pages render skeletons while they wait — so a slow first
+ * load looks like loading rather than an error.
+ *
+ * The real fix is an instance that does not suspend, at which point this is
+ * only a safety net. Lower it if that changes.
+ */
+const DEFAULT_TIMEOUT_MS = 30000;
 
 export class ApiError extends Error {
   constructor(message, { status = 0, cause } = {}) {
