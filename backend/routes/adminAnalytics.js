@@ -72,7 +72,24 @@ function clampDays(value) {
 /** pg returns COUNT/AVG as strings; the dashboard needs real numbers. */
 const num = (value) => (value === null || value === undefined ? null : Number(value));
 
-/** The list row for GET /bookings — no email/phone/message at list level. */
+/**
+ * The list row for GET /bookings — no email, phone or message at list level.
+ *
+ * The omission is deliberate and is asserted by tests/analytics-api.test.mjs.
+ * Two consumers read this endpoint: the analytics dashboard, which draws counts
+ * and trends and needs no personal data whatsoever, and the CRM's Trip
+ * Enquiries tab. Widening the list to suit the second would put up to
+ * BOOKINGS_LIMIT customers' contact details into every response the first one
+ * makes, for no use — the largest, most routine exposure of personal data in
+ * the application, created to save a request.
+ *
+ * The CRM reads contact details from GET /bookings/:id instead, one lead at a
+ * time, when an operator actually opens that lead. Same data, same
+ * authorisation, a fraction of the exposure.
+ *
+ * `departureCity` is here because it is trip logistics rather than a way to
+ * contact anyone, and the list is more useful for showing it.
+ */
 function serializeBookingListRow(row) {
   return {
     id: row.id,
@@ -81,6 +98,7 @@ function serializeBookingListRow(row) {
     packageSlug: row.package_slug,
     travelDate: row.travel_date,
     travellers: row.travellers,
+    departureCity: row.departure_city,
     status: row.status,
     createdAt: row.created_at,
     hasJourney: row.visitor_id !== null,
@@ -442,7 +460,8 @@ module.exports = function createAdminAnalyticsRouter(pool) {
       }
 
       const { rows } = await pool.query(
-        `SELECT b.id, b.name, b.travellers, b.status, b.created_at, b.visitor_id,
+        `SELECT b.id, b.name, b.travellers, b.departure_city, b.status,
+                b.created_at, b.visitor_id,
                 to_char(b.travel_date, 'YYYY-MM-DD') AS travel_date,
                 p.title AS package_title, p.slug AS package_slug
            FROM bookings b

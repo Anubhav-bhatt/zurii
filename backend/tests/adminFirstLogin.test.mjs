@@ -528,6 +528,42 @@ describe('a deactivated admin is refused everywhere', () => {
   });
 });
 
+// ── username uniqueness matches how login queries ───────────────────
+
+describe('admin usernames are unique case-insensitively', () => {
+  it('refuses a second account differing only by case', async () => {
+    // Login matches WHERE LOWER(username) = $1. Without a matching constraint
+    // both rows satisfy the plain unique index, one login matches two rows, and
+    // which account authenticates — whose password is checked — is whatever
+    // Postgres returns first.
+    const collision = BOB.toUpperCase();
+    await assert.rejects(
+      () =>
+        pool.query(
+          `INSERT INTO admins (username, password_hash, must_change_password, active)
+           VALUES ($1, $2, FALSE, TRUE)`,
+          [collision, '$2b$12$0123456789012345678901234567890123456789012345678901']
+        ),
+      (err) => err.code === '23505',
+      'the database must reject a case-colliding username'
+    );
+
+    const { rows } = await pool.query('SELECT COUNT(*)::int AS n FROM admins WHERE LOWER(username) = LOWER($1)', [BOB]);
+    assert.equal(rows[0].n, 1, 'exactly one account may answer to a given username');
+  });
+
+  it('still allows genuinely different usernames', async () => {
+    const name = `zzfl-distinct-${RUN}`;
+    const { rows } = await pool.query(
+      `INSERT INTO admins (username, password_hash, must_change_password, active)
+       VALUES ($1, $2, FALSE, TRUE) RETURNING id`,
+      [name, '$2b$12$0123456789012345678901234567890123456789012345678901']
+    );
+    assert.ok(rows[0].id, 'the constraint must not block unrelated names');
+    await pool.query('DELETE FROM admins WHERE id = $1', [rows[0].id]);
+  });
+});
+
 // ── the generic failure contract ────────────────────────────────────
 
 describe('failed authentication says the same thing every time', () => {
@@ -635,6 +671,113 @@ describe('the refresh cookie is set with the attributes the session depends on',
     const setSameSite = /SameSite=(\w+)/i.exec(setCookie)?.[1]?.toLowerCase();
     const clearSameSite = /SameSite=(\w+)/i.exec(cleared)?.[1]?.toLowerCase();
     assert.equal(clearSameSite, setSameSite, 'the clear must repeat SameSite');
+  });
+});
+
+// ── the CRM's two enquiry sources ───────────────────────────────────
+//
+// Enquiries from the Enquire buttons and the Plan Trip page are written to
+// `bookings`, while the contact forms write to `contacts`. The CRM read only
+// the second one, so the first was invisible — the row was in PostgreSQL and
+// no screen in the product would show it. These pin the contract the dashboard
+// now depends on: both sources reachable by one authenticated session, and the
+// booking list carrying the fields an operator needs to act on a lead.
+
+describe('the CRM can reach both enquiry sources with one session', () => {
+  let token;
+
+  it('authenticates', async () => {
+    const session = await login(BOB, BOB_PASSWORD);
+    assert.equal(session.status, 200);
+    token = session.token;
+  });
+
+  it('serves contact leads', async () => {
+    const res = await call('/api/contact', token);
+    assert.equal(res.status, 200);
+    assert.ok(Array.isArray(res.data), 'contacts must come back as a list');
+  });
+
+  it('serves trip enquiries from the same session', async () => {
+    const res = await call('/api/admin/bookings', token);
+    assert.equal(res.status, 200, 'the CRM reads this endpoint — it must not need a second login');
+    assert.ok(Array.isArray(res.data), 'bookings must come back as a list');
+  });
+
+  it('lists the trip context the CRM shows, and no contact details', async () => {
+    const { data } = await call('/api/admin/bookings', token);
+    if (data.length === 0) return; // nothing to assert against on an empty table
+
+    const row = data[0];
+    // Trip context — the reason bookings are not merged into `contacts`, which
+    // has nowhere to put any of it.
+    for (const field of ['id', 'name', 'packageTitle', 'travelDate', 'travellers', 'departureCity', 'status', 'createdAt']) {
+      assert.ok(field in row, `booking rows must preserve ${field}`);
+    }
+    // Deliberately absent. The analytics dashboard reads this same endpoint for
+    // counts and trends; carrying contact details here would put dozens of
+    // customers' email and phone into every one of those responses for no use.
+    // The CRM fetches them one lead at a time from /bookings/:id instead.
+    assert.equal(row.email, undefined, 'the list must not carry email');
+    assert.equal(row.phone, undefined, 'the list must not carry phone');
+    assert.equal(row.message, undefined, 'the list must not carry the message');
+  });
+
+  it('serves contact details one lead at a time, to an authenticated admin only', async () => {
+    const { data } = await call('/api/admin/bookings', token);
+    if (data.length === 0) return;
+
+    const id = data[0].id;
+    const detail = await call(`/api/admin/bookings/${id}`, token);
+    assert.equal(detail.status, 200);
+    for (const field of ['email', 'phone', 'message']) {
+      assert.ok(field in detail.data, `the detail view must expose ${field}`);
+    }
+    // The same record must stay closed to anyone without a session.
+    assert.equal((await call(`/api/admin/bookings/${id}`, null)).status, 401);
+  });
+
+  it('never exposes a password hash through either CRM source', async () => {
+    for (const route of ['/api/contact', '/api/admin/bookings']) {
+      const res = await fetch(`${base}${route}`, { headers: { Authorization: `Bearer ${token}` } });
+      const body = await res.text();
+      assert.ok(!body.includes('$2b$'), `${route} must not leak a hash`);
+      assert.ok(!body.includes('password_hash'), `${route} must not leak the column`);
+    }
+  });
+
+  it('refuses both sources without a token', async () => {
+    assert.equal((await call('/api/contact', null)).status, 401);
+    assert.equal((await call('/api/admin/bookings', null)).status, 401);
+  });
+
+  it('refuses both sources to an admin owing a password change', async () => {
+    const temp = await login(CARA, CARA_PRIVATE);
+    assert.equal(temp.status, 200);
+    // Cara has already replaced her temporary password by this point, so she is
+    // a normal admin — re-arm the flag to exercise the refusal, then clear it.
+    await pool.query('UPDATE admins SET must_change_password = TRUE WHERE id = $1', [caraId]);
+    for (const route of ['/api/contact', '/api/admin/bookings']) {
+      const res = await call(route, temp.token);
+      assert.equal(res.status, 403, `${route} must be refused`);
+      assert.equal(res.code, 'PASSWORD_CHANGE_REQUIRED');
+      assert.equal(res.data, undefined, `${route} must not leak data`);
+    }
+    await pool.query('UPDATE admins SET must_change_password = FALSE WHERE id = $1', [caraId]);
+  });
+
+  it('reading the CRM does not mutate either table', async () => {
+    const before = await pool.query(
+      'SELECT (SELECT COUNT(*)::int FROM contacts) AS c, (SELECT COUNT(*)::int FROM bookings) AS b'
+    );
+    for (let i = 0; i < 3; i += 1) {
+      await call('/api/contact', token);
+      await call('/api/admin/bookings', token);
+    }
+    const after = await pool.query(
+      'SELECT (SELECT COUNT(*)::int FROM contacts) AS c, (SELECT COUNT(*)::int FROM bookings) AS b'
+    );
+    assert.deepEqual(after.rows[0], before.rows[0], 'listing leads must never delete or create rows');
   });
 });
 

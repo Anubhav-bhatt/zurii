@@ -16,7 +16,8 @@
     "migrate:data": "node scripts/migrateTravelData.mjs",
     "migrate:extract": "node scripts/extractStaticData.mjs",
     "verify:data": "node scripts/verifyTravelData.mjs",
-    "migrate:admin-security": "node scripts/migrateAdminSecuritySchema.mjs"
+    "migrate:admin-security": "node scripts/migrateAdminSecuritySchema.mjs",
+    "migrate:admin-username": "node scripts/migrateAdminUsernameCase.mjs"
   },
   "keywords": [],
   "author": "",

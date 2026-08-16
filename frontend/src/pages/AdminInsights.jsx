@@ -10,6 +10,7 @@ import {
   AdminAuthError,
 } from '../services/adminApi';
 import ChangePasswordForm from '../components/admin/ChangePasswordForm';
+import TripEnquiries from '../components/admin/TripEnquiries';
 
 // Relative Time Helper
 const getRelativeTime = (dateString) => {
@@ -70,6 +71,23 @@ const AdminInsights = () => {
 
   // Tab State
   const [statusTab, setStatusTab] = useState('pending'); // 'pending' | 'completed'
+
+  // Which enquiry source is being viewed.
+  //
+  // The CRM read only `contacts`, so every enquiry from the Enquire buttons and
+  // the Plan Trip page — which the booking flow writes to `bookings` — was
+  // invisible here. The two tables are different models and stay separate; this
+  // switches which one the dashboard is showing rather than merging them.
+  const [leadSource, setLeadSource] = useState('contacts'); // 'contacts' | 'bookings'
+
+  // Trip enquiries live here rather than inside the tab component, because the
+  // tab badge and the KPI have to show a true count BEFORE anyone opens that
+  // tab. A count that only appears once you go looking is how these enquiries
+  // stayed invisible in the first place.
+  const [tripEnquiries, setTripEnquiries] = useState([]);
+  const [tripEnquiryCount, setTripEnquiryCount] = useState(null);
+  const [tripLoading, setTripLoading] = useState(false);
+  const [tripError, setTripError] = useState('');
 
   // Filtering & Sorting
   const [searchQuery, setSearchQuery] = useState('');
@@ -178,6 +196,43 @@ const AdminInsights = () => {
     }
   }, [clearSession]);
 
+  /**
+   * Trip enquiries — the `bookings` table, via the endpoint the analytics
+   * dashboard already uses. No new route was added for this.
+   *
+   * Failures are kept separate from the contacts fetch on purpose: if one
+   * source is unavailable the other still lists, rather than the whole CRM
+   * going dark over a table the operator may not even be looking at.
+   */
+  const fetchTripEnquiries = useCallback(async () => {
+    setTripLoading(true);
+    setTripError('');
+    try {
+      const data = await adminFetch('/api/admin/bookings', {
+        signal: AbortSignal.timeout(30000),
+      });
+      const rows = Array.isArray(data) ? data : [];
+      setTripEnquiries(rows);
+      setTripEnquiryCount(rows.length);
+    } catch (err) {
+      if (err instanceof AdminAuthError) {
+        clearSession();
+        return;
+      }
+      if (err instanceof AdminApiError && err.code === 'PASSWORD_CHANGE_REQUIRED') {
+        setAuthState('mustChangePassword');
+        return;
+      }
+      if (err.name === 'AbortError' || err.name === 'TimeoutError') {
+        setTripError('The request timed out. The server may be waking up — try again.');
+        return;
+      }
+      setTripError(err.message || 'Could not load trip enquiries.');
+    } finally {
+      setTripLoading(false);
+    }
+  }, [clearSession]);
+
   // Login handler — calls backend API
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -248,12 +303,14 @@ const AdminInsights = () => {
     return () => { cancelled = true; };
   }, []);
 
-  // Trigger fetch on auth state
+  // Trigger fetch on auth state. Both sources load up front so the Trip
+  // Enquiries tab shows a real count without having to be opened first.
   useEffect(() => {
     if (authState === 'authenticated') {
       fetchContacts();
+      fetchTripEnquiries();
     }
-  }, [authState, fetchContacts]);
+  }, [authState, fetchContacts, fetchTripEnquiries]);
 
   // Copy to clipboard helper
   const handleCopy = (text, key) => {
@@ -770,10 +827,23 @@ const AdminInsights = () => {
         {/* 📊 KPI ANALYTICS CARDS SECTION */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
-            { label: 'Pending Inquiries', value: kpis.pending, desc: `Quotes pending: ${kpis.highPriorityPending}`, icon: '🎒', color: 'text-violet-600 bg-violet-50 border-violet-100' },
-            { label: "Today's Leads", value: kpis.today, desc: `Overall: ${kpis.total} leads`, icon: '⚡', color: 'text-emerald-600 bg-emerald-50 border-emerald-100' },
-            { label: 'Completed Leads', value: kpis.completed, desc: 'Successfully processed', icon: '✅', color: 'text-green-600 bg-green-50 border-green-100' },
-            { label: 'Completion Rate', value: `${kpis.completionRate}%`, desc: `Leads completed ratio`, icon: '📈', color: 'text-blue-600 bg-blue-50 border-blue-100' },
+            // Every figure here is scoped to contact leads, because that is what
+            // `contacts` holds and what the pending/completed lifecycle applies
+            // to. The labels now say so. Before, "Overall: N leads" read as a
+            // count of all customer enquiries while silently excluding every
+            // trip enquiry — the same blind spot that hid them from the table.
+            { label: 'Pending Contact Leads', value: kpis.pending, desc: `High priority: ${kpis.highPriorityPending}`, icon: '🎒', color: 'text-violet-600 bg-violet-50 border-violet-100' },
+            {
+              label: "Today's Contact Leads",
+              value: kpis.today,
+              desc: tripEnquiryCount === null
+                ? `${kpis.total} contact leads · open Trip Enquiries for the rest`
+                : `${kpis.total} contact + ${tripEnquiryCount} trip = ${kpis.total + tripEnquiryCount} enquiries`,
+              icon: '⚡',
+              color: 'text-emerald-600 bg-emerald-50 border-emerald-100',
+            },
+            { label: 'Completed Contact Leads', value: kpis.completed, desc: 'Successfully processed', icon: '✅', color: 'text-green-600 bg-green-50 border-green-100' },
+            { label: 'Completion Rate', value: `${kpis.completionRate}%`, desc: `Contact leads completed`, icon: '📈', color: 'text-blue-600 bg-blue-50 border-blue-100' },
           ].map((card, idx) => (
             <div key={idx} className="bg-white border border-zinc-200/50 rounded-2xl p-5 shadow-xs flex items-center justify-between transition-premium hover:-translate-y-0.5 hover:shadow-sm">
               <div>
@@ -788,6 +858,50 @@ const AdminInsights = () => {
           ))}
         </div>
 
+        {/* ─── ENQUIRY SOURCE TABS ───
+            Contact leads and trip enquiries live in different tables with
+            different lifecycles, so they are shown side by side rather than
+            merged. Everything below the switch is the contacts CRM exactly as
+            it was. */}
+        <div className="flex items-center gap-1 mb-6 bg-zinc-100/70 p-1 rounded-xl w-fit">
+          {[
+            { key: 'contacts', label: 'Contact Leads', count: contacts.length },
+            { key: 'bookings', label: 'Trip Enquiries', count: tripEnquiryCount },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setLeadSource(tab.key)}
+              aria-pressed={leadSource === tab.key}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 flex items-center gap-2 ${
+                leadSource === tab.key
+                  ? 'bg-white text-zinc-900 shadow-xs'
+                  : 'text-zinc-500 hover:text-zinc-700'
+              }`}
+            >
+              {tab.label}
+              {tab.count !== null && tab.count !== undefined && (
+                <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.5 tabular-nums ${
+                  leadSource === tab.key ? 'bg-violet-50 text-violet-700' : 'bg-zinc-200/70 text-zinc-500'
+                }`}>
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {leadSource === 'bookings' && (
+          <TripEnquiries
+            enquiries={tripEnquiries}
+            loading={tripLoading}
+            error={tripError}
+            onRefresh={fetchTripEnquiries}
+          />
+        )}
+
+        {leadSource === 'contacts' && (
+        <>
         {/* 🛠️ CRM SEARCH & FILTER BAR */}
         <div className="bg-white rounded-2xl border border-zinc-200/50 shadow-xs p-5 md:p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
@@ -1288,6 +1402,8 @@ const AdminInsights = () => {
               </div>
             </div>
           </>
+        )}
+        </>
         )}
 
       </div>
