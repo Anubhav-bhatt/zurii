@@ -328,12 +328,84 @@ The entrypoint applies all five idempotent migrations before the server starts,
 so a fresh Render deploy needs no manual migration step. That assumes **one
 instance** — see the note in `backend/docker-entrypoint.sh` before scaling up.
 
-> **Before you point a browser frontend at this API**, read the cross-site
-> cookie warning in `render.yaml`. The refresh cookie is `SameSite=Lax`, and two
-> `*.onrender.com` subdomains are different *sites* — `onrender.com` is on the
-> Public Suffix List — so the cookie will not be sent and admins will be signed
-> out when their 15-minute access token expires. Setting `ALLOWED_ORIGINS` fixes
-> CORS; it does not fix this.
+> **Do not point the browser at this URL directly.** Serve the frontend with a
+> `/api/*` proxy to this service instead — see [Vercel
+> (frontend)](#vercel-frontend) below. The refresh cookie is `SameSite=Lax`, so a
+> browser calling this origin from another site will not send it, and admins get
+> signed out when their 15-minute access token expires. Setting `ALLOWED_ORIGINS`
+> fixes CORS; it does not fix this.
+
+### Vercel (frontend)
+
+`frontend/vercel.json` makes the SPA and the API one origin from the browser's
+point of view:
+
+```json
+{
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://zurii-alt4.onrender.com/api/:path*" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
+```
+
+The first rule proxies the API; the second is the SPA fallback, so a deep link
+like `/admin/insights` serves `index.html` instead of Vercel's 404. Order
+matters — a catch-all above the `/api` rule would swallow every API call.
+
+**`VITE_API_URL` must be unset or empty in the Vercel project.** This is the one
+setting that silently breaks admin sessions. `VITE_*` variables are read at
+*build* time and compiled into the bundle, and a dashboard value overrides the
+repository default, so setting it to `https://zurii-alt4.onrender.com` makes the
+browser bypass the proxy and call Render cross-site. The refresh cookie is then
+never sent and the symptom is not an error — login succeeds, the dashboard works
+for about fifteen minutes on the in-memory access token, and every page reload
+lands on the login screen. Leaving it unset makes a production build use
+same-origin `/api/...`; see `frontend/src/config/api.js`.
+
+Verify it from the deployed bundle rather than from the dashboard:
+
+```bash
+# The API origin the bundle was built with. Expect NO output — an empty base URL
+# means relative /api/... paths.
+curl -s https://zurii.vercel.app/ | grep -o '/assets/[^"]*\.js' | head -1 |
+  xargs -I{} curl -s https://zurii.vercel.app{} | grep -o 'https://[a-z0-9-]*\.onrender\.com'
+```
+
+With this topology the backend needs no cookie changes: leave `COOKIE_SAMESITE`
+unset so the refresh cookie stays `SameSite=Lax`, which is the strongest value
+that works. `ALLOWED_ORIGINS` is still required — config validation makes it
+mandatory in production — and should list the frontend origin, but it is no
+longer load-bearing for the browser, because the browser is not making a
+cross-origin request. `TRUST_PROXY=1` stays set for the reason above; Vercel
+adds a hop in front of Render, but Render's own edge is still the only hop whose
+`X-Forwarded-For` this service should trust.
+
+Check what the deployed backend actually sends, rather than what you think it is
+configured with. A bogus cookie takes the clear-cookie path and echoes the real
+attributes, without touching any account:
+
+```bash
+curl -s -i -X POST -H 'Cookie: zurii_refresh_token=bogus' \
+  https://zurii.vercel.app/api/auth/refresh | grep -i '^set-cookie'
+# Expect: Path=/; ...; HttpOnly; Secure; SameSite=Lax
+```
+
+#### Migrating off a cross-site setup
+
+If that probe reports `SameSite=None`, the deployment is on the cross-site
+topology and the two changes must be made **frontend first**:
+
+1. Clear `VITE_API_URL` in the Vercel project and redeploy, so the bundle calls
+   `/api/...` on its own origin. Sessions keep working throughout, because
+   `SameSite=None` is sent in first-party contexts too.
+2. **Then** delete `COOKIE_SAMESITE` on Render, returning the cookie to `Lax`.
+
+The reverse order signs out every admin in between: a `Lax` cookie with a
+still-cross-site bundle is precisely the combination the browser never sends.
+`SameSite=None` is also a third-party cookie, which Safari's ITP blocks outright
+and Firefox and Brave block in their default modes — so a cross-site deployment
+that "works" generally means it works in Chrome, for now.
 
 ---
 
@@ -483,9 +555,27 @@ localhost dev origins are deliberately **not** trusted.
 
 ### Admin login succeeds but you are signed out on the next page
 
-`NODE_ENV=production` while serving over plain HTTP. The refresh cookie is
-marked `Secure`, so the browser discards it. Either put TLS in front or set
-`NODE_ENV=development`.
+The refresh cookie is not coming back to `POST /api/auth/refresh`. Open the
+Network panel on a reload and look at that request: no `Cookie` header means the
+browser has it but will not send it, and a 401 with the cookie attached means the
+server rejected it. Three causes, in the order worth checking:
+
+1. **The browser is calling the API cross-site.** The requests should go to
+   `https://<your-frontend>/api/...`. If they go straight to the backend's own
+   origin, the `SameSite=Lax` cookie is not sent at all. Clear `VITE_API_URL` in
+   the frontend's build environment and redeploy — see [Vercel
+   (frontend)](#vercel-frontend). This is the common one, and the only one that
+   still lets login itself succeed.
+2. **`NODE_ENV=production` while serving over plain HTTP.** The cookie is marked
+   `Secure`, so the browser discards it on receipt. Put TLS in front, or set
+   `NODE_ENV=development` for a local HTTP deployment.
+3. **The token was revoked server-side.** Changing a password, logging out or
+   disabling the account all bump `token_version`, which invalidates every
+   outstanding refresh cookie by design. Signing in again fixes it.
+
+If you genuinely need the frontend on a different site from the API, set
+`COOKIE_SAMESITE=none` on the backend as well. It requires HTTPS, and it is
+weaker than the proxy — prefer the proxy.
 
 ### `port is already allocated`
 

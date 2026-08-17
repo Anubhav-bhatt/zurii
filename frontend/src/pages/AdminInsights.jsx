@@ -11,6 +11,7 @@ import {
 } from '../services/adminApi';
 import ChangePasswordForm from '../components/admin/ChangePasswordForm';
 import TripEnquiries from '../components/admin/TripEnquiries';
+import AllEnquiries from '../components/admin/AllEnquiries';
 
 // Relative Time Helper
 const getRelativeTime = (dateString) => {
@@ -78,7 +79,14 @@ const AdminInsights = () => {
   // the Plan Trip page — which the booking flow writes to `bookings` — was
   // invisible here. The two tables are different models and stay separate; this
   // switches which one the dashboard is showing rather than merging them.
-  const [leadSource, setLeadSource] = useState('contacts'); // 'contacts' | 'bookings'
+  //
+  // 'all' IS THE DEFAULT, AND THAT MATTERS. Landing on 'contacts' meant landing
+  // on one of two tables: the day it is empty, the dashboard says "No Inquiries
+  // Found" with every KPI at zero while trip enquiries sit one tab over. That is
+  // the same blind spot as before — the operator is not told to look elsewhere,
+  // they are told there is nothing. Defaulting to the union means an empty screen
+  // is the truth.
+  const [leadSource, setLeadSource] = useState('all'); // 'all' | 'contacts' | 'bookings'
 
   // Trip enquiries live here rather than inside the tab component, because the
   // tab badge and the KPI have to show a true count BEFORE anyone opens that
@@ -598,9 +606,20 @@ const AdminInsights = () => {
       if (c.priority === 'high' && status === 'pending') highPriorityPending++;
     });
 
-    const completionRate = contacts.length > 0 
-      ? Math.round((completed / contacts.length) * 100) 
+    const completionRate = contacts.length > 0
+      ? Math.round((completed / contacts.length) * 100)
       : 0;
+
+    // Trip enquiries, counted here so the cards above can speak for both tables.
+    // `tripEnquiries` is [] until that fetch lands, which is why the Total card
+    // reads `tripEnquiryCount === null` to distinguish "none" from "not yet".
+    let tripToday = 0;
+    let tripNew = 0;
+    tripEnquiries.forEach((e) => {
+      if (new Date(e.createdAt) >= todayStart) tripToday++;
+      // Anything the booking flow has not moved on from is still unhandled.
+      if (!e.status || e.status === 'NEW') tripNew++;
+    });
 
     return {
       total: contacts.length,
@@ -609,9 +628,13 @@ const AdminInsights = () => {
       today,
       highPriorityPending,
       completionRate,
-      filtered: filteredContacts.length
+      filtered: filteredContacts.length,
+      tripToday,
+      tripNew,
+      totalAll: contacts.length + tripEnquiries.length,
+      todayAll: today + tripToday,
     };
-  }, [contacts, filteredContacts.length]);
+  }, [contacts, filteredContacts.length, tripEnquiries]);
 
   const getCleanSource = (interest) => {
     if (!interest) return 'General';
@@ -827,23 +850,50 @@ const AdminInsights = () => {
         {/* 📊 KPI ANALYTICS CARDS SECTION */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
-            // Every figure here is scoped to contact leads, because that is what
-            // `contacts` holds and what the pending/completed lifecycle applies
-            // to. The labels now say so. Before, "Overall: N leads" read as a
-            // count of all customer enquiries while silently excluding every
-            // trip enquiry — the same blind spot that hid them from the table.
-            { label: 'Pending Contact Leads', value: kpis.pending, desc: `High priority: ${kpis.highPriorityPending}`, icon: '🎒', color: 'text-violet-600 bg-violet-50 border-violet-100' },
+            // THE TOTALS SPAN BOTH TABLES; THE LIFECYCLE FIGURES DO NOT.
+            //
+            // "Total" and "Today" are questions about customer enquiries, so
+            // counting only `contacts` answered them wrongly — and visibly so
+            // once that table was empty and every card read zero while three
+            // trip enquiries sat in the database. Those two now cover both
+            // sources and name the split.
+            //
+            // Completed and the completion rate stay contact-scoped, because
+            // pending→completed is the contacts lifecycle and the CRM drives it.
+            // Trip enquiries carry the booking flow's own NEW/CONTACTED/
+            // CONFIRMED/CANCELLED, which this dashboard does not own and must not
+            // silently fold into a single percentage. The labels say which is
+            // which rather than leaving the reader to guess.
             {
-              label: "Today's Contact Leads",
-              value: kpis.today,
+              label: 'Total Enquiries',
+              value: kpis.totalAll,
               desc: tripEnquiryCount === null
-                ? `${kpis.total} contact leads · open Trip Enquiries for the rest`
-                : `${kpis.total} contact + ${tripEnquiryCount} trip = ${kpis.total + tripEnquiryCount} enquiries`,
+                ? `${kpis.total} contact leads · trip enquiries loading…`
+                : `${kpis.total} contact + ${tripEnquiryCount} trip`,
+              icon: '🎒',
+              color: 'text-violet-600 bg-violet-50 border-violet-100',
+            },
+            {
+              label: 'Received Today',
+              value: kpis.todayAll,
+              desc: `${kpis.today} contact + ${kpis.tripToday} trip`,
               icon: '⚡',
               color: 'text-emerald-600 bg-emerald-50 border-emerald-100',
             },
-            { label: 'Completed Contact Leads', value: kpis.completed, desc: 'Successfully processed', icon: '✅', color: 'text-green-600 bg-green-50 border-green-100' },
-            { label: 'Completion Rate', value: `${kpis.completionRate}%`, desc: `Contact leads completed`, icon: '📈', color: 'text-blue-600 bg-blue-50 border-blue-100' },
+            {
+              label: 'Open / Unhandled',
+              value: kpis.pending + kpis.tripNew,
+              desc: `${kpis.pending} pending contact · ${kpis.tripNew} new trip`,
+              icon: '📥',
+              color: 'text-amber-600 bg-amber-50 border-amber-100',
+            },
+            {
+              label: 'Contact Leads Completed',
+              value: `${kpis.completionRate}%`,
+              desc: `${kpis.completed} of ${kpis.total} contact leads`,
+              icon: '📈',
+              color: 'text-blue-600 bg-blue-50 border-blue-100',
+            },
           ].map((card, idx) => (
             <div key={idx} className="bg-white border border-zinc-200/50 rounded-2xl p-5 shadow-xs flex items-center justify-between transition-premium hover:-translate-y-0.5 hover:shadow-sm">
               <div>
@@ -865,6 +915,11 @@ const AdminInsights = () => {
             it was. */}
         <div className="flex items-center gap-1 mb-6 bg-zinc-100/70 p-1 rounded-xl w-fit">
           {[
+            {
+              key: 'all',
+              label: 'All Enquiries',
+              count: tripEnquiryCount === null ? contacts.length : contacts.length + tripEnquiryCount,
+            },
             { key: 'contacts', label: 'Contact Leads', count: contacts.length },
             { key: 'bookings', label: 'Trip Enquiries', count: tripEnquiryCount },
           ].map((tab) => (
@@ -890,6 +945,18 @@ const AdminInsights = () => {
             </button>
           ))}
         </div>
+
+        {leadSource === 'all' && (
+          <AllEnquiries
+            contacts={contacts}
+            tripEnquiries={tripEnquiries}
+            loading={loading || tripLoading}
+            contactError={fetchError}
+            tripError={tripError}
+            onRefresh={() => { fetchContacts(); fetchTripEnquiries(); }}
+            onOpenSource={setLeadSource}
+          />
+        )}
 
         {leadSource === 'bookings' && (
           <TripEnquiries

@@ -97,14 +97,42 @@ services:
       # Comma-separated bare origins, no trailing path:
       #   https://zurii.example.com,https://www.zurii.example.com
       #
-      # CROSS-SITE COOKIE WARNING. The refresh cookie is SameSite=Lax. If the
-      # frontend ends up on a different *site* from this API — and note that
-      # onrender.com is on the Public Suffix List, so two *.onrender.com
-      # subdomains already count as different sites — the browser will not send
-      # that cookie, and admins will be signed out the moment their 15-minute
-      # access token expires. Listing the origin here fixes CORS; it does not
-      # fix the cookie. Serve the SPA behind the same origin (a Static Site with
-      # a /api/* rewrite to this service), or switch the cookie to
-      # SameSite=None; Secure in backend/server.js.
+      # Set it to the frontend's origin (e.g. https://zurii.vercel.app) even
+      # though the proxy below means the browser never makes a cross-origin call
+      # to this service. Two reasons: config validation makes it mandatory in
+      # production, and it is the allowlist that still applies if anything ever
+      # does reach this API directly from a browser.
+      #
+      # THE FRONTEND MUST REACH THIS API THROUGH ITS OWN ORIGIN, NOT THIS URL.
+      # frontend/vercel.json rewrites /api/:path* to this service, so the browser
+      # sees https://<frontend>/api/... and the refresh cookie stays first-party.
+      # That is what makes SameSite=Lax — the default, and the strongest value
+      # that works here — correct, so COOKIE_SAMESITE is deliberately not set
+      # below.
+      #
+      # If you instead point the frontend bundle straight at this origin (by
+      # setting VITE_API_URL to it), every admin call becomes cross-site: the
+      # browser will not attach a Lax cookie, and admins get signed out the
+      # moment their 15-minute access token expires — login works, the dashboard
+      # works briefly, then every reload lands on the login screen. Note that
+      # onrender.com and vercel.app are both on the Public Suffix List, so there
+      # is no shared parent site to fall back on. Listing the origin here fixes
+      # CORS; it does not fix the cookie. That topology needs
+      # COOKIE_SAMESITE=none as well, which is strictly weaker than the proxy:
+      # a third-party cookie is blocked outright by Safari's ITP and by Firefox
+      # and Brave in their default modes, so "it works" there means "it works in
+      # Chrome, for now".
+      #
+      # MIGRATING OFF THE CROSS-SITE SETUP — ORDER MATTERS. If COOKIE_SAMESITE is
+      # currently set to `none` in the Render dashboard, do the frontend first:
+      #
+      #   1. Clear VITE_API_URL in the Vercel project and redeploy, so the bundle
+      #      calls /api/... on its own origin. Sessions keep working throughout —
+      #      SameSite=None is sent in first-party contexts too.
+      #   2. THEN delete COOKIE_SAMESITE here, returning the cookie to Lax.
+      #
+      # Doing it in the other order breaks every admin session in between: a Lax
+      # cookie plus a still-cross-site bundle is exactly the combination that is
+      # never sent.
       - key: ALLOWED_ORIGINS
         sync: false

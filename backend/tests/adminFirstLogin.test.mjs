@@ -49,6 +49,9 @@ const CARA_TEMP = `Harbour@${crypto.randomBytes(2).toString('hex')}`;
 const CARA_PRIVATE = `cara-private-vault-${crypto.randomBytes(6).toString('hex')}`;
 const DAN_PASSWORD = `dan-private-vault-${crypto.randomBytes(6).toString('hex')}`;
 
+/** Names of throwaway contact leads this run submitted, for cleanup in after(). */
+const submittedContacts = [];
+
 const pool = getPool();
 let server;
 let base;
@@ -110,6 +113,17 @@ before(async () => {
 
 after(async () => {
   server?.kill('SIGTERM');
+
+  // Throwaway leads created by the submission tests below. Removed here as well
+  // as inline, so a failed assertion mid-test cannot leave a row behind in a
+  // database that also holds real customer enquiries. Scoped to this run's
+  // prefix — it can never match a genuine lead.
+  await pool.query('DELETE FROM contacts WHERE name = ANY($1::text[])', [submittedContacts]);
+  const strayLeads = await pool.query('SELECT COUNT(*)::int AS n FROM contacts WHERE name = ANY($1::text[])', [
+    submittedContacts,
+  ]);
+  assert.equal(strayLeads.rows[0].n, 0, 'test leads must not survive the run');
+
   const ids = [aliceId, bobId, caraId, danId];
   const names = [ALICE, BOB, CARA, DAN];
   await pool.query(
@@ -778,6 +792,216 @@ describe('the CRM can reach both enquiry sources with one session', () => {
       'SELECT (SELECT COUNT(*)::int FROM contacts) AS c, (SELECT COUNT(*)::int FROM bookings) AS b'
     );
     assert.deepEqual(after.rows[0], before.rows[0], 'listing leads must never delete or create rows');
+  });
+});
+
+// ── a submitted enquiry reaching the CRM ────────────────────────────
+//
+// The round trip the product is FOR: a visitor submits the public form, and the
+// operator sees that lead. Every other test in this file authenticates and reads
+// — none of them had ever written through POST /api/contact, so the entire
+// submission path was untested. A contact form that silently stopped inserting
+// would have kept all 219 tests green while the CRM showed nothing.
+//
+// The lead is created with this run's unique prefix and removed both inline and
+// in after(). It is never a real customer's record.
+
+describe('a submitted contact form reaches the CRM', () => {
+  const LEAD_NAME = `zzfl-lead-${RUN}`;
+  const LEAD_EMAIL = `zzfl-lead-${RUN}@example.invalid`;
+  let token;
+
+  it('accepts an anonymous submission from the public form', async () => {
+    submittedContacts.push(LEAD_NAME);
+    const res = await fetch(`${base}/api/contact`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: LEAD_NAME,
+        email: LEAD_EMAIL,
+        phone: '9800000000',
+        interest: 'Quote Request: Bali',
+        message: 'Regression fixture — safe to delete.',
+      }),
+    });
+    assert.ok(res.status === 200 || res.status === 201, `expected a 2xx, got ${res.status}`);
+    const body = await res.json();
+    assert.equal(body.success, true, 'the visitor must be told it worked');
+  });
+
+  it('stores it in contacts, with the defaults the CRM sorts on', async () => {
+    const { rows } = await pool.query(
+      'SELECT name, email, status, priority, source FROM contacts WHERE name = $1',
+      [LEAD_NAME]
+    );
+    assert.equal(rows.length, 1, 'exactly one row must be inserted');
+    assert.equal(rows[0].email, LEAD_EMAIL);
+    // Server-assigned, never taken from the body — a caller must not be able to
+    // post a lead that is already `completed` and therefore hidden from the
+    // default Pending tab.
+    assert.equal(rows[0].status, 'pending');
+    assert.equal(rows[0].priority, 'normal');
+  });
+
+  it('appears in the list the CRM reads', async () => {
+    const session = await login(BOB, BOB_PASSWORD);
+    token = session.token;
+    const res = await call('/api/contact', token);
+    assert.equal(res.status, 200);
+    const found = res.data.find((c) => c.name === LEAD_NAME);
+    assert.ok(found, 'the lead an operator was promised must be in the CRM payload');
+    assert.equal(found.email, LEAD_EMAIL, 'with the details needed to reply to it');
+    assert.equal(found.phone, '9800000000');
+  });
+
+  it('coexists with the trip enquiries rather than replacing them', async () => {
+    // The two sources are separate tables and the CRM shows both; submitting to
+    // one must not disturb the other.
+    const bookings = await call('/api/admin/bookings', token);
+    assert.equal(bookings.status, 200);
+    assert.ok(Array.isArray(bookings.data));
+
+    const counts = await pool.query(
+      'SELECT (SELECT COUNT(*)::int FROM contacts) AS c, (SELECT COUNT(*)::int FROM bookings) AS b'
+    );
+    assert.ok(counts.rows[0].c >= 1, 'the submitted lead is in contacts');
+    assert.equal(counts.rows[0].b, bookings.data.length >= 50 ? counts.rows[0].b : bookings.data.length,
+      'the bookings list must reflect the bookings table');
+  });
+
+  it('is removed again, leaving the table as it was', async () => {
+    await pool.query('DELETE FROM contacts WHERE name = $1', [LEAD_NAME]);
+    const { rows } = await pool.query('SELECT COUNT(*)::int AS n FROM contacts WHERE name = $1', [LEAD_NAME]);
+    assert.equal(rows[0].n, 0);
+  });
+});
+
+// ── surviving a page reload ─────────────────────────────────────────
+//
+// The exact sequence the browser performs when an admin reloads
+// /admin/insights, asserted end to end. The access token lives in module memory
+// in services/adminApi.js and is gone after a reload, so the refresh cookie is
+// the only thing standing between the operator and the login form.
+//
+// This is here because the failure mode is invisible to every other test in this
+// file: each one passes a token it was handed directly, which is precisely the
+// thing a reload does not have. A deployment can satisfy all of them and still
+// send the operator back to the login screen on every refresh.
+
+describe('a page reload restores the session from the refresh cookie', () => {
+  let session;
+  let restored;
+
+  it('signs in and is issued a refresh cookie', async () => {
+    session = await login(BOB, BOB_PASSWORD);
+    assert.equal(session.status, 200);
+    assert.ok(session.refresh, 'login must set the cookie the reload depends on');
+  });
+
+  it('mints a new access token from the cookie alone', async () => {
+    // bootstrapSession(): no Authorization header, only the cookie.
+    const res = await fetch(`${base}/api/auth/refresh`, {
+      method: 'POST',
+      headers: { Cookie: `zurii_refresh_token=${session.refresh}` },
+    });
+    assert.equal(res.status, 200, 'the reload must not need credentials again');
+    const body = await res.json();
+    restored = body.accessToken;
+    assert.ok(restored, 'a fresh access token must come back');
+    assert.equal(body.refreshToken, undefined, 'the refresh token stays in the cookie');
+  });
+
+  it('reports who is signed in, and that no password change is owed', async () => {
+    // getAdminSession(): what decides 'authenticated' over 'mustChangePassword'.
+    const res = await call('/api/admin/session', restored);
+    assert.equal(res.status, 200);
+    assert.equal(res.data.username, BOB);
+    assert.equal(res.data.mustChangePassword, false);
+  });
+
+  it('serves both CRM sources with the restored token', async () => {
+    assert.equal((await call('/api/contact', restored)).status, 200);
+    assert.equal((await call('/api/admin/bookings', restored)).status, 200);
+  });
+
+  it('renews transparently when only the access token is dead', async () => {
+    // adminFetch's retry path: a rejected token is not a dead session while the
+    // cookie is still good.
+    assert.equal((await call('/api/contact', 'not.a.valid.token')).status, 401);
+
+    const again = await fetch(`${base}/api/auth/refresh`, {
+      method: 'POST',
+      headers: { Cookie: `zurii_refresh_token=${session.refresh}` },
+    });
+    assert.equal(again.status, 200, 'the cookie must survive an expired access token');
+    const { accessToken } = await again.json();
+    assert.equal((await call('/api/contact', accessToken)).status, 200);
+  });
+
+  it('refuses a reload with no cookie, which is what shows the login form', async () => {
+    const res = await fetch(`${base}/api/auth/refresh`, { method: 'POST' });
+    assert.equal(res.status, 401);
+  });
+
+  it('refuses a forged cookie rather than trusting its contents', async () => {
+    const res = await fetch(`${base}/api/auth/refresh`, {
+      method: 'POST',
+      headers: { Cookie: 'zurii_refresh_token=not-a-real-token' },
+    });
+    assert.equal(res.status, 401);
+  });
+
+  it('stops restoring anything once the admin logs out', async () => {
+    await fetch(`${base}/api/auth/logout`, {
+      method: 'POST',
+      headers: { Cookie: `zurii_refresh_token=${session.refresh}` },
+    });
+    const res = await fetch(`${base}/api/auth/refresh`, {
+      method: 'POST',
+      headers: { Cookie: `zurii_refresh_token=${session.refresh}` },
+    });
+    assert.equal(res.status, 401, 'logout must survive a reload');
+    assert.equal((await call('/api/contact', restored)).status, 401, 'and revoke the access token');
+  });
+});
+
+describe('a reload by an admin who still owes a password change', () => {
+  let refresh;
+
+  it('signs in and re-arms the flag', async () => {
+    const session = await login(CARA, CARA_PRIVATE);
+    assert.equal(session.status, 200);
+    refresh = session.refresh;
+    // Cara replaced her temporary password earlier in this file, so the flag is
+    // set directly to exercise the refusal — the same approach the CRM block
+    // uses, on this run's own throwaway account.
+    await pool.query('UPDATE admins SET must_change_password = TRUE WHERE id = $1', [caraId]);
+  });
+
+  it('restores the session instead of refusing it', async () => {
+    // The bug this pins: if refresh applied the password-change gate, a reload
+    // would 401 and the page would show the LOGIN form to an admin who is
+    // authenticated and one screen away from fixing it.
+    const res = await fetch(`${base}/api/auth/refresh`, {
+      method: 'POST',
+      headers: { Cookie: `zurii_refresh_token=${refresh}` },
+    });
+    assert.equal(res.status, 200, 'a temporary-password session must survive a reload');
+    const { accessToken } = await res.json();
+
+    const session = await call('/api/admin/session', accessToken);
+    assert.equal(session.status, 200, 'the session endpoint must stay reachable');
+    assert.equal(session.data.mustChangePassword, true, 'and say a change is owed');
+
+    // Which is what puts up the password screen rather than the dashboard.
+    const crm = await call('/api/contact', accessToken);
+    assert.equal(crm.status, 403);
+    assert.equal(crm.code, 'PASSWORD_CHANGE_REQUIRED');
+  });
+
+  it('leaves the account as it found it', async () => {
+    await pool.query('UPDATE admins SET must_change_password = FALSE WHERE id = $1', [caraId]);
+    assert.equal((await adminRow(caraId)).must_change_password, false);
   });
 });
 
