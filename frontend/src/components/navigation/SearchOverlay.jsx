@@ -418,6 +418,8 @@ export default function SearchOverlay({ open, onClose }) {
                               <img
                                 src={pkg.heroImage}
                                 alt=""
+                                loading="lazy"
+                                decoding="async"
                                 className="h-10 w-10 shrink-0 rounded-lg bg-zinc-100 dark:bg-zinc-800 object-cover"
                               />
                               <div className="min-w-0">
@@ -585,6 +587,8 @@ export default function SearchOverlay({ open, onClose }) {
                             <img
                               src={pkg.heroImage}
                               alt=""
+                              loading="lazy"
+                              decoding="async"
                               className="h-9 w-9 shrink-0 rounded-lg bg-zinc-100 dark:bg-zinc-800 object-cover"
                             />
                             <span className="truncate text-xs font-semibold text-zinc-900 dark:text-zinc-100">{pkg.title}</span>

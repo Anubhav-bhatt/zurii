@@ -87,6 +87,56 @@ function readCaCert(env = process.env) {
 }
 
 /**
+ * Pool sizing and the one timeout worth setting.
+ *
+ * The default `connectionTimeoutMillis` is 0, which means "wait forever". If the
+ * database is unreachable or its connection limit is saturated, every request
+ * that needs a client parks indefinitely: the process accumulates hung requests
+ * and the memory behind them, /api/health keeps answering "alive" because the
+ * event loop is fine, and no error ever surfaces for an operator to act on. A
+ * finite value turns that into a 503 from /api/ready and a logged failure.
+ *
+ *   max                      10 — node-postgres's default, stated explicitly.
+ *                            One Render instance against a managed Postgres with
+ *                            a modest connection cap; the entrypoint already
+ *                            assumes a single instance. Raising it would not make
+ *                            a 68-row catalogue faster, only bring the
+ *                            provider's connection ceiling closer.
+ *   idleTimeoutMillis        10s — the default. Returns connections promptly
+ *                            rather than holding the pool open across quiet
+ *                            periods.
+ *   connectionTimeoutMillis  30s — bounded, but deliberately generous.
+ *
+ * WHY 30s AND NOT 10s. 10s was the first value here and it made the test suite
+ * fail intermittently — two runs in four, as `hookFailed: test server did not
+ * start in time`. Seven test files run in parallel, each with its own pool plus a
+ * spawned server with another, all against one remote database, and acquiring a
+ * connection under that contention can exceed ten seconds. The server then exits
+ * during initDB() and never binds. The tests were right and the setting was
+ * wrong: the goal is to stop waiting *forever*, and 30s does that without
+ * turning ordinary contention into a failure. It was not the test's timeout that
+ * needed raising.
+ *
+ * WHY THERE IS NO `statement_timeout`. It was set to 20s here and that was a
+ * production hazard, not a safety net. Eight scripts in scripts/ take their
+ * client from this pool, and db/baseSchema.js runs 23 DDL statements through it;
+ * docker-entrypoint.sh executes those migrations on every container boot under
+ * `set -e`. A CREATE INDEX or ALTER TABLE that legitimately runs past the
+ * ceiling — a bigger table, or a lock held by another connection — would be
+ * cancelled mid-migration and abort the boot. A per-query fuse belongs on the
+ * request path, not on a pool that migrations share.
+ *
+ * Also deliberately absent: `query_timeout`. It gives up client-side while the
+ * server keeps executing, freeing the caller but not the database — the opposite
+ * of what a saturated instance needs.
+ */
+const POOL_DEFAULTS = Object.freeze({
+  max: 10,
+  idleTimeoutMillis: 10_000,
+  connectionTimeoutMillis: 30_000,
+});
+
+/**
  * Parse DATABASE_URL into a pg config, applying the TLS mode above.
  */
 function buildConfig(url = process.env.DATABASE_URL, env = process.env) {
@@ -97,7 +147,9 @@ function buildConfig(url = process.env.DATABASE_URL, env = process.env) {
   }
   const config = parse(url);
   config.ssl = resolveSsl(config.host, env);
-  return config;
+  // Defaults first, so an explicit parameter in DATABASE_URL still wins — the
+  // connection string remains the operator's override for any of these.
+  return { ...POOL_DEFAULTS, ...config };
 }
 
 /**

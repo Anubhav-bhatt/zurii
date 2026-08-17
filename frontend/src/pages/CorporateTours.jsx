@@ -5,7 +5,7 @@ const CorporateTours = () => (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
       {tours.map((tour, i) => (
         <div key={i} className="bg-white dark:bg-zinc-900 rounded-2xl shadow p-4 flex flex-col items-center">
-          <img src={tour.image} alt={tour.title} className="w-full h-40 object-cover rounded-xl mb-4" />
+          <img src={tour.image} alt={tour.title} loading="lazy" decoding="async" className="w-full h-40 object-cover rounded-xl mb-4" />
           <h2 className="text-lg font-bold mb-2">{tour.title}</h2>
           <p className="text-gray-500 dark:text-zinc-400 text-sm mb-2 text-center">{tour.desc}</p>
         </div>

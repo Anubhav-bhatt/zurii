@@ -71,7 +71,8 @@ export default function Footer() {
               to="/"
               className="inline-block rounded focus-visible:ring-2 focus-visible:ring-zinc-100/20"
             >
-              <img src="/zurii-logo.png" alt="Zurii" className="h-9 w-auto rounded-md" />
+              {/* Always below the fold — the footer is the last thing on every page. */}
+              <img src="/zurii-logo.png" alt="Zurii" loading="lazy" decoding="async" className="h-9 w-auto rounded-md" />
             </Link>
 
             <p className="mt-4 max-w-xs text-sm leading-relaxed">

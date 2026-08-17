@@ -131,6 +131,64 @@ test('GET /api/packages/:slug preserves the migrated JSONB content', async () =>
   assert.ok(pkg.gallery.every((url) => /^https?:\/\//.test(url)), 'gallery holds usable URLs');
 });
 
+// ── the list/detail projection boundary ─────────────────────────────
+//
+// GET /packages selects card columns; GET /packages/:slug selects everything.
+// Both sides are asserted here because both are silently breakable and the
+// failure modes are opposite:
+//
+//   - Widening the list back to `p.*` costs nothing visible and restores ~136 kB
+//     to a response measured at 185,974 bytes before the split. Nothing would go
+//     wrong, so nothing would be noticed.
+//   - Narrowing it further to save more bytes would take `metadata` or
+//     `short_description` with it, and silently blank every card's badge or
+//     tagline — a visual regression with no error anywhere.
+//
+// The heavy fields are asserted EMPTY rather than absent: serializePackage maps
+// an unselected column through `?? []`, so the property still exists. That is
+// deliberate — frontend services/adapters.js defaults them the same way, so a
+// card never has to care which endpoint it came from.
+test('GET /api/packages returns the card contract, without the detail payload', async () => {
+  const { status, body } = await get('/api/packages?limit=3');
+  assert.equal(status, 200);
+  assert.ok(body.data.length > 0, 'the catalogue must return rows to assert against');
+
+  for (const pkg of body.data) {
+    // What a card renders. Losing any of these is a visible regression.
+    for (const field of ['id', 'slug', 'title', 'coverImage', 'price', 'currency', 'tags']) {
+      assert.ok(field in pkg, `list rows must carry ${field}`);
+    }
+    assert.equal(typeof pkg.price, 'number', 'price stays numeric for client-side sorting');
+    // Derived from `metadata`, which is why that column stays in the projection.
+    for (const field of ['badge', 'savings', 'locationLabel']) {
+      assert.ok(field in pkg, `list rows must carry ${field} (read from metadata)`);
+    }
+    // The card tagline — TrendingTrips renders it on the homepage.
+    assert.ok('shortDescription' in pkg, 'list rows must carry the card tagline');
+
+    // The detail-only payload must not ride along.
+    assert.equal(pkg.description, undefined, 'the long description belongs to the detail view');
+    for (const field of ['itinerary', 'inclusions', 'exclusions', 'batches', 'gallery']) {
+      assert.deepEqual(pkg[field], [], `${field} must not be sent to a list view`);
+    }
+  }
+});
+
+test('GET /api/packages/:slug still carries what the list omits', async () => {
+  const list = await get('/api/packages?limit=1');
+  const slug = list.body.data[0].slug;
+  const { body } = await get(`/api/packages/${encodeURIComponent(slug)}`);
+  const pkg = body.data;
+
+  // The same record, fetched the other way, is complete — this is the contrast
+  // that makes the narrow list safe rather than lossy.
+  assert.ok(pkg.description === null || typeof pkg.description === 'string',
+    'the detail view selects the description column');
+  for (const field of ['itinerary', 'inclusions', 'exclusions', 'batches', 'gallery', 'highlights']) {
+    assert.ok(Array.isArray(pkg[field]), `the detail view must carry ${field}`);
+  }
+});
+
 test('GET /api/packages/:slug returns 404 for an unknown slug', async () => {
   const { status, body } = await get('/api/packages/no-such-trip');
 

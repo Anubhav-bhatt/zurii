@@ -97,7 +97,9 @@ export default function MobileNavigation({ open, onClose, destinations = [], tri
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between border-b border-zinc-100 dark:border-zinc-800 px-4 py-3">
           <Link to="/" onClick={onClose} className="flex items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 dark:focus-visible:ring-zinc-100">
-            <img src="/zurii-logo.png" alt="Zurii" className="h-8 w-auto dark:brightness-110" />
+            {/* The drawer renders nothing until opened, so this is never on the
+                initial paint path. */}
+            <img src="/zurii-logo.png" alt="Zurii" loading="lazy" decoding="async" className="h-8 w-auto dark:brightness-110" />
           </Link>
 
           <div className="flex items-center gap-2">

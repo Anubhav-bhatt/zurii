@@ -143,7 +143,9 @@ const BlogDetail = () => {
                   onClick={() => navigate(`/blog/${post.slug}`)}
                   className="group bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-lg cursor-pointer transition"
                 >
-                  <img src={post.image} alt={post.title} className="h-40 w-full object-cover group-hover:scale-105 transition duration-500" />
+                  {/* "Related posts", at the very bottom of the article. The hero
+                      above stays eager as this page's LCP element. */}
+                  <img src={post.image} alt={post.title} loading="lazy" decoding="async" className="h-40 w-full object-cover group-hover:scale-105 transition duration-500" />
                   <div className="p-5">
                     <span className="text-[10px] font-bold text-violet-500 dark:text-violet-400 uppercase tracking-wider">{post.category}</span>
                     <h3 className="text-sm font-bold text-gray-900 dark:text-zinc-50 mt-1 line-clamp-2 group-hover:text-violet-600 transition">{post.title}</h3>

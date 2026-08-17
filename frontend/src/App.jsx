@@ -12,11 +12,21 @@ import BackToTop from './components/ui/BackToTop'
 import FloatingWhatsApp from './components/ui/FloatingWhatsApp'
 import LegacyRedirect, { ExploreRedirect } from './components/LegacyRedirect'
 
-// Eagerly loaded critical paths
+// Eagerly loaded critical path. HomePage is the landing route for most visitors,
+// so its chunk would be fetched immediately anyway — bundling it saves a round
+// trip on the one page where LCP matters most.
 import HomePage from './components/HomePage'
-import TripDetailPage from './components/TripDetailPage'
 
-// Lazy loaded page paths for chunk separation
+// Lazy loaded page paths for chunk separation.
+//
+// TripDetailPage was eager, which put it — and the EnquiryModal, EnquiryForm,
+// ItineraryAccordion and SimilarPackages it pulls in — into the initial bundle
+// for every visitor, including the ones who only ever see the homepage. It is a
+// route component like all the others below and behaves identically lazily;
+// being listed above rather than here looks deliberate but measured as ~30 kB of
+// the initial chunk (sourcemap-attributed) spent on a page most sessions never
+// open.
+const TripDetailPage = lazy(() => import('./components/TripDetailPage'))
 const PackagesPage = lazy(() => import('./pages/PackagesPage'))
 const DestinationPage = lazy(() => import('./components/DestinationPage'))
 const WishlistPage = lazy(() => import('./pages/WishlistPage'))

@@ -99,15 +99,61 @@ function serializePackage(row) {
 }
 
 /** Columns needed to serialize a package plus its destination, in one query. */
-const PACKAGE_SELECT = `
-  SELECT p.*,
+/**
+ * TWO PROJECTIONS, NOT ONE `p.*`.
+ *
+ * `packages` has seven wide JSONB/text columns — description, gallery,
+ * highlights, itinerary, inclusions, exclusions, batches — and exactly one
+ * screen renders any of them: TripDetailPage, which loads a single package from
+ * GET /packages/:slug. Every other caller draws cards.
+ *
+ * Selecting them everywhere made the list endpoint ship the entire itinerary and
+ * day-by-day inclusions of every result to build a grid of titles and prices.
+ * Measured on the live catalogue, GET /api/packages was 185,974 bytes; the card
+ * columns alone carry the same screen.
+ *
+ * `metadata` stays in the card projection despite being the widest column
+ * (285 B average): serializePackage reads `badge`, `savings` and `locationLabel`
+ * out of it, and those are on the card. `short_description` stays too — it is the
+ * card tagline, read by TrendingTrips on the homepage. Dropping either would be
+ * a visible regression rather than a saving.
+ *
+ * The two share serializePackage. A column that was not selected arrives as
+ * `undefined`, which the serializer turns into `[]` for the array fields and
+ * omits for `description`; frontend services/adapters.js already defaults every
+ * one of them (`pkg.itinerary ?? []`). So a card built from the narrow row is
+ * byte-identical in the properties it actually uses.
+ */
+const PACKAGE_CARD_COLUMNS = `
+         p.id, p.slug, p.title, p.subtitle, p.short_description,
+         p.duration_days, p.duration_nights, p.duration_text,
+         p.price, p.original_price, p.currency,
+         p.cover_image, p.tags, p.trip_type,
+         p.rating, p.reviews_count, p.group_size, p.difficulty,
+         p.featured, p.popular, p.status, p.metadata, p.destination_id
+`;
+
+const DESTINATION_JOIN_COLUMNS = `
          d.slug    AS destination_slug,
          d.name    AS destination_name,
          d.country AS destination_country,
          d.region  AS destination_region,
          d.kind    AS destination_kind
+`;
+
+const PACKAGE_FROM = `
     FROM packages p
     LEFT JOIN destinations d ON d.id = p.destination_id
+`;
+
+/** Card fields only — every list and grid. */
+const PACKAGE_LIST_SELECT = `
+  SELECT ${PACKAGE_CARD_COLUMNS}, ${DESTINATION_JOIN_COLUMNS} ${PACKAGE_FROM}
+`;
+
+/** Everything, for the one screen that renders it. */
+const PACKAGE_DETAIL_SELECT = `
+  SELECT p.*, ${DESTINATION_JOIN_COLUMNS} ${PACKAGE_FROM}
 `;
 
 const SORTS = {
@@ -194,7 +240,7 @@ module.exports = function createTravelRouter(pool) {
       // The destination page always renders its trips, so they come along in
       // the same response rather than forcing a second round trip.
       const packages = await pool.query(
-        `${PACKAGE_SELECT} WHERE p.status = $1 AND d.slug = $2 ORDER BY ${SORTS.recommended}`,
+        `${PACKAGE_LIST_SELECT} WHERE p.status = $1 AND d.slug = $2 ORDER BY ${SORTS.recommended}`,
         [PUBLIC_PACKAGE_STATUS, req.params.slug]
       );
 
@@ -276,7 +322,7 @@ module.exports = function createTravelRouter(pool) {
       const offsetPlaceholder = `$${values.length}`;
 
       const { rows } = await pool.query(
-        `${PACKAGE_SELECT}
+        `${PACKAGE_LIST_SELECT}
           WHERE ${where.join(' AND ')}
           ORDER BY ${orderBy}
           LIMIT ${limitPlaceholder} OFFSET ${offsetPlaceholder}`,
@@ -308,7 +354,7 @@ module.exports = function createTravelRouter(pool) {
   router.get('/packages/:slug', async (req, res) => {
     try {
       const { rows } = await pool.query(
-        `${PACKAGE_SELECT} WHERE p.slug = $1 AND p.status = $2`,
+        `${PACKAGE_DETAIL_SELECT} WHERE p.slug = $1 AND p.status = $2`,
         [req.params.slug, PUBLIC_PACKAGE_STATUS]
       );
 

@@ -1,11 +1,26 @@
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 import DesktopNavigation from './DesktopNavigation';
 import MobileNavigation from './MobileNavigation';
 import NavigationActions from './NavigationActions';
-import SearchOverlay from './SearchOverlay';
 import Container from '../ui/Container';
+
+/**
+ * The search palette is the largest thing the header owns — measured at ~16 kB
+ * of the initial chunk — and it is unreachable until someone clicks search or
+ * presses ⌘K. It already returned null while closed, so it rendered nothing for
+ * the whole of most visits and still shipped on the critical path.
+ *
+ * Splitting it costs nothing behaviourally: mounting only while open is what the
+ * closed render already amounted to, and its scroll-lock and focus-trap effects
+ * clean up on unmount exactly as they did when `open` went false.
+ *
+ * MobileNavigation is deliberately NOT split. It is the primary navigation on
+ * phones, it is a third of the size, and a chunk fetch between tap and menu is a
+ * worse trade than the bytes are worth.
+ */
+const SearchOverlay = lazy(() => import('./SearchOverlay'));
 import { useAsyncData } from '../../hooks/useAsyncData';
 import { getDestinationsCached } from '../../services/destinationsApi';
 
@@ -130,7 +145,12 @@ export default function Topbar() {
         triggerRef={menuTriggerRef}
       />
 
-      <SearchOverlay open={searchOpen} onClose={closeOverlay} />
+      {/* Mounted only while open — see the note on the lazy import above. */}
+      {searchOpen && (
+        <Suspense fallback={null}>
+          <SearchOverlay open onClose={closeOverlay} />
+        </Suspense>
+      )}
     </>
   );
 }
