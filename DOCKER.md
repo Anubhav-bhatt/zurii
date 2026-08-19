@@ -41,21 +41,37 @@ cd zurii
 # 1. Create your env file
 cp .env.example .env
 
-# 2. Fill in the required values
+# 2. Fill in the required values. All four are REQUIRED — Compose refuses to
+#    start if any is empty, naming the variable it wants.
+#
 #    POSTGRES_PASSWORD — URL-safe characters only (no @ : / ? #)
-#    JWT_SECRET, JWT_REFRESH_SECRET — generate each with:
+#    JWT_SECRET, JWT_REFRESH_SECRET — two DIFFERENT values, generate each with:
 openssl rand -hex 48
-#    ADMIN_SEED — your admin login, as user:password
+#    ALLOWED_ORIGINS  — the origin you will browse the site on. Locally that is
+#                       the WEB_PORT below, so: http://localhost:8080
+#                       Deployed, it is your real domain: https://your-domain.example
+#
+#    Leave ADMIN_SEED EMPTY. Create the first admin once the stack is up (step 4
+#    below), which prompts without echo instead of putting the password in a file.
 
 # 3. Build and start
 docker compose up -d --build
 ```
 
-Open **http://localhost:8080**. Change the port with `WEB_PORT` in `.env`.
+```bash
+# 4. Create the first admin. Prompts for the password with echo disabled, so it
+#    never reaches your shell history, the environment, or a file.
+docker compose exec backend node create-admin.js add <username>
+```
+
+Open **http://localhost:8080**. Change the port with `WEB_PORT` in `.env` — and
+keep `ALLOWED_ORIGINS` in step 2 pointing at whatever port you chose.
 
 Compose waits for Postgres to pass `pg_isready` before starting the backend, so
-the first boot has no connection race. The backend creates the `contacts` and
-`admins` tables and seeds admin accounts automatically on startup.
+the first boot has no connection race. `backend/docker-entrypoint.sh` then
+applies the full schema — contacts, admins, destinations, packages, bookings and
+analytics — before the server starts. Every migration is idempotent, so this is
+safe on each boot and each restart.
 
 Verify it came up:
 
@@ -97,7 +113,8 @@ Set in `.env` next to `docker-compose.yml`. It is gitignored — never commit it
 | `POSTGRES_PASSWORD`  | **yes**  | —             | URL-safe chars only; interpolated into a connection string |
 | `JWT_SECRET`         | **yes**  | —             | Backend exits at startup if unset |
 | `JWT_REFRESH_SECRET` | **yes**  | —             | Backend exits at startup if unset |
-| `ADMIN_SEED`         | no       | *(empty)*     | Admin logins to create on first boot, `user:pass,user:pass`. Empty = none created |
+| `ALLOWED_ORIGINS`    | **yes**  | —             | Comma-separated browser origins. Locally `http://localhost:8080`; deployed, your real domain. Bare origins, no trailing path, never `*` |
+| `ADMIN_SEED`         | no       | *(empty)*     | Leave empty; create admins with `docker compose exec backend node create-admin.js add <user>`. Only for automated provisioning: `user:pass,user:pass` puts the password in the environment |
 | `POSTGRES_USER`      | no       | `zurii`       | |
 | `POSTGRES_DB`        | no       | `zurii`       | |
 | `WEB_PORT`           | no       | `8080`        | Host port for the UI |
