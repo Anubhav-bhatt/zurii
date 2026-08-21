@@ -1,22 +1,22 @@
 import { API_BASE_URL } from '../config/api';
-import { ApiError } from './apiClient';
+import { ApiError, API_TIMEOUT_MS } from './apiClient';
 import { attribution } from './analytics';
 
 /**
  * Enquiry submission — the one write the public site performs.
  *
  * `apiClient.js` only speaks GET, so the POST lives here and deliberately
- * mirrors its behaviour: the same 10s timeout, the same "abort if either the
- * caller or the timeout fires" wiring, the same envelope check, and errors
- * shaped as `ApiError` with a message that is safe to put in front of a user.
+ * mirrors its behaviour: the same timeout — imported from there rather than
+ * restated, because restating it is how this file stayed at 10s after
+ * apiClient moved to 30s — the same "abort if either the caller or the
+ * timeout fires" wiring, the same envelope check, and errors shaped as
+ * `ApiError` with a message that is safe to put in front of a user.
  *
  * The one addition is field-level errors. A 400 from `POST /api/bookings`
  * carries `{ error, fields: { name: '…' } }`; that object is attached to the
  * thrown error as `.fields` so the form can mark the offending inputs instead
  * of showing one generic banner. Callers therefore branch on `err.fields`.
  */
-
-const DEFAULT_TIMEOUT_MS = 10000;
 
 /** Keep only `{ field: 'message' }` pairs so the form never renders an object. */
 function toFieldErrors(fields) {
@@ -37,7 +37,7 @@ function toFieldErrors(fields) {
  * @param {object} options { signal, timeoutMs }
  * @returns {Promise<{ id: number|string, status: string }>}
  */
-export async function createBooking(payload, { signal, timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
+export async function createBooking(payload, { signal, timeoutMs = API_TIMEOUT_MS } = {}) {
   const controller = new AbortController();
 
   // A caller abort (unmount) and our own timeout both surface as AbortError, but

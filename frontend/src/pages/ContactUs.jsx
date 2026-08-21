@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 
 import Container from '../components/ui/Container';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
@@ -58,6 +58,26 @@ export default function ContactUs() {
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState('idle'); // idle | submitting | success | error
 
+  /**
+   * In-flight guard for the submit handler.
+   *
+   * A ref, not the `status` state, because `status` is the thing that arrives
+   * too late. Setting it to 'submitting' schedules a re-render; until React
+   * commits that render the submit button is still enabled and `status` is
+   * still 'idle', so a second event arriving in the same tick passes every
+   * check and fires a second POST. Two rows in `contacts`, one customer — and
+   * the CRM has no way to tell the duplicate from a genuine second enquiry.
+   *
+   * The button's `loading` prop already disables it (see ui/Button), which
+   * closes the slow case; this closes the fast one — a double click landing
+   * before paint, or a held Enter key repeating `submit` off a text input.
+   * A ref flips synchronously, so the second event sees it immediately.
+   *
+   * Cleared in `finally`, not on success: a failed submission must be
+   * retryable, and the success screen's "Send another" button returns here.
+   */
+  const submittingRef = useRef(false);
+
   const update = (event) => {
     const { name, value } = event.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -67,6 +87,10 @@ export default function ContactUs() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    // Before validation: a submission already in flight must be dropped
+    // outright, not re-validated.
+    if (submittingRef.current) return;
+
     const found = validate(form);
     setErrors(found);
     if (Object.keys(found).length > 0) {
@@ -74,6 +98,9 @@ export default function ContactUs() {
       return;
     }
 
+    // Set together, and only after validation has passed — a rejected
+    // submission never started, so it must not lock the form.
+    submittingRef.current = true;
     setStatus('submitting');
     try {
       // The anonymous visitor/session ids ride along on the contact itself so
@@ -95,6 +122,8 @@ export default function ContactUs() {
       setCallback('');
     } catch {
       setStatus('error');
+    } finally {
+      submittingRef.current = false;
     }
   };
 

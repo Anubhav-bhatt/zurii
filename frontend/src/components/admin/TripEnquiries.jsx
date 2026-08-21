@@ -1,6 +1,7 @@
 import { Fragment, useMemo, useState } from 'react';
 
 import { adminFetch } from '../../services/adminApi';
+import { API_TIMEOUT_MS } from '../../services/apiClient';
 
 /**
  * The Trip Enquiries tab of the CRM — enquiries submitted through EnquiryForm
@@ -94,7 +95,7 @@ export default function TripEnquiries({ enquiries = [], loading = false, error =
     setDetails((prev) => ({ ...prev, [id]: { loading: true, error: '', data: null } }));
     try {
       const data = await adminFetch(`/api/admin/bookings/${id}`, {
-        signal: AbortSignal.timeout(30000),
+        signal: AbortSignal.timeout(API_TIMEOUT_MS),
       });
       setDetails((prev) => ({ ...prev, [id]: { loading: false, error: '', data } }));
     } catch (err) {

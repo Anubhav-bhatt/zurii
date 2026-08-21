@@ -1,6 +1,7 @@
 import { Fragment, useMemo, useState } from 'react';
 
 import { adminFetch } from '../../services/adminApi';
+import { API_TIMEOUT_MS } from '../../services/apiClient';
 
 /**
  * "All Enquiries" — every customer enquiry, from both tables, in one list.
@@ -199,7 +200,7 @@ export default function AllEnquiries({
     setDetails((prev) => ({ ...prev, [row.id]: { loading: true, error: '', data: null } }));
     try {
       const data = await adminFetch(`/api/admin/bookings/${row.id}`, {
-        signal: AbortSignal.timeout(30000),
+        signal: AbortSignal.timeout(API_TIMEOUT_MS),
       });
       setDetails((prev) => ({ ...prev, [row.id]: { loading: false, error: '', data } }));
     } catch (err) {

@@ -31,8 +31,15 @@ import { API_BASE_URL } from '../config/api';
  *
  * The real fix is an instance that does not suspend, at which point this is
  * only a safety net. Lower it if that changes.
+ *
+ * EXPORTED because it is the whole frontend's timeout, not this module's.
+ * bookingsApi.js kept its own copy at the old 10s value and was never
+ * updated with this one, so the public enquiry POST — the site's only write —
+ * still aborted mid cold start; the admin CRM had the same split, three
+ * fetches at 30s and one at 10s. A second constant is what let them diverge,
+ * so there is now only one.
  */
-const DEFAULT_TIMEOUT_MS = 30000;
+export const API_TIMEOUT_MS = 30000;
 
 export class ApiError extends Error {
   constructor(message, { status = 0, cause } = {}) {
@@ -60,7 +67,7 @@ export function buildQuery(params = {}) {
  * Throws ApiError with a message safe to show a user. `signal` lets callers
  * abort on unmount; an abort is rethrown untouched so callers can ignore it.
  */
-export async function apiGet(path, { signal, timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
+export async function apiGet(path, { signal, timeoutMs = API_TIMEOUT_MS } = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 

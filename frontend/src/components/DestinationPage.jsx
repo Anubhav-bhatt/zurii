@@ -89,7 +89,39 @@ export default function DestinationPage() {
     );
   }
 
-  const packages = destination.packages ?? [];
+  // A resolved request is not the same as a usable destination.
+  //
+  // `useAsyncData` reports error only when the promise rejected, and `apiGet`
+  // only rejects when the envelope says `success: false` — so a 200 carrying
+  // `{success:true}` with no `data`, or `{success:true, data:null}`, resolves
+  // cleanly. `adaptDestination` maps both of those to null (it guards its own
+  // input), which meant this line then read `.packages` off null and threw
+  // during render. There is no error boundary in the tree, so that did not
+  // degrade this page — it unmounted the whole app to a blank white screen.
+  //
+  // `name` is the field checked because it is NOT NULL in the destinations
+  // table and every branch below interpolates it: a row that reached here
+  // without one would render "Trips to undefined" and build a WhatsApp message
+  // to match. So this rejects exactly the shapes that cannot be displayed, and
+  // no valid destination.
+  //
+  // Presented as a retryable error rather than "not found": a missing
+  // destination already arrives as a 404 and is handled above, so reaching
+  // here means the response itself was wrong, and that is worth retrying.
+  if (!destination || typeof destination !== 'object' || !destination.name) {
+    return (
+      <div className="pt-16 sm:pt-[68px]">
+        <Container className="py-16">
+          <ErrorState
+            onRetry={reload}
+            description="We couldn't read that destination just now. Please try again in a moment."
+          />
+        </Container>
+      </div>
+    );
+  }
+
+  const packages = Array.isArray(destination.packages) ? destination.packages : [];
   const context = [destination.kind === 'domestic' ? 'India' : destination.region, destination.country]
     .filter((value, index, all) => value && all.indexOf(value) === index)
     .join(' · ');
@@ -145,7 +177,10 @@ export default function DestinationPage() {
               {destination.about}
             </p>
 
-            {destination.cities?.length > 0 && (
+            {/* `cities` comes from the destinations.metadata JSONB blob, so its type
+                is whatever was written there — `?.length > 0` is also true for a
+                string, and .map() below is not. */}
+            {Array.isArray(destination.cities) && destination.cities.length > 0 && (
               <div className="mt-6">
                 <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">
                   Places you'll visit

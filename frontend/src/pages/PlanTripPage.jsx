@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 import Container from '../components/ui/Container';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
@@ -79,12 +80,12 @@ export default function PlanTripPage() {
 
               <p className="mt-5 border-t border-zinc-200 dark:border-zinc-800 pt-4 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
                 Looking for something else? The{' '}
-                <a
-                  href="/contact-us"
+                <Link
+                  to="/contact-us"
                   className="font-semibold text-violet-700 hover:text-violet-900 dark:text-violet-400 dark:hover:text-violet-300"
                 >
                   contact page
-                </a>{' '}
+                </Link>{' '}
                 is the place for general questions.
               </p>
             </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const copied = (text, setCopied) => {
   navigator.clipboard.writeText(text).catch(() => {});
@@ -155,8 +156,8 @@ const PaymentPolicy = () => (
           <li className="flex items-start gap-3 text-sm text-gray-600 dark:text-zinc-300">
             <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-violet-500 shrink-0" />
             Do check our{' '}
-            <a href="/cancellation-policy" className="text-violet-600 dark:text-violet-400 hover:underline font-semibold mx-0.5">Cancellation Policy</a>,{' '}
-            <a href="/privacy-policy" className="text-violet-600 dark:text-violet-400 hover:underline font-semibold mx-0.5">Privacy Policy</a> and Disclaimer on our website for related details.
+            <Link to="/cancellation-policy" className="text-violet-600 dark:text-violet-400 hover:underline font-semibold mx-0.5">Cancellation Policy</Link>,{' '}
+            <Link to="/privacy-policy" className="text-violet-600 dark:text-violet-400 hover:underline font-semibold mx-0.5">Privacy Policy</Link> and Disclaimer on our website for related details.
           </li>
         </ul>
       </div>

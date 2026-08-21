@@ -9,6 +9,7 @@ import {
   AdminApiError,
   AdminAuthError,
 } from '../services/adminApi';
+import { API_TIMEOUT_MS } from '../services/apiClient';
 import ChangePasswordForm from '../components/admin/ChangePasswordForm';
 import TripEnquiries from '../components/admin/TripEnquiries';
 import AllEnquiries from '../components/admin/AllEnquiries';
@@ -170,8 +171,12 @@ const AdminInsights = () => {
     try {
       // adminFetch unwraps the `{ success, data }` envelope and throws on
       // failure, so the response-shape checks that used to live here are gone.
+      // The same timeout as every other API call in the app. This was 10s
+      // while its three siblings were 30s, so on a cold backend the contact
+      // leads aborted and the tab reported a timeout while trip enquiries —
+      // the identical round trip — loaded fine.
       const data = await adminFetch('/api/contact', {
-        signal: AbortSignal.timeout(10000),
+        signal: AbortSignal.timeout(API_TIMEOUT_MS),
       });
       setContacts(data);
     } catch (err) {
@@ -217,7 +222,7 @@ const AdminInsights = () => {
     setTripError('');
     try {
       const data = await adminFetch('/api/admin/bookings', {
-        signal: AbortSignal.timeout(30000),
+        signal: AbortSignal.timeout(API_TIMEOUT_MS),
       });
       const rows = Array.isArray(data) ? data : [];
       setTripEnquiries(rows);

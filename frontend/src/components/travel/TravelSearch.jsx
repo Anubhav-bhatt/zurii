@@ -1,5 +1,5 @@
 import { useId, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { useAsyncData } from '../../hooks/useAsyncData';
 import { getDestinationsCached } from '../../services/destinationsApi';
@@ -238,9 +238,9 @@ export default function TravelSearch({ className = '' }) {
       {destinationsUnavailable && (
         <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
           Destination list unavailable right now — search by budget or duration, or{' '}
-          <a href="/packages" className="font-semibold text-zinc-900 dark:text-zinc-200 hover:underline">
+          <Link to="/packages" className="font-semibold text-zinc-900 dark:text-zinc-200 hover:underline">
             browse all trips
-          </a>
+          </Link>
           .
         </p>
       )}
