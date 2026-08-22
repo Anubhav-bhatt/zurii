@@ -193,8 +193,8 @@ is a warning, not a failure — but `verify` is what you want before go-live.
 
 ### Schema initialisation
 
-There is no manual migration step. The container entrypoint
-(`backend/docker-entrypoint.sh`) applies the schema on every start, and the
+The schema applies itself. The container entrypoint
+(`backend/docker-entrypoint.sh`) runs the migrations on every start, and the
 server heals its own tables at boot. Every statement is `CREATE ... IF NOT
 EXISTS` or `ADD COLUMN IF NOT EXISTS`:
 
@@ -202,11 +202,49 @@ EXISTS` or `ADD COLUMN IF NOT EXISTS`:
 - running it repeatedly is a no-op;
 - an existing production database is brought up to date in place.
 
+Exactly one migration is deliberately left for you to run by hand. It is
+described in the next section, and a fresh deployment is not finished until you
+have run it.
+
 > **Scaling note.** This runs on every backend replica's boot. With more than
 > one replica, two containers can issue the same DDL simultaneously, which
 > PostgreSQL can answer with a duplicate-object error despite `IF NOT EXISTS`.
 > The bundled Compose file runs a single backend, so this cannot occur. If you
 > scale out, move the entrypoint's migration block into a one-shot init job.
+
+### The one manual migration — `migrate:admin-username`
+
+Run this once against the production database after the first deploy:
+
+```bash
+docker compose exec backend npm run migrate:admin-username
+
+# On Render, use the service Shell, or run it from a checkout with
+# DATABASE_URL pointed at the production database.
+```
+
+**Why it is not automatic.** Login matches case-insensitively
+(`WHERE LOWER(username) = $1`), but the table's uniqueness constraint is
+case-*sensitive*. So `Admin` and `admin` can both exist, both satisfy the
+constraint, and one login then matches two rows — PostgreSQL returns whichever
+it likes without an `ORDER BY`, so which account you authenticate as, and
+therefore whose password is checked, becomes non-deterministic. This migration
+adds a unique index on `LOWER(username)` so the constraint finally matches the
+query.
+
+It is idempotent and non-destructive — `CREATE UNIQUE INDEX IF NOT EXISTS`
+only, no `DROP`, no `UPDATE`, no `DELETE` — so re-running it is a no-op.
+
+It is kept out of `docker-entrypoint.sh` deliberately. If two accounts already
+collide it reports them and exits non-zero without touching a row, and the
+entrypoint runs under `set -e`: automating it would turn two badly-named admin
+accounts into a total outage of the public website, catalogue and contact form
+included. The blast radius has to match the fault, so you run it by hand and
+read the result.
+
+> If it reports a collision, resolve it before going further. Deciding which
+> account is real is an operator's call — both automatic answers, renaming one
+> or deleting one, can lock a person out of production.
 
 ---
 
