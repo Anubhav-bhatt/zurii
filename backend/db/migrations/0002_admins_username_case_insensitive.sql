@@ -1,0 +1,13 @@
+-- 0002_admins_username_case_insensitive
+--
+-- Formerly the manual scripts/migrateAdminUsernameCase.mjs (DEPLOYMENT.md,
+-- "The one manual migration"). Login matches LOWER(username) while the column's
+-- own UNIQUE constraint is case-sensitive, so "Admin" and "admin" could coexist
+-- and one login would match two rows. This index makes the constraint match the
+-- query.
+--
+-- IF NOT EXISTS: a database that already ran the manual script keeps its index.
+-- If two existing usernames differ only by case, the CREATE fails, the runner
+-- rolls this migration back and stops — nothing is renamed or deleted
+-- automatically; deciding which account is real stays an operator's call.
+CREATE UNIQUE INDEX IF NOT EXISTS admins_username_lower_key ON admins (LOWER(username));

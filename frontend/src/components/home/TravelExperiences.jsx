@@ -61,6 +61,7 @@ export default function TravelExperiences({ packages = [] }) {
                 src={card.image}
                 alt=""
                 ratio="aspect-[5/4] sm:aspect-[16/10]"
+                sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 62vw"
                 imgClassName="transition-transform duration-500 ease-out group-hover:scale-105"
               >
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />

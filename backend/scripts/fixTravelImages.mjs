@@ -30,6 +30,7 @@
  * match fails and the step reports `already-fixed`.
  */
 import poolModule from '../db/pool.js';
+import safetyModule from '../db/safety.js';
 
 const { getPool } = poolModule;
 
@@ -315,6 +316,15 @@ async function apply(pool) {
   } finally {
     client.release();
   }
+}
+
+// Updates catalogue rows: refuses unless DATABASE_URL is a verified local zurii_dev/zurii_test
+// database, or a remote database named explicitly in ZURII_CONFIRM_REMOTE_DATABASE.
+try {
+  await safetyModule.guardManualDataScript('scripts/fixTravelImages.mjs');
+} catch (err) {
+  console.error(`✗ ${err.message}`);
+  process.exit(1);
 }
 
 const pool = getPool();

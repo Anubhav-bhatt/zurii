@@ -1,6 +1,7 @@
 import Container from '../ui/Container';
 import Button from '../ui/Button';
 import { whatsappLink } from '../../config/site';
+import { trackWhatsAppClick } from '../../services/marketing';
 
 /**
  * Closing conversion section. Both actions route to destinations that already
@@ -27,6 +28,7 @@ export default function PlanTripCTA() {
             href={whatsappLink()}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackWhatsAppClick('home_plan_cta')}
             variant="whatsapp"
             size="lg"
             className="w-full sm:w-auto"

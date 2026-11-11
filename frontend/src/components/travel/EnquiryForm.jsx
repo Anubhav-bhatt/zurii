@@ -1,10 +1,14 @@
-import { useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 
 import Button from '../ui/Button';
 import { whatsappLink } from '../../config/site';
 import { createBooking } from '../../services/bookingsApi';
 import { track } from '../../services/analytics';
+import { LEAD_FORMS, trackLead, trackWhatsAppClick } from '../../services/marketing';
 import { useAsyncData } from '../../hooks/useAsyncData';
+import { createSubmissionKeys } from '../../services/submissionKey';
+import { MONTHS, readTripPlan, travellersCount } from '../../services/tripPlan';
+import { titleCase } from '../../utils/format';
 import { getDestinationsCached } from '../../services/destinationsApi';
 
 /**
@@ -41,7 +45,26 @@ const EMPTY = {
   // Only collected in `tripContext` mode — see the note on that prop.
   destination: '',
   budget: '',
+  // A planning preference from the home search, or picked in Plan My Trip.
+  month: '',
 };
+
+/**
+ * Start from the visitor's trip plan (services/tripPlan.js): the destination
+ * they chose on a destination page or in the home search, the month, the
+ * traveller count and the budget. Nothing is invented — an empty plan gives
+ * the empty form.
+ */
+function initialForm(plan, planningMode) {
+  const count = travellersCount(plan?.travellers);
+  return {
+    ...EMPTY,
+    ...(count ? { travellers: String(count) } : {}),
+    ...(plan?.month ? { month: plan.month } : {}),
+    ...(planningMode && plan?.destination ? { destination: plan.destination } : {}),
+    ...(planningMode && plan?.budget ? { budget: plan.budget } : {}),
+  };
+}
 
 /**
  * Budget bands, worded as the homepage search words them so a visitor who came
@@ -110,15 +133,31 @@ export default function EnquiryForm({
   packageSlug,
   packageTitle,
   tripContext = false,
+  plan,
   onSuccess,
   className = '',
   compact = false,
 }) {
   const uid = useId();
-  const [form, setForm] = useState(EMPTY);
+  // `plan` comes from Plan My Trip's URL; otherwise this tab's saved plan.
+  const [form, setForm] = useState(() => initialForm(plan ?? readTripPlan(), tripContext && !packageSlug));
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState('idle'); // idle | submitting | success | error
   const [submitError, setSubmitError] = useState('');
+  // One idempotency key per submission attempt (services/submissionKey.js):
+  // Send pressed again with the same contents cannot create a second enquiry.
+  const [submissionKeys] = useState(createSubmissionKeys);
+  // `status` is a render-time snapshot: clicks that land before React re-renders
+  // all read 'idle'. This ref flips synchronously, so they send one request and
+  // fire one Meta Lead between them.
+  const submittingRef = useRef(false);
+  const successRef = useRef(null);
+
+  // The form is replaced by the confirmation; move focus there so keyboard and
+  // screen-reader users are not left on a control that no longer exists.
+  useEffect(() => {
+    if (status === 'success') successRef.current?.focus();
+  }, [status]);
 
   const today = todayISO();
   const pair = compact ? 'grid gap-4' : 'grid gap-5 sm:grid-cols-2';
@@ -155,7 +194,7 @@ export default function EnquiryForm({
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (status === 'submitting') return; // a second click must not create a second enquiry
+    if (submittingRef.current) return; // a second click must not create a second enquiry
 
     const found = validate(form, today);
     setErrors(found);
@@ -164,23 +203,26 @@ export default function EnquiryForm({
       return;
     }
 
+    submittingRef.current = true;
     setStatus('submitting');
     setSubmitError('');
 
     // Destination and budget are planning hints rather than columns, so they go
     // into the message as labelled lines above whatever the visitor wrote.
     const contextLines = [];
-    if (showTripContext) {
+    if (showTripContext && form.destination) {
+      // The list may still be loading when a pre-selected destination is sent.
       const chosen = destinationOptions.find((d) => d.slug === form.destination);
-      if (chosen) contextLines.push(`Destination: ${chosen.name}`);
-      if (form.budget) contextLines.push(`Budget: ${form.budget}`);
+      contextLines.push(`Destination: ${chosen?.name ?? titleCase(form.destination.replace(/-/g, ' '))}`);
     }
+    if (form.month) contextLines.push(`Preferred month: ${form.month}`);
+    if (showTripContext && form.budget) contextLines.push(`Budget: ${form.budget}`);
     const composedMessage = [contextLines.join(' | '), form.message.trim()]
       .filter(Boolean)
       .join('\n\n');
 
     try {
-      const result = await createBooking({
+      const payload = {
         ...(packageSlug ? { packageSlug } : {}),
         name: form.name.trim(),
         email: form.email.trim(),
@@ -189,13 +231,23 @@ export default function EnquiryForm({
         travellers: Number(form.travellers),
         departureCity: form.departureCity.trim(),
         message: composedMessage,
-      });
+        // Which form, for the campaign report (ZT-16); Plan My Trip also
+        // records the destination it was about.
+        submissionSource: packageSlug ? 'trip_enquiry' : 'plan_my_trip',
+        ...(showTripContext && form.destination ? { destinationSlug: form.destination } : {}),
+      };
+      const result = await createBooking(payload, { idempotencyKey: submissionKeys.keyFor(payload) });
+      submissionKeys.succeeded();
 
       // After the enquiry resolved, fire-and-forget: the success panel is
       // never delayed by analytics, and no personal data rides on the event.
       track('enquiry_submitted', {
         ...(packageSlug ? { entityType: 'package', entitySlug: packageSlug } : {}),
       });
+      // Meta Lead: only here, after createBooking resolved — the API has
+      // confirmed the enquiry was saved. Validation errors and failed requests
+      // land in the catch below and never reach it. No form data is sent.
+      trackLead(tripContext ? LEAD_FORMS.plan : LEAD_FORMS.trip);
 
       setStatus('success');
       setForm(EMPTY);
@@ -225,6 +277,8 @@ export default function EnquiryForm({
 
       setSubmitError(err?.message || '');
       setStatus('error');
+    } finally {
+      submittingRef.current = false;
     }
   };
 
@@ -232,7 +286,9 @@ export default function EnquiryForm({
     return (
       <div className={className}>
         <div
-          className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-8 text-center dark:border-emerald-900/50 dark:bg-emerald-950/30"
+          ref={successRef}
+          tabIndex={-1}
+          className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-8 text-center outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-emerald-900/50 dark:bg-emerald-950/30"
           role="status"
         >
           <p className="text-lg font-bold text-emerald-900 dark:text-emerald-300">Thanks — your enquiry has been sent.</p>
@@ -255,6 +311,23 @@ export default function EnquiryForm({
         </p>
       )}
 
+      {/* A month chosen in the home search goes with a trip enquiry too; the
+          visitor can drop it. Plan My Trip shows it as a field instead. */}
+      {!showTripContext && form.month && (
+        <p className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+          <span>
+            Travelling in <span className="font-semibold">{form.month}</span> — from your search
+          </span>
+          <button
+            type="button"
+            onClick={() => setForm((prev) => ({ ...prev, month: '' }))}
+            className="touch-target rounded px-1 text-xs font-semibold text-zinc-600 underline underline-offset-2 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/20 dark:text-zinc-400 dark:hover:text-zinc-100"
+          >
+            Remove
+          </button>
+        </p>
+      )}
+
       {showTripContext && (
         <div className={pair}>
           <div>
@@ -272,6 +345,26 @@ export default function EnquiryForm({
               {destinationOptions.map((destination) => (
                 <option key={destination.slug} value={destination.slug}>
                   {destination.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className={LABEL} htmlFor={`${uid}-month`}>
+              When would you like to travel?
+            </label>
+            <select
+              id={`${uid}-month`}
+              name="month"
+              value={form.month}
+              onChange={update}
+              className={`${FIELD} ${FIELD_OK}`}
+            >
+              <option value="">Not sure yet</option>
+              {MONTHS.map((month) => (
+                <option key={month} value={month}>
+                  {month}
                 </option>
               ))}
             </select>
@@ -302,7 +395,7 @@ export default function EnquiryForm({
       <div className={pair}>
         <div>
           <label className={LABEL} htmlFor={`${uid}-name`}>
-            Your name <span className="text-rose-500">*</span>
+            Your name <span className="text-rose-500" aria-hidden="true">*</span><span className="sr-only"> (required)</span>
           </label>
           <input
             id={`${uid}-name`}
@@ -310,6 +403,7 @@ export default function EnquiryForm({
             value={form.name}
             onChange={update}
             autoComplete="name"
+            aria-required="true"
             aria-invalid={Boolean(errors.name)}
             aria-describedby={errors.name ? `${uid}-name-error` : undefined}
             className={`${FIELD} ${errors.name ? FIELD_ERROR : FIELD_OK}`}
@@ -324,7 +418,7 @@ export default function EnquiryForm({
 
         <div>
           <label className={LABEL} htmlFor={`${uid}-phone`}>
-            Phone <span className="text-rose-500">*</span>
+            Phone <span className="text-rose-500" aria-hidden="true">*</span><span className="sr-only"> (required)</span>
           </label>
           <input
             id={`${uid}-phone`}
@@ -334,6 +428,7 @@ export default function EnquiryForm({
             value={form.phone}
             onChange={update}
             autoComplete="tel"
+            aria-required="true"
             aria-invalid={Boolean(errors.phone)}
             aria-describedby={errors.phone ? `${uid}-phone-error` : undefined}
             className={`${FIELD} ${errors.phone ? FIELD_ERROR : FIELD_OK}`}
@@ -349,7 +444,7 @@ export default function EnquiryForm({
 
       <div>
         <label className={LABEL} htmlFor={`${uid}-email`}>
-          Email <span className="text-rose-500">*</span>
+          Email <span className="text-rose-500" aria-hidden="true">*</span><span className="sr-only"> (required)</span>
         </label>
         <input
           id={`${uid}-email`}
@@ -358,6 +453,7 @@ export default function EnquiryForm({
           value={form.email}
           onChange={update}
           autoComplete="email"
+          aria-required="true"
           aria-invalid={Boolean(errors.email)}
           aria-describedby={errors.email ? `${uid}-email-error` : undefined}
           className={`${FIELD} ${errors.email ? FIELD_ERROR : FIELD_OK}`}
@@ -395,7 +491,7 @@ export default function EnquiryForm({
 
         <div>
           <label className={LABEL} htmlFor={`${uid}-travellers`}>
-            Travellers
+            Travellers <span className="text-rose-500" aria-hidden="true">*</span><span className="sr-only"> (required)</span>
           </label>
           <input
             id={`${uid}-travellers`}
@@ -407,6 +503,7 @@ export default function EnquiryForm({
             step={1}
             value={form.travellers}
             onChange={update}
+            aria-required="true"
             aria-invalid={Boolean(errors.travellers)}
             aria-describedby={errors.travellers ? `${uid}-travellers-error` : undefined}
             className={`${FIELD} ${errors.travellers ? FIELD_ERROR : FIELD_OK}`}
@@ -468,8 +565,9 @@ export default function EnquiryForm({
           role="alert"
           className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300"
         >
-          {submitError ? endWithStop(submitError) : "We couldn't send that just now."} Please try again, or reach us
-          on WhatsApp.
+          {submitError ? endWithStop(submitError) : "We couldn't send that just now."}
+          {/* The 429 message already points to WhatsApp; do not say it twice. */}
+          {/whatsapp/i.test(submitError) ? null : ' Please try again, or reach us on WhatsApp.'}
         </p>
       )}
 
@@ -488,6 +586,12 @@ export default function EnquiryForm({
           href={whatsappLink(packageTitle)}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() =>
+            trackWhatsAppClick(tripContext ? 'plan_trip_form' : 'enquiry_form', {
+              context: packageSlug ? 'package' : 'general',
+              ...(packageSlug ? { entityType: 'package', entitySlug: packageSlug } : {}),
+            })
+          }
           variant="whatsapp"
           size="lg"
           className="w-full"

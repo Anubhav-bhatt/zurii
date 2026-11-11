@@ -24,6 +24,9 @@ is an empty blank waiting for your value.
 - [Database setup](#database-setup)
 - [Creating the first admin](#creating-the-first-admin)
 - [Deployment](#deployment)
+- [Client IP and rate limits](#client-ip-and-rate-limits)
+- [Caching, missing files and security headers](#caching-missing-files-and-security-headers)
+- [Meta Pixel and consent](#meta-pixel-and-consent)
 - [Verification](#verification)
 - [Troubleshooting](#troubleshooting)
 - [Security notes](#security-notes)
@@ -57,6 +60,35 @@ docker compose build
 docker compose up -d
 ```
 
+The backend then waits for the versioned migrations: it refuses to start until
+migration 0004 (lead management) is applied, and never applies it itself. On a
+new database, adopt the baseline and apply the rest once — the entrypoint has
+already built the baseline tables:
+
+```bash
+docker compose run --rm -e ZURII_PRODUCTION_DB_APPROVED=yes backend \
+  node scripts/db.mjs migrate --target production --confirm-database <POSTGRES_DB> --adopt-baseline
+```
+
+A new database has no trips or destinations yet. Import the approved catalogue
+(`--dry-run` first reports what it would write), check the result, then start
+the whole stack — `up -d` rather than `restart backend`, because the frontend
+was never started while the backend was waiting:
+
+```bash
+docker compose run --rm -e ZURII_PRODUCTION_DB_APPROVED=yes backend \
+  node scripts/db.mjs seed-catalogue --target production --confirm-database <POSTGRES_DB> --dry-run
+docker compose run --rm -e ZURII_PRODUCTION_DB_APPROVED=yes backend \
+  node scripts/db.mjs seed-catalogue --target production --confirm-database <POSTGRES_DB>
+docker compose run --rm -e ZURII_PRODUCTION_DB_APPROVED=yes backend \
+  node scripts/db.mjs verify --target production --confirm-database <POSTGRES_DB>
+docker compose up -d --wait
+```
+
+(Rehearsed in Phase 7 on a disposable stack: without the seed step the site
+starts with 0 trips.) See [docs/DATABASE_MIGRATIONS.md](docs/DATABASE_MIGRATIONS.md)
+before doing any of this on a database that already holds data.
+
 Then create your admin account:
 
 ```bash
@@ -87,10 +119,13 @@ loads the site can read it.
 | `JWT_REFRESH_SECRET` | **Yes** | Private | Signs 7-day refresh tokens. Must **differ** from `JWT_SECRET` | *(you generate)* |
 | `ALLOWED_ORIGINS` | **Yes in production** | Private | Comma-separated browser origins allowed to call the API. Never `*` | `https://zurii.example` |
 | `NODE_ENV` | No | Private | `production` enables HSTS and `Secure` cookies. Only with TLS in front | `development` |
-| `TRUST_PROXY` | No | Private | Trusted reverse-proxy hops. `1` behind the bundled nginx. Compose sets this for you | `1` |
+| `TRUST_PROXY` | No | Private | Trusted reverse-proxy hops: `1` behind the bundled nginx (Compose default), `2` with a TLS proxy in front (`docker-compose.prod.yml` default). See [Client IP and rate limits](#client-ip-and-rate-limits) | `1` |
 | `ADMIN_SEED` | No | Private | Optional bootstrap admin, `user:password`. Prefer the CLI — see below | *(leave empty)* |
 | `WEB_PORT` | No | Private | Host port for the web UI | `8080` |
 | `VITE_API_URL` | No | **Public** | Leave **empty** for same-origin `/api/*` proxying. Baked in at image build time | *(empty)* |
+| `VITE_SITE_URL` | **Yes in production** | **Public** | The canonical origin for canonical links, link previews and `sitemap.xml` ([docs/SEO.md](docs/SEO.md)). No path, no trailing slash. Unset: the site works but has no canonical URLs and no sitemap. Baked in at build time | `https://www.example.com` |
+| `SITE_NOINDEX` | No | **Public** | `true` on a **staging** build: every page `noindex`, `robots.txt` disallows all. (Vercel previews are noindex automatically.) | *(empty)* |
+| `LOG_LEVEL` | No | Private | `debug` \| `info` \| `warn` \| `error` for the structured JSON log ([docs/OBSERVABILITY.md](docs/OBSERVABILITY.md)) | `info` |
 
 ### The one rule about `VITE_` variables
 
@@ -206,11 +241,28 @@ Exactly one migration is deliberately left for you to run by hand. It is
 described in the next section, and a fresh deployment is not finished until you
 have run it.
 
+> **Versioned migrations 0004 and 0005 are required.** The entrypoint does not
+> apply the versioned migrations (`backend/db/migrations/`); the server checks
+> for 0004 (lead management) and 0005 (lead attribution) at startup and exits,
+> naming the missing one, until they are applied with
+> `node scripts/db.mjs migrate --target <development|production>` — see
+> [docs/DATABASE_MIGRATIONS.md](docs/DATABASE_MIGRATIONS.md). Apply them before
+> deploying the code that needs them.
+
 > **Scaling note.** This runs on every backend replica's boot. With more than
 > one replica, two containers can issue the same DDL simultaneously, which
 > PostgreSQL can answer with a duplicate-object error despite `IF NOT EXISTS`.
 > The bundled Compose file runs a single backend, so this cannot occur. If you
 > scale out, move the entrypoint's migration block into a one-shot init job.
+
+> **Manual data scripts are guarded.** `migrate:data`, `db:migrate`,
+> `db:seed:demo`, `db:seed:demo:remove` and `scripts/fixTravelImages.mjs` write
+> data, so they refuse any non-local database unless you first take a backup
+> and set `ZURII_CONFIRM_REMOTE_DATABASE=<exact database name>`. The boot-time
+> migrations above are unaffected. See
+> [docs/DATABASE_MIGRATIONS.md](docs/DATABASE_MIGRATIONS.md) for the versioned
+> migration ledger now used for local databases, and the prepared (not yet
+> executed) procedure for moving production onto it.
 
 ### The one manual migration — `migrate:admin-username`
 
@@ -348,7 +400,10 @@ of them is in the file, and none should ever be.
 Three settings that are specific to running behind Render's edge:
 
 - **`TRUST_PROXY=1`.** Render terminates TLS and forwards to the container, so
-  without this `req.ip` is Render's address for every request. The login rate
+  without this `req.ip` is Render's address for every request. It is right for
+  requests that reach Render directly; for requests proxied by Vercel it is not
+  enough, and raising it is not safe — see
+  [Client IP and rate limits](#client-ip-and-rate-limits). The login rate
   limiter would then bucket the whole internet into one key — a single attacker
   could lock out every admin — and the audit trail would record the proxy's IP
   on every event.
@@ -376,20 +431,28 @@ instance** — see the note in `backend/docker-entrypoint.sh` before scaling up.
 ### Vercel (frontend)
 
 `frontend/vercel.json` makes the SPA and the API one origin from the browser's
-point of view:
+point of view, and serves the prerendered pages ([docs/SEO.md](docs/SEO.md)):
 
-```json
-{
-  "rewrites": [
-    { "source": "/api/:path*", "destination": "https://zurii-alt4.onrender.com/api/:path*" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
-}
-```
+- `/api/:path*` is proxied to Render — the first rewrite, so nothing shadows it;
+- every public page is a prerendered file (`/about` → `about/index.html`);
+- `/trip/*`, `/destination/*`, `/blog/*` without a prerendered page, and the
+  admin, get the app shell `spa-fallback.html`;
+- old category URLs (`/international`, `/explore/*`, …) redirect permanently;
+- anything else is a real 404 with `404.html`.
 
-The first rule proxies the API; the second is the SPA fallback, so a deep link
-like `/admin/insights` serves `index.html` instead of Vercel's 404. Order
-matters — a catch-all above the `/api` rule would swallow every API call.
+**The build reads one file outside `frontend/`.** `npm run build` prerenders
+pages from `backend/db/catalogue/catalogue.v2.json`. With the project's Root
+Directory set to `frontend`, keep Vercel's "Include files outside the root
+directory in the Build Step" setting enabled (the default for new projects).
+If it is off, the build fails at `scripts/prerender.mjs` with `ENOENT … catalogue.v2.json`
+and the previous deployment keeps serving. A healthy build log shows
+`prerender: 124 pages (36 destinations, 68 trips, 6 guides) · sitemap 123 URLs`
+(`sitemap not written` instead when `VITE_SITE_URL` is unset, as on previews). The Docker image
+gets the same file through a named build context (`frontend/Dockerfile`).
+
+Set **`VITE_SITE_URL`** to the public origin for the **Production** environment
+only, so previews never declare themselves canonical (previews are noindex
+anyway through `VERCEL_ENV`).
 
 **`VITE_API_URL` must be unset or empty in the Vercel project.** This is the one
 setting that silently breaks admin sessions. `VITE_*` variables are read at
@@ -415,9 +478,10 @@ unset so the refresh cookie stays `SameSite=Lax`, which is the strongest value
 that works. `ALLOWED_ORIGINS` is still required — config validation makes it
 mandatory in production — and should list the frontend origin, but it is no
 longer load-bearing for the browser, because the browser is not making a
-cross-origin request. `TRUST_PROXY=1` stays set for the reason above; Vercel
-adds a hop in front of Render, but Render's own edge is still the only hop whose
-`X-Forwarded-For` this service should trust.
+cross-origin request. `TRUST_PROXY=1` stays set: Render's edge is the only hop
+whose `X-Forwarded-For` this service can trust, because the Render URL is also
+reachable directly. The cost is that visitors arriving through Vercel may share
+rate-limit buckets — see [Client IP and rate limits](#client-ip-and-rate-limits).
 
 Check what the deployed backend actually sends, rather than what you think it is
 configured with. A bogus cookie takes the clear-cookie path and echoes the real
@@ -446,6 +510,137 @@ and Firefox and Brave block in their default modes — so a cross-site deploymen
 that "works" generally means it works in Chrome, for now.
 
 ---
+
+## Client IP and rate limits
+
+Every limiter keys on `req.ip`. Express takes it from `X-Forwarded-For` only for
+the number of hops `TRUST_PROXY` declares, so a header a visitor sends cannot
+pick their bucket — as long as that number matches the real proxy chain. Too
+low, and unrelated visitors share a proxy's bucket; too high, and callers can
+choose their own address. IPv4 addresses are keyed individually; IPv6 clients
+by their /56 prefix, so one client cannot rotate through its own range.
+
+| Limit | Ceiling | Keyed on |
+| ----- | ------- | -------- |
+| Failed sign-ins, per client | 20 per 15 min | client |
+| Failed sign-ins, per client per username | 4 per 15 min | client + username |
+| Account lock (PostgreSQL) | 5 consecutive failures → locked 15 min | account |
+| Password checks in progress | 2 at once, 16 waiting, then 503 | whole process |
+| Trip enquiries + contact form | 30 per 10 min | client |
+| Token refresh | 60 per 15 min | client |
+| Analytics events | 120 per min | client |
+
+Every 429 has the same shape — `{ "success": false, "error": "…", "code":
+"RATE_LIMITED" }` with `Retry-After` — and both enquiry forms show its message,
+which points to WhatsApp. Refused enquiries are logged as
+`Rate limit: enquiry refused (429)`. Limits live in process memory: a restart
+clears them, and with several replicas each keeps its own.
+
+| Topology | Chain | `TRUST_PROXY` | Status |
+| -------- | ----- | ------------- | ------ |
+| Compose, bundled nginx only | browser → nginx → API | `1` (Compose default) | Verified locally |
+| Compose + TLS proxy (`docker-compose.prod.yml`) | browser → Caddy / host nginx / ALB → nginx → API | `2` (overlay default) | Verified locally with a simulated front proxy |
+| Render, called directly | browser → Render edge → API | `1` | Production check below |
+| Vercel → Render (current) | browser → Vercel → Render edge → API | `1` | **Not fixed** — see below |
+
+**Vercel → Render.** With `1`, `req.ip` is the address Vercel used to reach
+Render, so visitors arriving through the Vercel rewrite may share a handful of
+buckets. Raising the count to `2` is not safe: `zurii-alt4.onrender.com` is
+publicly reachable, and a caller going to it directly could then put any address
+in `X-Forwarded-For`. What Vercel forwards to an external rewrite could not be
+verified from a development machine. Until it is, the enquiry ceiling is sized
+generously (30 per 10 minutes per bucket), a refused visitor is told to use
+WhatsApp, and every refusal is logged.
+
+Production check (no customer data involved):
+
+1. Sign in to `/admin` through the Vercel domain.
+2. In the production database, read the newest sign-in row:
+   `SELECT created_at, ip_address FROM admin_audit_logs WHERE event_type = 'LOGIN_SUCCESS' ORDER BY created_at DESC LIMIT 1;`
+3. Your own public IP there means each visitor has their own bucket. A cloud
+   provider's address means visitors share buckets; then either serve the API
+   from a subdomain of the site's own domain (a Render custom domain such as
+   `api.<your-domain>`, added to `connect-src` and `ALLOWED_ORIGINS`; the
+   refresh cookie stays `SameSite=Lax` because the two are same-site), or put an
+   authenticated proxy hop in front of Render. Neither is done in this branch.
+
+Repeat steps 1–2 for a Compose deployment with a TLS proxy: you should see your
+own IP with `TRUST_PROXY=2`.
+
+## Caching, missing files and security headers
+
+`frontend/vercel.json` and `frontend/nginx.conf` apply the same rules:
+
+| Path | `Cache-Control` | A missing file returns |
+| ---- | --------------- | ---------------------- |
+| `/assets/travel/v1/…`, `/assets/brand/v1/…` | `public, max-age=31536000, immutable` | 404 |
+| `/assets/<name>-<hash>.js` / `.css` (Vite) | `public, max-age=31536000, immutable` | 404 |
+| `/`, `/index.html`, app routes such as `/trip/<slug>` | `no-cache` | `index.html` (200) |
+| any other path with a file extension | `no-cache` | 404 |
+
+Long caching is safe only because these URLs never change their bytes. Vite puts
+a content hash in every bundle name. Image URLs carry the recipe version (`v1`)
+and the master's content hash, and `tools/images` refuses to write different
+bytes to a path that already exists: a new recipe or encoder needs `v2`. HTML is
+`no-cache`, so a new deployment's `index.html` — and through it the new bundle
+names — is picked up on the next visit.
+
+Security headers on every page: `Content-Security-Policy` (below),
+`X-Frame-Options: DENY` with `frame-ancestors 'none'`, `nosniff`,
+`Referrer-Policy: strict-origin-when-cross-origin` and a `Permissions-Policy`
+that turns off camera, microphone, geolocation and payment. The CSP allows
+scripts only from the site, its inline theme bootstrap and
+`https://connect.facebook.net`; connections only to the site,
+`https://www.facebook.com` and `https://connect.facebook.net` (Vercel also lists
+the Render origin, for the cross-site topology — remove it once the bundle probe
+in the Vercel section confirms same-origin `/api`). Vercel adds HSTS itself.
+
+The Vercel patterns were verified locally with an emulation of these rules, not
+on Vercel. On a **preview** deployment, before production:
+
+```bash
+SITE=https://<preview-url>
+curl -s -o /dev/null -w '%{http_code}\n' $SITE/assets/travel/v1/missing/400.avif   # 404
+curl -s -o /dev/null -w '%{http_code} %{content_type}\n' $SITE/trip/any-slug          # 200 text/html
+curl -sI $SITE/ | grep -iE 'cache-control|content-security-policy|x-frame-options'
+curl -sI "$SITE$(curl -s $SITE/ | grep -o '/assets/[^"]*\.js' | head -1)" | grep -i cache-control  # immutable
+```
+
+## Meta Pixel and consent
+
+The Pixel (`4858424197723199`, a public identifier) is not in `index.html`.
+`src/services/metaPixel.js` adds Meta's `fbevents.js` to `<head>` only after a
+visitor clicks **Allow** in the cookie banner, initialises it once with
+automatic configuration off and no advanced matching, and never on `/admin`.
+`VITE_META_PIXEL_ID` overrides the ID (empty disables it); the dev server has it
+off unless set. Visitors can change their choice from **Cookie preferences** in
+the footer or the privacy policy; declining or withdrawing removes the `_fbp` /
+`_fbc` cookies and sends nothing further.
+
+| What happened | Meta event | Sent with |
+| ------------- | ---------- | --------- |
+| Public page viewed (first page and each route change) | `PageView` | — |
+| Trip or destination page loaded | `ViewContent` | slug, `product` / `product_group` |
+| Search submitted (results page, or the home page search form) | `Search` | `content_category: packages` — never the search text |
+| Trip enquiry / Plan My Trip / contact form saved by the API | `Lead` | the form's label only |
+| Any public WhatsApp button | `Contact` | the button's placement (and trip slug on trip pages) |
+
+No names, phone numbers, emails, messages or search terms are sent. Meta's own
+script still reports the page URL with each event, as the standard Pixel does;
+Zurii URLs carry no personal data, except that text a visitor types into search
+appears in `/packages?q=…`.
+
+Before going live (outside this repository):
+
+- Have the privacy policy section **Cookies and ads measurement** and the
+  opt-in approach reviewed and approved.
+- In Meta Events Manager, keep **Automatic advanced matching** off — it is a
+  server-side setting that would make the Pixel read form fields regardless of
+  this code.
+- With the Pixel's **Test events** tool, confirm on a preview deployment that
+  nothing arrives before **Allow**, that each event in the table arrives once,
+  and that nothing arrives after **Decline**. This was not checked from the
+  development machine, where every Meta request was intercepted.
 
 ## Verification
 
@@ -626,10 +821,12 @@ The frontend container is up but the backend is not reachable. Check
 
 ### Rate limits throttle every visitor at once
 
-`TRUST_PROXY` is unset behind a proxy, so every visitor arrives with the
-proxy's IP and shares one bucket. Compose sets `TRUST_PROXY=1` for the bundled
-stack. Leave it **unset** if the backend is ever exposed directly — trusting
-`X-Forwarded-For` on a directly reachable server lets any caller spoof their IP.
+`TRUST_PROXY` is lower than the number of proxies in front of the API, so every
+visitor arrives with a proxy's IP and shares one bucket. Look for
+`Rate limit: enquiry refused (429)` in the backend log, then follow
+[Client IP and rate limits](#client-ip-and-rate-limits). Leave it **unset** if
+the backend is ever exposed directly — trusting `X-Forwarded-For` on a directly
+reachable server lets any caller spoof their IP.
 
 > When reporting a problem, never paste `.env`, `docker compose config` output,
 > or a `DATABASE_URL`. The log lines above are written to be safe to share.
@@ -642,8 +839,18 @@ What is already in place, so you do not weaken it by accident:
 
 - Passwords are bcrypt-hashed (cost 12); no plaintext password is ever stored,
   logged, returned by an API, or printed by the CLI.
-- Login is rate-limited per IP+username, and accounts lock for 15 minutes after
-  5 failed attempts. Both are deliberate — do not disable them.
+- Login is rate-limited — 20 failures per client and 4 per client per username
+  every 15 minutes — and accounts lock for 15 minutes after 5 consecutive
+  failures from any number of networks. One client cannot lock an account on
+  its own. At most 2 password checks run at once (16 wait; the rest get 503).
+  All deliberate — do not disable them.
+- A database outage during sign-in checks answers 503 and keeps the admin's
+  session; only a dead credential answers 401 and clears the cookie.
+- Leads are never hard-deleted from the CRM: deletion is a soft delete with who,
+  when and why recorded, and can be undone. Status changes and notes are kept
+  in an append-only history the database itself protects
+  ([docs/LEAD_MANAGEMENT.md](docs/LEAD_MANAGEMENT.md)).
+- The public enquiry forms are idempotent: a retried submission is stored once.
 - Login timing is equalised, so a wrong username costs the same as a wrong
   password and the endpoint cannot be used to enumerate usernames.
 - Every failure returns the same generic message.

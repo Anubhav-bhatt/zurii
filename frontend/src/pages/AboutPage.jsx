@@ -5,6 +5,7 @@ import SmartImage from '../components/ui/SmartImage';
 import { useAsyncData } from '../hooks/useAsyncData';
 import { getDestinationsCached } from '../services/destinationsApi';
 import { SITE, whatsappLink } from '../config/site';
+import { trackWhatsAppClick } from '../services/marketing';
 
 /**
  * About page.
@@ -66,7 +67,14 @@ export default function AboutPage() {
               <Button to="/packages" variant="accent" size="lg">
                 Browse our trips
               </Button>
-              <Button href={whatsappLink()} target="_blank" rel="noopener noreferrer" variant="secondary" size="lg">
+              <Button
+                href={whatsappLink()}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackWhatsAppClick('about_page')}
+                variant="secondary"
+                size="lg"
+              >
                 Talk to us
               </Button>
             </div>
@@ -76,6 +84,8 @@ export default function AboutPage() {
             src={heroImage}
             alt="A destination Zurii travels to"
             ratio="aspect-[4/5] sm:aspect-[4/3] lg:aspect-[4/5]"
+            /* A landscape photo cropped to a 4:5 box is drawn ~2.2× wider than the box. */
+            sizes="(min-width: 1024px) 1250px, 100vw"
             className="rounded-3xl"
             priority
           />

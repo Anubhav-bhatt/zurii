@@ -6,6 +6,7 @@
  * Safe to run repeatedly — it never drops tables or overwrites existing data.
  */
 import pkg from '../db/pool.js';
+import safetyModule from '../db/safety.js';
 const { getPool } = pkg;
 
 const LEGACY_TABLES = [
@@ -213,6 +214,15 @@ export async function migrateSchema(pool) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
+  // Renames tables: refuses unless DATABASE_URL is a verified local zurii_dev/zurii_test
+  // database, or a remote database named explicitly in ZURII_CONFIRM_REMOTE_DATABASE.
+  // Superseded for new environments by the ledger migrations (scripts/db.mjs).
+  try {
+    await safetyModule.guardManualDataScript('scripts/migrate-zurii-v1.mjs');
+  } catch (err) {
+    console.error(`✗ ${err.message}`);
+    process.exit(1);
+  }
   const pool = getPool();
   try {
     const summary = await migrateSchema(pool);

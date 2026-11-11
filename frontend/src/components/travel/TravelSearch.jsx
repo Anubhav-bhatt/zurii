@@ -4,11 +4,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAsyncData } from '../../hooks/useAsyncData';
 import { getDestinationsCached } from '../../services/destinationsApi';
 import { track } from '../../services/analytics';
+import { trackSearchPerformed } from '../../services/marketing';
+import { BUDGET_BANDS, MONTHS, TRAVELLER_OPTIONS, readTripPlan, saveTripPlan } from '../../services/tripPlan';
 
-const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
+// Months, budgets and traveller counts come from services/tripPlan.js, which
+// also validates them wherever they travel next (URL, enquiry form).
 
 const DURATIONS = [
   { value: '1-3', label: '1 – 3 days' },
@@ -16,15 +16,9 @@ const DURATIONS = [
   { value: '7+', label: '7+ days' },
 ];
 
-const BUDGETS = [
-  { label: 'Up to ₹25,000', maxPrice: '25000' },
-  { label: '₹25,000 – ₹50,000', minPrice: '25000', maxPrice: '50000' },
-  { label: '₹50,000 – ₹1,00,000', minPrice: '50000', maxPrice: '100000' },
-  { label: '₹1,00,000 – ₹2,00,000', minPrice: '100000', maxPrice: '200000' },
-  { label: 'Above ₹2,00,000', minPrice: '200000' },
-];
+const BUDGETS = BUDGET_BANDS;
 
-const TRAVELLERS = ['1', '2', '3-4', '5-6', '7+'];
+const TRAVELLERS = TRAVELLER_OPTIONS;
 
 const FIELD_WRAP = 'relative flex items-center w-full h-12';
 const SELECT_FIELD =
@@ -43,7 +37,20 @@ const EMPTY = { destination: '', month: '', duration: '', budget: '', travellers
 export default function TravelSearch({ className = '' }) {
   const navigate = useNavigate();
   const uid = useId();
-  const [form, setForm] = useState(EMPTY);
+  // Restored from this tab's trip plan, so Back from the results — or a
+  // refresh — shows the search the visitor made rather than a blank form.
+  const [form, setForm] = useState(() => {
+    const plan = readTripPlan();
+    const budget = BUDGETS.findIndex((band) => band.label === plan.budget);
+    return {
+      ...EMPTY,
+      destination: plan.destination ?? '',
+      month: plan.month ?? '',
+      duration: plan.duration ?? '',
+      budget: budget >= 0 ? String(budget) : '',
+      travellers: plan.travellers ?? '',
+    };
+  });
 
   const { data: destinations, loading, error } = useAsyncData(
     () => getDestinationsCached(),
@@ -62,7 +69,10 @@ export default function TravelSearch({ className = '' }) {
     if (form.destination) params.set('destination', form.destination);
     if (form.duration) params.set('duration', form.duration);
 
-    const budget = BUDGETS[Number(form.budget)];
+    // "Any budget" is ''. Number('') is 0, which used to select the FIRST band —
+    // every search without a budget silently became "Up to ₹25,000" and hid the
+    // dearer trips (found in Phase 5; present since the committed version).
+    const budget = form.budget === '' ? null : BUDGETS[Number(form.budget)];
     if (budget) {
       if (budget.minPrice) params.set('minPrice', budget.minPrice);
       if (budget.maxPrice) params.set('maxPrice', budget.maxPrice);
@@ -71,13 +81,27 @@ export default function TravelSearch({ className = '' }) {
     if (form.month) params.set('month', form.month);
     if (form.travellers) params.set('travellers', form.travellers);
 
+    // Month and travellers are planning preferences, not filters (the
+    // catalogue has no availability data): they ride along in the URL and in
+    // this tab's trip plan, and pre-fill the enquiry form. See services/tripPlan.js.
+    saveTripPlan({
+      destination: form.destination || null,
+      month: form.month || null,
+      duration: form.duration || null,
+      travellers: form.travellers || null,
+      budget: budget?.label ?? null,
+    });
+
     // Fired before navigate and never awaited — the fetch's keepalive carries
     // it through the route change. Only slugs and picker values, no free text.
-    const trackedFilters = {};
-    for (const [key, value] of params.entries()) {
-      if (key !== 'destination') trackedFilters[key] = value;
-    }
-    track('search_performed', { meta: { query: form.destination || '', filters: trackedFilters } });
+    // The destination is a filter, not a typed query: it used to be recorded as
+    // `query`, which filled the "top searches" report with slugs (ZT-26).
+    const trackedFilters = Object.fromEntries(params.entries());
+    track('search_performed', { meta: { query: '', source: 'home_search', filters: trackedFilters } });
+    // Meta Search for a submitted search with at least one criterion. The
+    // results page does not report filter-only searches, so this is counted
+    // once; the criteria are only a de-duplication key and never sent.
+    if (params.toString()) trackSearchPerformed(`filters:${params}`);
 
     navigate(`/packages${params.toString() ? `?${params}` : ''}`);
   };

@@ -21,6 +21,8 @@
  * server.js. Admin requests sign a real JWT with the same secret requireAuth
  * verifies, so the auth path under test is the production one.
  */
+// First import: refuses to run unless started by `npm test` against the verified zurii_test database.
+import { assertTestDatabase } from './helpers/testDatabaseGuard.mjs';
 import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
@@ -52,6 +54,7 @@ const createdBookingIds = [];
 
 before(async () => {
   pool = getPool();
+  await assertTestDatabase(pool);
 
   assert.ok(process.env.JWT_SECRET, 'JWT_SECRET must be set (backend/.env) to test admin routes');
 
@@ -204,7 +207,8 @@ test('a valid event returns 202 and lands in analytics_events', async () => {
   assert.equal(row.entity_type, 'package');
   assert.equal(row.entity_slug, 'bali');
   assert.equal(row.page_path, '/packages/bali');
-  assert.equal(row.referrer, 'https://www.google.com/');
+  // Stored as the origin only (Phase 6 privacy control): a full referrer URL can carry another site's query string.
+  assert.equal(row.referrer, 'https://www.google.com');
   assert.deepEqual(row.utm, { utm_source: 'google', utm_medium: 'cpc' });
   assert.deepEqual(row.metadata, { position: 3 });
 });

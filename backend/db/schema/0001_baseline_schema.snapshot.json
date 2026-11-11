@@ -1,0 +1,1028 @@
+{
+  "schema": "public",
+  "tables": {
+    "admin_audit_logs": {
+      "columns": [
+        {
+          "position": 1,
+          "name": "id",
+          "type": "bigint",
+          "notNull": true,
+          "default": "nextval('admin_audit_logs_id_seq'::regclass)"
+        },
+        {
+          "position": 2,
+          "name": "admin_id",
+          "type": "integer",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 3,
+          "name": "event_type",
+          "type": "character varying(64)",
+          "notNull": true,
+          "default": null
+        },
+        {
+          "position": 4,
+          "name": "success",
+          "type": "boolean",
+          "notNull": true,
+          "default": "true"
+        },
+        {
+          "position": 5,
+          "name": "ip_address",
+          "type": "character varying(64)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 6,
+          "name": "user_agent",
+          "type": "character varying(512)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 7,
+          "name": "metadata",
+          "type": "jsonb",
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        {
+          "position": 8,
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "notNull": true,
+          "default": "now()"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "admin_audit_logs_admin_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE SET NULL"
+        },
+        {
+          "name": "admin_audit_logs_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "admin_audit_logs_admin_created_idx",
+          "definition": "CREATE INDEX admin_audit_logs_admin_created_idx ON public.admin_audit_logs USING btree (admin_id, created_at DESC)"
+        },
+        {
+          "name": "admin_audit_logs_created_idx",
+          "definition": "CREATE INDEX admin_audit_logs_created_idx ON public.admin_audit_logs USING btree (created_at DESC)"
+        },
+        {
+          "name": "admin_audit_logs_event_created_idx",
+          "definition": "CREATE INDEX admin_audit_logs_event_created_idx ON public.admin_audit_logs USING btree (event_type, created_at DESC)"
+        },
+        {
+          "name": "admin_audit_logs_pkey",
+          "definition": "CREATE UNIQUE INDEX admin_audit_logs_pkey ON public.admin_audit_logs USING btree (id)"
+        }
+      ]
+    },
+    "admins": {
+      "columns": [
+        {
+          "position": 1,
+          "name": "id",
+          "type": "integer",
+          "notNull": true,
+          "default": "nextval('admins_id_seq'::regclass)"
+        },
+        {
+          "position": 2,
+          "name": "username",
+          "type": "character varying(100)",
+          "notNull": true,
+          "default": null
+        },
+        {
+          "position": 3,
+          "name": "password_hash",
+          "type": "character varying(255)",
+          "notNull": true,
+          "default": null
+        },
+        {
+          "position": 4,
+          "name": "created_at",
+          "type": "timestamp without time zone",
+          "notNull": false,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        {
+          "position": 5,
+          "name": "token_version",
+          "type": "integer",
+          "notNull": true,
+          "default": "0"
+        },
+        {
+          "position": 6,
+          "name": "failed_login_attempts",
+          "type": "integer",
+          "notNull": true,
+          "default": "0"
+        },
+        {
+          "position": 7,
+          "name": "locked_until",
+          "type": "timestamp with time zone",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 8,
+          "name": "must_change_password",
+          "type": "boolean",
+          "notNull": true,
+          "default": "false"
+        },
+        {
+          "position": 9,
+          "name": "password_changed_at",
+          "type": "timestamp with time zone",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 10,
+          "name": "active",
+          "type": "boolean",
+          "notNull": true,
+          "default": "true"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "admins_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "admins_username_key",
+          "type": "u",
+          "definition": "UNIQUE (username)"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "admins_pkey",
+          "definition": "CREATE UNIQUE INDEX admins_pkey ON public.admins USING btree (id)"
+        },
+        {
+          "name": "admins_username_key",
+          "definition": "CREATE UNIQUE INDEX admins_username_key ON public.admins USING btree (username)"
+        }
+      ]
+    },
+    "analytics_events": {
+      "columns": [
+        {
+          "position": 1,
+          "name": "id",
+          "type": "integer",
+          "notNull": true,
+          "default": "nextval('analytics_events_id_seq'::regclass)"
+        },
+        {
+          "position": 2,
+          "name": "visitor_id",
+          "type": "character varying(64)",
+          "notNull": true,
+          "default": null
+        },
+        {
+          "position": 3,
+          "name": "session_id",
+          "type": "character varying(64)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 4,
+          "name": "event_type",
+          "type": "character varying(40)",
+          "notNull": true,
+          "default": null
+        },
+        {
+          "position": 5,
+          "name": "entity_type",
+          "type": "character varying(20)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 6,
+          "name": "entity_id",
+          "type": "integer",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 7,
+          "name": "entity_slug",
+          "type": "character varying(250)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 8,
+          "name": "page_path",
+          "type": "character varying(300)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 9,
+          "name": "referrer",
+          "type": "character varying(300)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 10,
+          "name": "utm",
+          "type": "jsonb",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 11,
+          "name": "metadata",
+          "type": "jsonb",
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        {
+          "position": 12,
+          "name": "created_at",
+          "type": "timestamp without time zone",
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "analytics_events_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "analytics_events_entity_slug_idx",
+          "definition": "CREATE INDEX analytics_events_entity_slug_idx ON public.analytics_events USING btree (entity_slug) WHERE (entity_slug IS NOT NULL)"
+        },
+        {
+          "name": "analytics_events_pkey",
+          "definition": "CREATE UNIQUE INDEX analytics_events_pkey ON public.analytics_events USING btree (id)"
+        },
+        {
+          "name": "analytics_events_type_created_idx",
+          "definition": "CREATE INDEX analytics_events_type_created_idx ON public.analytics_events USING btree (event_type, created_at)"
+        },
+        {
+          "name": "analytics_events_visitor_created_idx",
+          "definition": "CREATE INDEX analytics_events_visitor_created_idx ON public.analytics_events USING btree (visitor_id, created_at)"
+        }
+      ]
+    },
+    "bookings": {
+      "columns": [
+        {
+          "position": 1,
+          "name": "id",
+          "type": "integer",
+          "notNull": true,
+          "default": "nextval('bookings_id_seq'::regclass)"
+        },
+        {
+          "position": 2,
+          "name": "package_id",
+          "type": "integer",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 3,
+          "name": "name",
+          "type": "character varying(120)",
+          "notNull": true,
+          "default": null
+        },
+        {
+          "position": 4,
+          "name": "email",
+          "type": "character varying(255)",
+          "notNull": true,
+          "default": null
+        },
+        {
+          "position": 5,
+          "name": "phone",
+          "type": "character varying(32)",
+          "notNull": true,
+          "default": null
+        },
+        {
+          "position": 6,
+          "name": "travel_date",
+          "type": "date",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 7,
+          "name": "travellers",
+          "type": "integer",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 8,
+          "name": "departure_city",
+          "type": "character varying(120)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 9,
+          "name": "message",
+          "type": "text",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 10,
+          "name": "status",
+          "type": "character varying(20)",
+          "notNull": true,
+          "default": "'NEW'::character varying"
+        },
+        {
+          "position": 11,
+          "name": "admin_notes",
+          "type": "text",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 12,
+          "name": "source",
+          "type": "character varying(50)",
+          "notNull": true,
+          "default": "'Website'::character varying"
+        },
+        {
+          "position": 13,
+          "name": "created_at",
+          "type": "timestamp without time zone",
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        {
+          "position": 14,
+          "name": "updated_at",
+          "type": "timestamp without time zone",
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        {
+          "position": 15,
+          "name": "visitor_id",
+          "type": "character varying(64)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 16,
+          "name": "session_id",
+          "type": "character varying(64)",
+          "notNull": false,
+          "default": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "bookings_package_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE SET NULL"
+        },
+        {
+          "name": "bookings_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "bookings_status_check",
+          "type": "c",
+          "definition": "CHECK (status::text = ANY (ARRAY['NEW'::character varying, 'CONTACTED'::character varying, 'INTERESTED'::character varying, 'CONFIRMED'::character varying, 'CLOSED'::character varying]::text[]))"
+        },
+        {
+          "name": "bookings_travellers_check",
+          "type": "c",
+          "definition": "CHECK (travellers IS NULL OR travellers >= 1 AND travellers <= 50)"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "bookings_created_at_idx",
+          "definition": "CREATE INDEX bookings_created_at_idx ON public.bookings USING btree (created_at DESC)"
+        },
+        {
+          "name": "bookings_package_id_idx",
+          "definition": "CREATE INDEX bookings_package_id_idx ON public.bookings USING btree (package_id)"
+        },
+        {
+          "name": "bookings_pkey",
+          "definition": "CREATE UNIQUE INDEX bookings_pkey ON public.bookings USING btree (id)"
+        },
+        {
+          "name": "bookings_status_idx",
+          "definition": "CREATE INDEX bookings_status_idx ON public.bookings USING btree (status)"
+        }
+      ]
+    },
+    "contacts": {
+      "columns": [
+        {
+          "position": 1,
+          "name": "id",
+          "type": "integer",
+          "notNull": true,
+          "default": "nextval('contacts_id_seq'::regclass)"
+        },
+        {
+          "position": 2,
+          "name": "name",
+          "type": "character varying(255)",
+          "notNull": true,
+          "default": null
+        },
+        {
+          "position": 3,
+          "name": "email",
+          "type": "character varying(255)",
+          "notNull": true,
+          "default": null
+        },
+        {
+          "position": 4,
+          "name": "phone",
+          "type": "character varying(50)",
+          "notNull": true,
+          "default": null
+        },
+        {
+          "position": 5,
+          "name": "interest",
+          "type": "character varying(255)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 6,
+          "name": "message",
+          "type": "text",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 7,
+          "name": "callback",
+          "type": "character varying(50)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 8,
+          "name": "priority",
+          "type": "character varying(20)",
+          "notNull": false,
+          "default": "'normal'::character varying"
+        },
+        {
+          "position": 9,
+          "name": "status",
+          "type": "character varying(30)",
+          "notNull": false,
+          "default": "'pending'::character varying"
+        },
+        {
+          "position": 10,
+          "name": "source",
+          "type": "character varying(50)",
+          "notNull": false,
+          "default": "'Website'::character varying"
+        },
+        {
+          "position": 11,
+          "name": "created_at",
+          "type": "timestamp without time zone",
+          "notNull": false,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        {
+          "position": 12,
+          "name": "visitor_id",
+          "type": "character varying(64)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 13,
+          "name": "session_id",
+          "type": "character varying(64)",
+          "notNull": false,
+          "default": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "contacts_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "contacts_pkey",
+          "definition": "CREATE UNIQUE INDEX contacts_pkey ON public.contacts USING btree (id)"
+        }
+      ]
+    },
+    "destinations": {
+      "columns": [
+        {
+          "position": 1,
+          "name": "id",
+          "type": "integer",
+          "notNull": true,
+          "default": "nextval('destinations_id_seq'::regclass)"
+        },
+        {
+          "position": 2,
+          "name": "legacy_id",
+          "type": "character varying(150)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 3,
+          "name": "name",
+          "type": "character varying(150)",
+          "notNull": true,
+          "default": null
+        },
+        {
+          "position": 4,
+          "name": "slug",
+          "type": "character varying(150)",
+          "notNull": true,
+          "default": null
+        },
+        {
+          "position": 5,
+          "name": "country",
+          "type": "character varying(100)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 6,
+          "name": "region",
+          "type": "character varying(100)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 7,
+          "name": "kind",
+          "type": "character varying(20)",
+          "notNull": true,
+          "default": "'domestic'::character varying"
+        },
+        {
+          "position": 8,
+          "name": "short_description",
+          "type": "text",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 9,
+          "name": "description",
+          "type": "text",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 10,
+          "name": "image",
+          "type": "text",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 11,
+          "name": "gallery",
+          "type": "jsonb",
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        {
+          "position": 12,
+          "name": "featured",
+          "type": "boolean",
+          "notNull": true,
+          "default": "false"
+        },
+        {
+          "position": 13,
+          "name": "active",
+          "type": "boolean",
+          "notNull": true,
+          "default": "true"
+        },
+        {
+          "position": 14,
+          "name": "metadata",
+          "type": "jsonb",
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        {
+          "position": 15,
+          "name": "created_at",
+          "type": "timestamp without time zone",
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        {
+          "position": 16,
+          "name": "updated_at",
+          "type": "timestamp without time zone",
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "destinations_kind_check",
+          "type": "c",
+          "definition": "CHECK (kind::text = ANY (ARRAY['domestic'::character varying, 'international'::character varying]::text[]))"
+        },
+        {
+          "name": "destinations_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "destinations_slug_key",
+          "type": "u",
+          "definition": "UNIQUE (slug)"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "destinations_featured_idx",
+          "definition": "CREATE INDEX destinations_featured_idx ON public.destinations USING btree (featured) WHERE featured"
+        },
+        {
+          "name": "destinations_kind_active_idx",
+          "definition": "CREATE INDEX destinations_kind_active_idx ON public.destinations USING btree (kind, active)"
+        },
+        {
+          "name": "destinations_name_lower_idx",
+          "definition": "CREATE INDEX destinations_name_lower_idx ON public.destinations USING btree (lower((name)::text))"
+        },
+        {
+          "name": "destinations_pkey",
+          "definition": "CREATE UNIQUE INDEX destinations_pkey ON public.destinations USING btree (id)"
+        },
+        {
+          "name": "destinations_slug_key",
+          "definition": "CREATE UNIQUE INDEX destinations_slug_key ON public.destinations USING btree (slug)"
+        }
+      ]
+    },
+    "packages": {
+      "columns": [
+        {
+          "position": 1,
+          "name": "id",
+          "type": "integer",
+          "notNull": true,
+          "default": "nextval('packages_id_seq'::regclass)"
+        },
+        {
+          "position": 2,
+          "name": "legacy_id",
+          "type": "character varying(200)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 3,
+          "name": "title",
+          "type": "character varying(250)",
+          "notNull": true,
+          "default": null
+        },
+        {
+          "position": 4,
+          "name": "slug",
+          "type": "character varying(250)",
+          "notNull": true,
+          "default": null
+        },
+        {
+          "position": 5,
+          "name": "destination_id",
+          "type": "integer",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 6,
+          "name": "subtitle",
+          "type": "character varying(250)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 7,
+          "name": "short_description",
+          "type": "text",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 8,
+          "name": "description",
+          "type": "text",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 9,
+          "name": "duration_days",
+          "type": "integer",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 10,
+          "name": "duration_nights",
+          "type": "integer",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 11,
+          "name": "duration_text",
+          "type": "character varying(80)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 12,
+          "name": "price",
+          "type": "numeric(12,2)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 13,
+          "name": "original_price",
+          "type": "numeric(12,2)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 14,
+          "name": "currency",
+          "type": "character varying(3)",
+          "notNull": true,
+          "default": "'INR'::character varying"
+        },
+        {
+          "position": 15,
+          "name": "cover_image",
+          "type": "text",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 16,
+          "name": "gallery",
+          "type": "jsonb",
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        {
+          "position": 17,
+          "name": "highlights",
+          "type": "jsonb",
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        {
+          "position": 18,
+          "name": "itinerary",
+          "type": "jsonb",
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        {
+          "position": 19,
+          "name": "inclusions",
+          "type": "jsonb",
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        {
+          "position": 20,
+          "name": "exclusions",
+          "type": "jsonb",
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        {
+          "position": 21,
+          "name": "batches",
+          "type": "jsonb",
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        {
+          "position": 22,
+          "name": "tags",
+          "type": "jsonb",
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        {
+          "position": 23,
+          "name": "trip_type",
+          "type": "character varying(50)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 24,
+          "name": "rating",
+          "type": "numeric(2,1)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 25,
+          "name": "reviews_count",
+          "type": "integer",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 26,
+          "name": "group_size",
+          "type": "character varying(60)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 27,
+          "name": "difficulty",
+          "type": "character varying(30)",
+          "notNull": false,
+          "default": null
+        },
+        {
+          "position": 28,
+          "name": "featured",
+          "type": "boolean",
+          "notNull": true,
+          "default": "false"
+        },
+        {
+          "position": 29,
+          "name": "popular",
+          "type": "boolean",
+          "notNull": true,
+          "default": "false"
+        },
+        {
+          "position": 30,
+          "name": "status",
+          "type": "character varying(20)",
+          "notNull": true,
+          "default": "'PUBLISHED'::character varying"
+        },
+        {
+          "position": 31,
+          "name": "metadata",
+          "type": "jsonb",
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        {
+          "position": 32,
+          "name": "created_at",
+          "type": "timestamp without time zone",
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        {
+          "position": 33,
+          "name": "updated_at",
+          "type": "timestamp without time zone",
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "packages_destination_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (destination_id) REFERENCES destinations(id) ON DELETE SET NULL"
+        },
+        {
+          "name": "packages_original_price_check",
+          "type": "c",
+          "definition": "CHECK (original_price IS NULL OR original_price >= 0::numeric)"
+        },
+        {
+          "name": "packages_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "packages_price_check",
+          "type": "c",
+          "definition": "CHECK (price IS NULL OR price >= 0::numeric)"
+        },
+        {
+          "name": "packages_slug_key",
+          "type": "u",
+          "definition": "UNIQUE (slug)"
+        },
+        {
+          "name": "packages_status_check",
+          "type": "c",
+          "definition": "CHECK (status::text = ANY (ARRAY['DRAFT'::character varying, 'PUBLISHED'::character varying, 'ARCHIVED'::character varying]::text[]))"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "packages_destination_id_idx",
+          "definition": "CREATE INDEX packages_destination_id_idx ON public.packages USING btree (destination_id)"
+        },
+        {
+          "name": "packages_featured_idx",
+          "definition": "CREATE INDEX packages_featured_idx ON public.packages USING btree (featured) WHERE featured"
+        },
+        {
+          "name": "packages_pkey",
+          "definition": "CREATE UNIQUE INDEX packages_pkey ON public.packages USING btree (id)"
+        },
+        {
+          "name": "packages_popular_idx",
+          "definition": "CREATE INDEX packages_popular_idx ON public.packages USING btree (popular) WHERE popular"
+        },
+        {
+          "name": "packages_price_idx",
+          "definition": "CREATE INDEX packages_price_idx ON public.packages USING btree (price)"
+        },
+        {
+          "name": "packages_slug_key",
+          "definition": "CREATE UNIQUE INDEX packages_slug_key ON public.packages USING btree (slug)"
+        },
+        {
+          "name": "packages_status_idx",
+          "definition": "CREATE INDEX packages_status_idx ON public.packages USING btree (status)"
+        },
+        {
+          "name": "packages_tags_gin_idx",
+          "definition": "CREATE INDEX packages_tags_gin_idx ON public.packages USING gin (tags)"
+        },
+        {
+          "name": "packages_trip_type_idx",
+          "definition": "CREATE INDEX packages_trip_type_idx ON public.packages USING btree (trip_type)"
+        }
+      ]
+    }
+  }
+}

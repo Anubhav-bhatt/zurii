@@ -1,0 +1,93 @@
+{
+  "name": "zurii-brand-assets",
+  "version": 1,
+  "publicBase": "/assets/brand/v1",
+  "publicDir": "frontend/public",
+  "master": {
+    "path": "/zurii-logo.png",
+    "actualFormat": "jpeg",
+    "width": 1024,
+    "height": 1024,
+    "bytes": 257068,
+    "sha256": "b40109ff76321a5165999fa9caffbc0015bda6095e7249d1ec69a733ffbaf912",
+    "note": "Kept in place and unmodified; no page loads it any more."
+  },
+  "displayedAt": "32–36 CSS px square (header, footer, mobile drawer)",
+  "encoding": {
+    "resample": "lanczos3",
+    "webp": {
+      "lossless": true,
+      "effort": 6
+    },
+    "png": {
+      "compressionLevel": 9,
+      "palette": false
+    }
+  },
+  "files": [
+    {
+      "path": "/assets/brand/v1/zurii-logo-36.webp",
+      "format": "webp",
+      "width": 36,
+      "height": 36,
+      "bytes": 1006,
+      "sha256": "29abe81aaaffa3e2fa436dd5238b70e9d48820dea715e073142955bd305cfadd"
+    },
+    {
+      "path": "/assets/brand/v1/zurii-logo-36.png",
+      "format": "png",
+      "width": 36,
+      "height": 36,
+      "bytes": 1229,
+      "sha256": "f67bb91359239c005cf8bf8d7be8e6961a15be03eabd8041166af39f98b8bd06"
+    },
+    {
+      "path": "/assets/brand/v1/zurii-logo-72.webp",
+      "format": "webp",
+      "width": 72,
+      "height": 72,
+      "bytes": 2768,
+      "sha256": "68c6975629726df861cab1783d0fb8fe1fb5ef1a0396bc8e2b4182ce7a0bff6f"
+    },
+    {
+      "path": "/assets/brand/v1/zurii-logo-72.png",
+      "format": "png",
+      "width": 72,
+      "height": 72,
+      "bytes": 3287,
+      "sha256": "d44b669088d0da48a083151ab635f69f8801eb8fb141766d66a4d6ad478abbdc"
+    },
+    {
+      "path": "/assets/brand/v1/zurii-logo-108.webp",
+      "format": "webp",
+      "width": 108,
+      "height": 108,
+      "bytes": 5032,
+      "sha256": "ac61d32ed70d4c4fca461ab74d24c57e899424030c16d0b7833ff71b13279ae4"
+    },
+    {
+      "path": "/assets/brand/v1/zurii-logo-108.png",
+      "format": "png",
+      "width": 108,
+      "height": 108,
+      "bytes": 6111,
+      "sha256": "3b640d495b75a916aefcbd8b55c1873db1ac7af92ad8c463131cf4328e8a9b06"
+    },
+    {
+      "path": "/assets/brand/v1/zurii-logo-144.webp",
+      "format": "webp",
+      "width": 144,
+      "height": 144,
+      "bytes": 8250,
+      "sha256": "998f2f7968b9fd93f9c315ac6a9f8952375751a637230da44f4679f1e9dd61c1"
+    },
+    {
+      "path": "/assets/brand/v1/zurii-logo-144.png",
+      "format": "png",
+      "width": 144,
+      "height": 144,
+      "bytes": 10493,
+      "sha256": "0d65a05a541a20b3f50b59c7d33a2c50ab2fdb8c96ab25aed70dd390db2585ba"
+    }
+  ]
+}

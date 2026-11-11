@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import Button from '../ui/Button';
 import Container from '../ui/Container';
+import ResponsiveImage from '../ui/ResponsiveImage';
 import TravelSearch from '../travel/TravelSearch';
 
 /**
@@ -9,14 +10,23 @@ import TravelSearch from '../travel/TravelSearch';
  * scrim, concise copy, and the travel search panel overlapping the bottom edge.
  *
  * Slides come from the featured packages already fetched by the homepage, so
- * the hero adds no request of its own. The first image loads eagerly and at
- * high priority (it is the largest contentful paint); the rest are lazy.
- * Rotation stops entirely under prefers-reduced-motion.
+ * the hero adds no request of its own.
+ *
+ * Only the first slide is in the document on first paint — it is the largest
+ * contentful paint, so it loads eagerly, at high priority, and at the width
+ * the viewport needs rather than one fixed desktop size. Each later slide is
+ * mounted a couple of seconds before its turn: stacked slides all sit inside
+ * the viewport, so `loading="lazy"` never deferred them, and every one was
+ * downloaded at full size before the visitor had seen the first.
+ * Rotation stops entirely under prefers-reduced-motion, and then no further
+ * slide is ever fetched.
  */
 
 const ROTATE_MS = 6000;
+/** How long before its turn the next slide starts loading. */
+const PRELOAD_LEAD_MS = 2500;
 
-/** Unsplash serves a larger, better-compressed file when asked. */
+/** A remote Unsplash cover (not a locally hosted asset) is asked for a hero-sized file. */
 function heroSized(url) {
   if (!url) return url;
   if (!url.includes('images.unsplash.com')) return url;
@@ -25,6 +35,8 @@ function heroSized(url) {
 
 export default function HeroSection({ slides = [] }) {
   const [current, setCurrent] = useState(0);
+  // Slides 0..mounted-1 are rendered. Rotation is sequential, so a count is enough.
+  const [mounted, setMounted] = useState(1);
 
   const usable = slides.filter((slide) => slide.heroImage);
 
@@ -32,9 +44,14 @@ export default function HeroSection({ slides = [] }) {
     if (usable.length < 2) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    const timer = setInterval(() => setCurrent((prev) => (prev + 1) % usable.length), ROTATE_MS);
-    return () => clearInterval(timer);
-  }, [usable.length]);
+    const count = usable.length;
+    const preload = setTimeout(() => setMounted((n) => Math.max(n, Math.min(count, current + 2))), ROTATE_MS - PRELOAD_LEAD_MS);
+    const rotate = setTimeout(() => setCurrent((prev) => (prev + 1) % count), ROTATE_MS);
+    return () => {
+      clearTimeout(preload);
+      clearTimeout(rotate);
+    };
+  }, [current, usable.length]);
 
   const active = usable[current];
 
@@ -53,13 +70,20 @@ export default function HeroSection({ slides = [] }) {
       <div className="absolute inset-0 -z-10 overflow-hidden">
         {usable.length === 0 && <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-900" />}
 
-        {usable.map((slide, index) => (
-          <img
+        {usable.slice(0, Math.max(mounted, current + 1)).map((slide, index) => (
+          <ResponsiveImage
             key={slide.slug}
             src={heroSized(slide.heroImage)}
             alt=""
             aria-hidden="true"
-            loading={index === 0 ? 'eager' : 'lazy'}
+            /* The width the photo is drawn at, not the viewport's: below `xl` the
+               hero is taller than a landscape photo scaled to the screen width,
+               so `object-cover` draws it 1100–1600 px wide and crops the sides. */
+            sizes="(min-width: 1280px) 100vw, (min-width: 640px) 1200px, 1500px"
+            /* Mounting is the deferral, so each slide is eager once mounted;
+               only the first competes for bandwidth at high priority. */
+            priority={index === 0}
+            loading="eager"
             fetchPriority={index === 0 ? 'high' : 'low'}
             /* Portrait crops keep the subject centred; wide screens favour the
                upper third where horizons and skylines sit. */
@@ -107,11 +131,15 @@ export default function HeroSection({ slides = [] }) {
 
       {/* In flow on small screens; overhanging the hero's lower edge from lg up. */}
       <Container className="mt-8 lg:absolute lg:inset-x-0 lg:bottom-0 lg:mt-0 lg:translate-y-1/2">
-        <TravelSearch />
-      </Container>
+        <div className="relative">
+          <TravelSearch />
 
-      {usable.length > 1 && (
-        <div className="absolute bottom-6 right-6 hidden gap-1.5 lg:flex">
+          {usable.length > 1 && (
+          // Anchored just above the search panel's right end. Pinned to the
+          // hero's corner they sat on top of the panel from lg to ~1366px wide.
+          // Each button is a 24×24 target (WCAG 2.5.8) around the same 6px dot.
+          // After the form in the DOM, so the tab order is unchanged.
+          <div className="absolute bottom-full right-0 mb-2 hidden lg:flex">
           {usable.map((slide, index) => (
             <button
               key={slide.slug}
@@ -119,13 +147,20 @@ export default function HeroSection({ slides = [] }) {
               onClick={() => setCurrent(index)}
               aria-label={`Show ${slide.title}`}
               aria-current={index === current}
-              className={`h-1.5 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ${
-                index === current ? 'w-7 bg-white' : 'w-2.5 bg-white/45 hover:bg-white/70'
-              }`}
-            />
+              className="group flex h-6 min-w-6 items-center justify-center focus-visible:outline-none"
+            >
+              <span
+                aria-hidden="true"
+                className={`block h-1.5 rounded-full transition-all duration-300 group-focus-visible:ring-2 group-focus-visible:ring-white ${
+                  index === current ? 'w-7 bg-white' : 'w-2.5 bg-white/45 group-hover:bg-white/70'
+                }`}
+              />
+            </button>
           ))}
+          </div>
+          )}
         </div>
-      )}
+      </Container>
     </section>
   );
 }

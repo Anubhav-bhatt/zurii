@@ -11,14 +11,18 @@
  * rather than booting server.js, so the tests do not depend on auth setup or a
  * fixed port being free.
  */
+// First import: refuses to run unless started by `npm test` against the verified zurii_test database.
+import { assertTestDatabase } from './helpers/testDatabaseGuard.mjs';
 import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
 
 import poolModule from '../db/pool.js';
 import createTravelRouter from '../routes/travel.js';
+import seedModule from '../db/catalogueSeed.js';
 
 const { getPool } = poolModule;
+const { isPortableImageRef } = seedModule;
 
 let server;
 let baseUrl;
@@ -26,6 +30,7 @@ let pool;
 
 before(async () => {
   pool = getPool();
+  await assertTestDatabase(pool);
   const app = express();
   app.use('/api', createTravelRouter(pool));
 
@@ -128,7 +133,13 @@ test('GET /api/packages/:slug preserves the migrated JSONB content', async () =>
   assert.ok(pkg.inclusions.length > 0);
   assert.ok(pkg.exclusions.length > 0);
   assert.ok(pkg.gallery.length > 0);
-  assert.ok(pkg.gallery.every((url) => /^https?:\/\//.test(url)), 'gallery holds usable URLs');
+  // A usable reference is whatever the catalogue validator accepts: a locally hosted,
+  // site-relative asset (/assets/travel/…) or — for a photo that could not be migrated —
+  // its original https URL. Never a machine path, a data: URI or an empty string.
+  assert.ok(
+    pkg.gallery.every((ref) => typeof ref === 'string' && isPortableImageRef(ref)),
+    'gallery holds usable image references',
+  );
 });
 
 // ── the list/detail projection boundary ─────────────────────────────

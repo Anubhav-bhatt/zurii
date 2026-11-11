@@ -17,6 +17,8 @@
  * port rather than booting server.js, so the tests do not depend on auth setup
  * or a fixed port being free. The JSON body limit matches server.js.
  */
+// First import: refuses to run unless started by `npm test` against the verified zurii_test database.
+import { assertTestDatabase } from './helpers/testDatabaseGuard.mjs';
 import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
@@ -33,7 +35,6 @@ const VALIDATION_ERROR = 'Please check the highlighted fields.';
 let server;
 let baseUrl;
 let pool;
-let startingCount;
 let samplePackage; // a real PUBLISHED package, read rather than assumed
 
 /** Every id this file inserts, so after() can remove exactly those rows. */
@@ -41,15 +42,13 @@ const createdIds = [];
 
 before(async () => {
   pool = getPool();
+  await assertTestDatabase(pool);
 
   const { rows } = await pool.query(
     `SELECT id, slug FROM packages WHERE status = 'PUBLISHED' ORDER BY id LIMIT 1`
   );
   assert.ok(rows.length > 0, 'expected at least one published package to enquire about');
   samplePackage = rows[0];
-
-  const counted = await pool.query('SELECT COUNT(*)::int AS n FROM bookings');
-  startingCount = counted.rows[0].n;
 
   const app = express();
   app.use(express.json({ limit: '32kb' }));
@@ -62,17 +61,27 @@ before(async () => {
 });
 
 after(async () => {
-  // Remove tracked ids first, then sweep the marker domain as a safety net.
-  if (createdIds.length > 0) {
-    await pool.query('DELETE FROM bookings WHERE id = ANY($1::int[])', [createdIds]);
+  try {
+    // Remove tracked ids first, then sweep the marker domain as a safety net.
+    if (createdIds.length > 0) {
+      await pool.query('DELETE FROM bookings WHERE id = ANY($1::int[])', [createdIds]);
+    }
+    await pool.query('DELETE FROM bookings WHERE email LIKE $1', [`%@${TEST_EMAIL_DOMAIN}`]);
+
+    // Scoped to this file's own rows. The whole-table count used to be
+    // compared with the count at start, which other test files running in
+    // parallel (they insert and remove their own bookings) can legitimately
+    // change in between — and a failure here then skipped the close below
+    // and left the process hanging.
+    const { rows } = await pool.query('SELECT COUNT(*)::int AS n FROM bookings WHERE email LIKE $1 OR id = ANY($2::int[])', [
+      `%@${TEST_EMAIL_DOMAIN}`,
+      createdIds,
+    ]);
+    assert.equal(rows[0].n, 0, 'tests must leave none of their own bookings behind');
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+    await pool.end();
   }
-  await pool.query('DELETE FROM bookings WHERE email LIKE $1', [`%@${TEST_EMAIL_DOMAIN}`]);
-
-  const { rows } = await pool.query('SELECT COUNT(*)::int AS n FROM bookings');
-  assert.equal(rows[0].n, startingCount, 'tests must leave the bookings table exactly as they found it');
-
-  await new Promise((resolve) => server.close(resolve));
-  await pool.end();
 });
 
 /** POST an enquiry; any row it creates is recorded for cleanup. */

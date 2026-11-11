@@ -74,6 +74,56 @@ const isAbsent = (value) =>
 const isPlainObject = (value) =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
+// ── privacy controls (ZT-15/ZT-22) ──────────────────────────────────
+// Applied to every stored event whatever the client sends; none of them
+// rejects an event, they only reduce what is kept.
+
+const UTM_ALLOWED = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+const UTM_VALUE_MAX = 100;
+const META_TEXT_MAX = 200;
+const EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
+// Ten or more digits in one run, separators allowed: a phone number.
+const PHONE_LIKE = /\+?\d(?:[\s().-]?\d){9,}/g;
+
+/** Emails and phone numbers typed into search boxes are replaced, not stored. */
+const redactPersonal = (text) => text.replace(EMAIL, '[redacted]').replace(PHONE_LIKE, '[redacted]');
+
+/** The referring page's origin only: a full URL can carry another site's query string. */
+function referrerOrigin(value) {
+  try {
+    const url = new URL(value);
+    return /^https?:$/.test(url.protocol) ? url.origin : null;
+  } catch {
+    return null;
+  }
+}
+
+/** A path without its query string or fragment, which can hold search text. */
+const pathOnly = (value) => value.split(/[?#]/)[0] || null;
+
+/** Only the five utm_* tags, as short strings, and nothing that looks personal. */
+function utmOnly(utm) {
+  const out = {};
+  for (const key of UTM_ALLOWED) {
+    const value = utm[key];
+    if (typeof value !== 'string') continue;
+    const text = value.trim().slice(0, UTM_VALUE_MAX);
+    if (text && redactPersonal(text) === text) out[key] = text;
+  }
+  return Object.keys(out).length ? out : null;
+}
+
+/** Every string in metadata, one level deep, is length-capped and redacted. */
+function scrubMeta(meta) {
+  const out = {};
+  for (const [key, value] of Object.entries(meta)) {
+    if (typeof value === 'string') out[key] = redactPersonal(value).slice(0, META_TEXT_MAX);
+    else if (isPlainObject(value)) out[key] = scrubMeta(value);
+    else out[key] = value;
+  }
+  return out;
+}
+
 /**
  * Validate an analytics event body. Never throws — a malformed body is simply
  * invalid. One generic sentence per failure; this is a fire-and-forget
@@ -133,7 +183,7 @@ function validateEvent(body) {
     if (typeof input.path !== 'string' || input.path.trim().length > PATH_MAX) {
       return fail('That path is not valid.');
     }
-    path = input.path.trim() || null;
+    path = pathOnly(input.path.trim());
   }
 
   let referrer = null;
@@ -141,7 +191,7 @@ function validateEvent(body) {
     if (typeof input.referrer !== 'string' || input.referrer.trim().length > PATH_MAX) {
       return fail('That referrer is not valid.');
     }
-    referrer = input.referrer.trim() || null;
+    referrer = referrerOrigin(input.referrer.trim());
   }
 
   // ── utm + meta ────────────────────────────────────────────────────
@@ -154,7 +204,7 @@ function validateEvent(body) {
     if (Buffer.byteLength(JSON.stringify(input.utm), 'utf8') > JSON_MAX_BYTES) {
       return fail('utm is too large.');
     }
-    utm = input.utm;
+    utm = utmOnly(input.utm);
   }
 
   let meta = {};
@@ -163,7 +213,7 @@ function validateEvent(body) {
     if (Buffer.byteLength(JSON.stringify(input.meta), 'utf8') > JSON_MAX_BYTES) {
       return fail('meta is too large.');
     }
-    meta = input.meta;
+    meta = scrubMeta(input.meta);
   }
 
   return {
@@ -188,4 +238,4 @@ function extractAttribution(body) {
   };
 }
 
-module.exports = { EVENT_TYPES, ID_PATTERN, isValidId, validateEvent, extractAttribution };
+module.exports = { EVENT_TYPES, ID_PATTERN, isValidId, validateEvent, extractAttribution, redactPersonal, referrerOrigin };

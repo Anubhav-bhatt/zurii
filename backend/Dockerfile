@@ -1,10 +1,12 @@
 # syntax=docker/dockerfile:1
 
-# Base image is pinned to a minor version rather than the floating `20-alpine`
-# tag. `20-alpine` silently re-points at a new Node and a new Alpine on every
+# Base image is pinned to a minor version rather than the floating `24-alpine`
+# tag. `24-alpine` silently re-points at a new Node and a new Alpine on every
 # rebuild, so two builds of the same commit could ship different runtimes — and
 # a regression would look like an application bug. Bump this deliberately.
-ARG NODE_VERSION=20.19-alpine
+# Node 24 is the Active LTS line (Node 20 reached end of life in April 2026);
+# 24.19 is the release the test suite and Docker checks were run on.
+ARG NODE_VERSION=24.19-alpine
 
 # ─────────────────────────────────────────────────────────────
 # Stage 1: install production dependencies only

@@ -1,4 +1,7 @@
 import { API_BASE_URL } from '../config/api';
+import { fallbackMessage } from './errorMessages.js';
+
+export { fallbackMessage };
 
 /**
  * One place where HTTP happens. Every travel service goes through this, so
@@ -89,7 +92,7 @@ export async function apiGet(path, { signal, timeoutMs = API_TIMEOUT_MS } = {}) 
     }
 
     if (!response.ok) {
-      throw new ApiError(body?.error || `Request failed (${response.status})`, { status: response.status });
+      throw new ApiError(body?.error || fallbackMessage(response.status), { status: response.status });
     }
     if (!body?.success) {
       throw new ApiError(body?.error || 'Unexpected response from the server.', { status: response.status });

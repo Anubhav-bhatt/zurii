@@ -1,0 +1,15 @@
+{
+  "name": "zurii-image-pipeline",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Dev-time only: downloads licence-checked travel imagery, writes responsive renditions into frontend/public/assets/travel and the versioned image manifest. Never part of a runtime or Docker build.",
+  "engines": { "node": ">=20.11" },
+  "scripts": {
+    "build": "node build.mjs",
+    "verify": "node verify.mjs"
+  },
+  "dependencies": {
+    "sharp": "0.35.5"
+  }
+}

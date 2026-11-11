@@ -13,7 +13,7 @@ try {
   config = loadConfig();
 } catch (err) {
   // The message names variables and rules only — never values. See config/env.js.
-  console.error(err.message);
+  require('./lib/logger').log.error('config_invalid', { reason: err.message });
   process.exit(1);
 }
 
@@ -30,16 +30,26 @@ const createTravelRouter = require('./routes/travel');
 const createBookingsRouter = require('./routes/bookings');
 const createAnalyticsRouter = require('./routes/analytics');
 const createAdminAnalyticsRouter = require('./routes/adminAnalytics');
+const createLeadsRouter = require('./routes/leads');
+const { createLeadService } = require('./lib/leads');
+const { readIdempotencyKey, hashSubmission, createOnce, IdempotencyError } = require('./lib/idempotency');
+const { missingLeadSchema, migrationsFor } = require('./db/leadSchema');
 const createHealthRouter = require('./routes/health');
 const { extractAttribution } = require('./lib/validateEvent');
+const { parseAttribution, attributionValues, ATTRIBUTION_COLUMNS } = require('./lib/attribution');
+const { log, errorFields, classifyDbError } = require('./lib/logger');
+const { createRequestLogger } = require('./middleware/requestLog');
 const {
   corsOptions,
   helmetOptions,
+  loginClientLimiter,
   loginLimiter,
+  LOGIN_POLICY,
   leadLimiter,
   refreshLimiter,
 } = require('./middleware/security');
 const { AUDIT_EVENTS, FAILURE_REASONS, recordAuditEvent } = require('./lib/adminAudit');
+const { createWorkGate, WorkGateBusyError, LOGIN_WORK_GATE } = require('./lib/workGate');
 const { validateAdminPassword } = require('./lib/validateAdminPassword');
 
 // ── Account-level login throttle ────────────────────────────────────
@@ -51,8 +61,11 @@ const { validateAdminPassword } = require('./lib/validateAdminPassword');
 //
 // The lock is temporary by design — never permanent — so a locked-out admin
 // always recovers without operator intervention.
-const MAX_FAILED_LOGINS = 5;
-const LOCK_MINUTES = 15;
+// The numbers live in middleware/security.js (LOGIN_POLICY) beside the
+// per-client limiters, because the two are tuned together: one client's
+// failure budget per username is deliberately below this threshold.
+const MAX_FAILED_LOGINS = LOGIN_POLICY.lockThreshold;
+const LOCK_MINUTES = LOGIN_POLICY.lockMinutes;
 
 const app = express();
 
@@ -132,6 +145,7 @@ app.disable('x-powered-by');
 // Security response headers (CSP, Referrer-Policy, nosniff, frame-ancestors,
 // HSTS in production). See middleware/security.js for why the CSP is this
 // strict — this process serves JSON only.
+app.use(createRequestLogger());
 app.use(helmet(helmetOptions));
 
 // CORS is an explicit allowlist (ALLOWED_ORIGINS + localhost dev ports), not
@@ -141,6 +155,23 @@ app.use(cors(corsOptions));
 // hostile request from being buffered into memory before validation sees it.
 app.use(express.json({ limit: '32kb' }));
 app.use(cookieParser());
+
+// No API response may be stored by a browser or a shared cache unless a route
+// says so: admin data and auth responses carry personal data or credentials.
+// Only the public catalogue routes (routes/travel.js) opt back in, with a short
+// public lifetime.
+//
+// Scoped to what a cache could store — GET/HEAD, and everything under /admin
+// and /auth. POST responses are never cached, and marking the analytics POST
+// `no-store` made Chrome hold every fire-and-forget event open (its body is
+// never read, and only a cacheable response is drained), keeping a connection
+// busy per page view. Found by the Phase 5 performance run.
+app.use('/api', (req, res, next) => {
+  if (req.method === 'GET' || req.method === 'HEAD' || /^\/(admin|auth)(\/|$)/.test(req.path)) {
+    res.set('Cache-Control', 'no-store');
+  }
+  next();
+});
 
 // Database. Presence and shape of DATABASE_URL were checked by loadConfig().
 // Connection/TLS handling lives in db/pool.js so the migration scripts share it.
@@ -153,10 +184,10 @@ const pool = getPool();
 // the variable that fixes it is the whole point; nothing about the connection
 // itself is logged.
 if (config.isProduction && isUnverifiedTls(buildConfig())) {
-  console.warn(
-    '⚠ PostgreSQL TLS is not verifying the server certificate. Set DATABASE_SSL=verify ' +
-    '(with DATABASE_CA_CERT if your provider issues its own CA) to authenticate the database.'
-  );
+  log.warn('db_tls_unverified', {
+    reason: 'PostgreSQL TLS is not verifying the server certificate. Set DATABASE_SSL=verify ' +
+      '(with DATABASE_CA_CERT if your provider issues its own CA) to authenticate the database.',
+  });
 }
 
 // ══════════════════════════════════════════
@@ -171,7 +202,7 @@ const initDB = async () => {
     // there for the restart loop this ordering bug caused on a fresh database.
     // Idempotent, so running it here as well costs nothing and keeps a
     // directly-started server (npm start) self-healing.
-    await ensureBaseSchema(pool);
+    await ensureBaseSchema(pool, (message) => log.info('schema_ready', { reason: String(message).replace(/^[^A-Za-z]+/, '') }));
 
     // Seed admin accounts from the environment, never from source.
     // Format: ADMIN_SEED="alice:s3cret,bob:otherpass"
@@ -190,10 +221,10 @@ const initDB = async () => {
     if (!seed) {
       const { rows } = await pool.query('SELECT COUNT(*)::int AS n FROM admins');
       if (rows[0].n === 0) {
-        console.warn(
-          '⚠ No admin accounts exist and ADMIN_SEED is unset — the admin panel ' +
-          'is unreachable. Set ADMIN_SEED, or run: node create-admin.js add <user> <pass>'
-        );
+        log.warn('admin_none', {
+          reason: 'No admin accounts exist and ADMIN_SEED is unset — the admin panel is unreachable. ' +
+            'Set ADMIN_SEED, or run: node create-admin.js add <user>',
+        });
       }
     } else {
       for (const entry of seed.split(',')) {
@@ -203,7 +234,7 @@ const initDB = async () => {
         const password = separator === -1 ? '' : entry.slice(separator + 1);
 
         if (!username || !password) {
-          console.warn(`⚠ Skipping malformed ADMIN_SEED entry (expected user:password)`);
+          log.warn('admin_seed_skipped', { reason: 'Malformed ADMIN_SEED entry (expected user:password).' });
           continue;
         }
 
@@ -214,9 +245,8 @@ const initDB = async () => {
         // loudly rather than silently created — and never echoed.
         const policy = validateAdminPassword(password, username);
         if (!policy.valid) {
-          console.warn(`⚠ Refusing to seed admin "${username}": ${policy.error}`);
-          console.warn('  Fix ADMIN_SEED and restart, or create the account with:');
-          console.warn(`  node create-admin.js add ${username}`);
+          // The username is an operator-chosen account name, not customer data.
+          log.warn('admin_seed_refused', { target: username, reason: `${policy.error} Fix ADMIN_SEED and restart, or run: node create-admin.js add <user>` });
           continue;
         }
 
@@ -236,12 +266,12 @@ const initDB = async () => {
             'INSERT INTO admins (username, password_hash, must_change_password) VALUES ($1, $2, TRUE)',
             [username, hash]
           );
-          console.log(`  → Seeded admin: ${username} (must change password at first login)`);
+          log.info('admin_seeded', { target: username, reason: 'must change password at first login' });
         }
       }
     }
 
-    console.log("✓ Admin accounts ready.");
+    log.info('admin_ready');
   } catch (err) {
     // Rethrown, not swallowed.
     //
@@ -319,9 +349,13 @@ const generateRefreshToken = (admin) => {
 const DUMMY_HASH = bcrypt.hashSync(require('crypto').randomBytes(32).toString('hex'), 12);
 
 // POST /api/auth/login
-// Rate limited (see middleware/security.js): 10 failed attempts per
-// IP+username per 15 minutes. Successful logins are not counted.
-app.post('/api/auth/login', loginLimiter, async (req, res) => {
+// Rate limited (see LOGIN_POLICY in middleware/security.js): 20 failed attempts
+// per client across all usernames, and 4 per client per username, every 15
+// minutes. Successful logins are not counted. The bcrypt work itself passes
+// through loginWorkGate, which bounds it across all clients at once.
+const loginWorkGate = createWorkGate(LOGIN_WORK_GATE);
+
+app.post('/api/auth/login', loginClientLimiter, loginLimiter, async (req, res) => {
   try {
     const { username, password } = req.body ?? {};
 
@@ -358,7 +392,21 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
 
     // Always run one bcrypt comparison, even when the username is unknown, so
     // both outcomes take the same time. The dummy hash can never match.
-    const passwordMatch = await bcrypt.compare(password, admin?.password_hash ?? DUMMY_HASH);
+    let passwordMatch;
+    try {
+      passwordMatch = await loginWorkGate.run(() => bcrypt.compare(password, admin?.password_hash ?? DUMMY_HASH));
+    } catch (err) {
+      if (!(err instanceof WorkGateBusyError)) throw err;
+      // Too many sign-ins in flight across all clients (a flood): refuse
+      // cheaply instead of queueing more bcrypt work. Nothing is counted
+      // against the account, so a flood cannot lock anyone out this way.
+      res.set('Retry-After', '5');
+      return res.status(503).json({
+        success: false,
+        error: 'Sign-in is busy. Please try again in a moment.',
+        code: 'LOGIN_BUSY',
+      });
+    }
 
     if (isLocked) {
       // Same body as a wrong password: the response must not reveal that this
@@ -518,7 +566,7 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
       },
     });
   } catch (err) {
-    console.error("Login Error:", err);
+    log.error('handler_error', { reqId: req.id, context: 'login', ...errorFields(err, { withStack: true }) });
     res.status(500).json({ success: false, error: 'Login failed. Server error.' });
   }
 });
@@ -535,14 +583,29 @@ app.post('/api/auth/refresh', refreshLimiter, async (req, res) => {
       });
     }
 
-    // Verify the refresh token
+    // Credential failures and infrastructure failures get different answers
+    // (ZT-07). A token that fails verification is dead for good: 401, and the
+    // cookie is cleared (the outer catch). A database that cannot answer says
+    // nothing about the token: 503 with the cookie left in place, so the
+    // session resumes once PostgreSQL is back instead of a brief outage
+    // signing every admin out.
     const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
 
-    // Confirm admin still exists in DB
-    const result = await pool.query(
-      'SELECT id, username, token_version, must_change_password, active FROM admins WHERE id = $1',
-      [decoded.id]
-    );
+    let result;
+    try {
+      result = await pool.query(
+        'SELECT id, username, token_version, must_change_password, active FROM admins WHERE id = $1',
+        [decoded.id]
+      );
+    } catch (dbErr) {
+      log.error('handler_error', { reqId: req.id, context: 'refresh', ...errorFields(dbErr) });
+      res.set('Retry-After', '5');
+      return res.status(503).json({
+        success: false,
+        error: 'Service temporarily unavailable. Please try again shortly.',
+        code: 'SERVICE_UNAVAILABLE',
+      });
+    }
     if (result.rows.length === 0) {
       res.clearCookie(REFRESH_COOKIE_NAME, REFRESH_COOKIE_OPTIONS);
       return res.status(401).json({
@@ -616,7 +679,9 @@ app.post('/api/auth/refresh', refreshLimiter, async (req, res) => {
       },
     });
   } catch (err) {
-    // If refresh token is expired or invalid, clear the cookie
+    // Reached for a token that is expired, malformed or signed with another
+    // key (jwt.verify). Database failures never get here — they return 503
+    // above — so clearing the cookie only ever discards a dead credential.
     res.clearCookie(REFRESH_COOKIE_NAME, REFRESH_COOKIE_OPTIONS);
     return res.status(401).json({ 
       success: false, 
@@ -686,7 +751,7 @@ app.post('/api/auth/logout', async (req, res) => {
       }
     } catch (err) {
       // Logged, not surfaced: the cookie is still cleared below.
-      console.error('Logout revocation failed:', err.message);
+      log.error('handler_error', { reqId: req.id, context: 'logout', ...errorFields(err) });
     }
   }
 
@@ -812,23 +877,45 @@ app.post('/api/contact', leadLimiter, async (req, res) => {
     // malformed is silently dropped to null — a bad analytics id must never
     // fail a lead submission.
     const { visitorId, sessionId } = extractAttribution(req.body);
+    // Marketing attribution (ZT-16): validated field by field, and like the
+    // analytics ids it can never fail the lead — see lib/attribution.js.
+    const attribution = attributionValues(parseAttribution(req.body));
 
-    const result = await pool.query(
-      `INSERT INTO contacts (name, email, phone, interest, message, callback, status, priority, source,
-                             visitor_id, session_id)
-       VALUES ($1, $2, $3, $4, $5, $6, 'pending', 'normal', 'Website', $7, $8)
-       RETURNING id, status, created_at`,
-      // Exactly the values that were validated above. The optional three are
-      // stored as NULL rather than '' when empty, so "not supplied" stays
-      // distinguishable from "supplied blank" in the CRM.
-      [clean.name, clean.email, clean.phone,
-       clean.interest || null, clean.message || null, clean.callback || null,
-       visitorId, sessionId]
-    );
+    // Duplicate protection (Phase 4): a retried submission with the same
+    // Idempotency-Key gets the lead it already created, never a second one.
+    const idempotencyKey = readIdempotencyKey(req);
+    const { row, replayed } = await createOnce(pool, {
+      endpoint: 'contact',
+      key: idempotencyKey,
+      requestHash: hashSubmission({ ...clean, visitorId, sessionId, attribution }),
+      insert: async (db) => {
+        const result = await db.query(
+          `INSERT INTO contacts (name, email, phone, interest, message, callback, status, priority, source,
+                                 visitor_id, session_id, ${ATTRIBUTION_COLUMNS.join(', ')})
+           VALUES ($1, $2, $3, $4, $5, $6, 'pending', 'normal', 'Website', $7, $8,
+                   ${ATTRIBUTION_COLUMNS.map((_, i) => `$${i + 9}`).join(', ')})
+           RETURNING id, status, created_at`,
+          // Exactly the values that were validated above. The optional three are
+          // stored as NULL rather than '' when empty, so "not supplied" stays
+          // distinguishable from "supplied blank" in the CRM.
+          [clean.name, clean.email, clean.phone,
+           clean.interest || null, clean.message || null, clean.callback || null,
+           visitorId, sessionId, ...attribution]
+        );
+        return result.rows[0];
+      },
+      load: async (db, id) => (await db.query('SELECT id, status, created_at FROM contacts WHERE id = $1', [id])).rows[0],
+    });
 
-    res.status(201).json({ success: true, data: result.rows[0] });
+    if (replayed) res.set('Idempotent-Replayed', 'true');
+    res.status(201).json({ success: true, data: row });
   } catch (err) {
-    console.error("Insert Error:", err);
+    if (err instanceof IdempotencyError) {
+      return res.status(err.status).json({ success: false, error: err.message, code: err.code });
+    }
+    // Structured and scrubbed: never the error object, whose query parameters
+    // carry the visitor's submitted values (lib/logger.js).
+    log.error('lead_insert_failed', { reqId: req.id, context: 'contact', ...errorFields(err) });
     // 22001 = value too long for a column. That means validation and the schema
     // disagree, which is our bug — but the visitor can still act on "this field
     // is too long", whereas a 500 just loses their enquiry. Never echo the
@@ -839,7 +926,15 @@ app.post('/api/contact', leadLimiter, async (req, res) => {
         error: 'One of the fields is too long. Please shorten it and try again.',
       });
     }
-    res.status(500).json({ success: false, error: 'Database insertion failed' });
+    if (['db_unavailable', 'db_timeout'].includes(classifyDbError(err))) {
+      res.set('Retry-After', '30');
+      return res.status(503).json({
+        success: false,
+        error: 'We could not save your message just now. Please try again in a moment, or reach us on WhatsApp.',
+        code: 'SERVICE_UNAVAILABLE',
+      });
+    }
+    res.status(500).json({ success: false, error: 'We could not save your message. Please try again, or reach us on WhatsApp.' });
   }
 });
 
@@ -1016,16 +1111,31 @@ app.post('/api/admin/change-password', requireAuthAllowPasswordChange, async (re
     } catch {
       // The connection is already broken; the outer error is the useful one.
     }
-    console.error('Change Password Error:', err);
+    log.error('handler_error', { reqId: req.id, context: 'change_password', ...errorFields(err, { withStack: true }) });
     return res.status(500).json({ success: false, error: 'Could not change the password. Please try again.' });
   } finally {
     client.release();
   }
 });
 
+// Unified lead management (Phase 4): contacts + bookings behind one API.
+// Mounted on its own path BEFORE the generic /api/admin router, so a lead
+// request is authenticated once and never enters that router.
+app.use('/api/admin/leads', createLeadsRouter(pool));
+
 // Admin analytics dashboards + lead journeys. The router applies requireAuth
 // to every route itself, so nothing under /api/admin is ever public.
 app.use('/api/admin', createAdminAnalyticsRouter(pool));
+
+// The legacy contact routes below keep their URLs and response shapes for
+// existing clients, but every change now goes through the lead service, so it
+// is recorded in lead_activity like a change made in the CRM.
+const leadService = createLeadService(pool);
+const contactRef = (raw) => {
+  const id = /^[1-9]\d{0,9}$/.test(String(raw)) ? Number(raw) : null;
+  return id && id <= 2147483647 ? { source: 'contact', id } : null;
+};
+const actingAdmin = (req) => ({ id: req.admin?.id ?? null, username: req.admin?.username ?? 'unknown' });
 
 // GET /api/contact — Fetch all leads (Admin only)
 app.get('/api/contact', requireAuth, async (req, res) => {
@@ -1042,7 +1152,8 @@ app.get('/api/contact', requireAuth, async (req, res) => {
     const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 500, 1), 1000);
     const offset = Math.max(Number.parseInt(req.query.offset, 10) || 0, 0);
 
-    const where = [];
+    // Soft-deleted leads (Phase 4) are out of the normal list.
+    const where = ['deleted_at IS NULL'];
     const values = [];
     // Parameterized, and only used when it is actually a string: an array here
     // would otherwise reach the driver as a non-scalar.
@@ -1071,71 +1182,56 @@ app.get('/api/contact', requireAuth, async (req, res) => {
       meta: { total, limit, offset, returned: result.rows.length, truncated: offset + result.rows.length < total },
     });
   } catch (err) {
-    console.error("Fetch Error:", err);
+    log.error('handler_error', { reqId: req.id, context: 'contacts_list', ...errorFields(err, { withStack: true }) });
     res.status(500).json({ success: false, error: 'Failed to fetch contacts' });
   }
 });
 
-// PATCH /api/contact/:id/complete — Mark lead as completed (Admin only)
-app.patch('/api/contact/:id/complete', requireAuth, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const query = `
-      UPDATE contacts 
-      SET status = 'completed' 
-      WHERE id = $1 
-      RETURNING *;
-    `;
-    const result = await pool.query(query, [id]);
-    if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Contact not found' });
+// PATCH /api/contact/:id/complete — legacy "completed" (unified CLOSED)
+// PATCH /api/contact/:id/reopen   — legacy "pending"   (unified NEW)
+for (const [action, status] of [['complete', 'CLOSED'], ['reopen', 'NEW']]) {
+  app.patch(`/api/contact/:id/${action}`, requireAuth, async (req, res) => {
+    try {
+      const ref = contactRef(req.params.id);
+      const result = ref
+        ? await leadService.changeStatus(ref, { status, admin: actingAdmin(req), via: 'legacy-api' })
+        : { outcome: 'not_found' };
+      if (result.outcome === 'not_found' || result.outcome === 'deleted') {
+        return res.status(404).json({ success: false, error: 'Contact not found' });
+      }
+      const { rows } = await pool.query('SELECT * FROM contacts WHERE id = $1', [ref.id]);
+      return res.status(200).json({ success: true, data: rows[0] });
+    } catch (err) {
+      log.error('handler_error', { reqId: req.id, context: `contact_${action}`, ...errorFields(err) });
+      return res.status(500).json({ success: false, error: `Failed to ${action} contact` });
     }
-    res.status(200).json({ success: true, data: result.rows[0] });
-  } catch (err) {
-    console.error("Complete Error:", err);
-    res.status(500).json({ success: false, error: 'Failed to complete contact' });
-  }
-});
+  });
+}
 
-// PATCH /api/contact/:id/reopen — Reopen a completed lead (Admin only)
-app.patch('/api/contact/:id/reopen', requireAuth, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const query = `
-      UPDATE contacts 
-      SET status = 'pending' 
-      WHERE id = $1 
-      RETURNING *;
-    `;
-    const result = await pool.query(query, [id]);
-    if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Contact not found' });
-    }
-    res.status(200).json({ success: true, data: result.rows[0] });
-  } catch (err) {
-    console.error("Reopen Error:", err);
-    res.status(500).json({ success: false, error: 'Failed to reopen contact' });
-  }
-});
-
-// DELETE /api/contact/:id — Delete a lead (Admin only)
+// DELETE /api/contact/:id — now a SOFT delete (ZT-10): the lead leaves the
+// normal lists, who/when is recorded, and it can be restored from the CRM.
+// Same URL and response shape as the old permanent delete.
 app.delete('/api/contact/:id', requireAuth, async (req, res) => {
   try {
-    const { id } = req.params;
-    const query = `
-      DELETE FROM contacts 
-      WHERE id = $1 
-      RETURNING *;
-    `;
-    const result = await pool.query(query, [id]);
-    if (result.rows.length === 0) {
+    const ref = contactRef(req.params.id);
+    const result = ref
+      ? await leadService.softDelete(ref, { admin: actingAdmin(req), via: 'legacy-api' })
+      : { outcome: 'not_found' };
+    if (result.outcome !== 'deleted') {
       return res.status(404).json({ success: false, error: 'Contact not found' });
     }
-    res.status(200).json({ success: true, message: 'Lead deleted successfully', data: result.rows[0] });
+    const { rows } = await pool.query('SELECT * FROM contacts WHERE id = $1', [ref.id]);
+    return res.status(200).json({ success: true, message: 'Lead deleted successfully', data: rows[0] });
   } catch (err) {
-    console.error("Delete Error:", err);
-    res.status(500).json({ success: false, error: 'Failed to delete contact' });
+    log.error('handler_error', { reqId: req.id, context: 'contact_delete', ...errorFields(err) });
+    return res.status(500).json({ success: false, error: 'Failed to delete contact' });
   }
+});
+
+// Unknown API routes answer in JSON like every other API response, instead of
+// Express's HTML "Cannot GET" page (ZT-30).
+app.use('/api', (req, res) => {
+  res.status(404).json({ success: false, error: 'Not found.', code: 'NOT_FOUND' });
 });
 
 // ══════════════════════════════════════════
@@ -1163,7 +1259,12 @@ app.use((err, req, res, next) => {
   }
 
   // Log for the operator, tell the client nothing about internals.
-  console.error('Unhandled Error:', err);
+  const dbClass = classifyDbError(err);
+  log.error('unhandled_error', { reqId: req.id, ...errorFields(err, { withStack: !dbClass }) });
+  if (dbClass === 'db_unavailable' || dbClass === 'db_timeout') {
+    res.set('Retry-After', '30');
+    return res.status(503).json({ success: false, error: 'This is temporarily unavailable. Please try again in a moment.', code: 'SERVICE_UNAVAILABLE' });
+  }
   res.status(500).json({ success: false, error: 'Something went wrong.' });
 });
 
@@ -1188,25 +1289,45 @@ async function start() {
     // Only the driver's message, never the error object: a pg error can carry
     // the full connection configuration on properties that a bare
     // `console.error(err)` would print, credentials included.
-    console.error(`Database initialization failed: ${err.message}`);
-    if (err.code) console.error(`  PostgreSQL error code: ${err.code}`);
-    console.error(
-      '  Check DATABASE_URL (host, database, user, password) and that PostgreSQL is\n' +
-      '  reachable from this container. Inside Docker, `localhost` means the container\n' +
-      '  itself — use the Compose service name. Run `npm run check:env` to verify config.'
-    );
+    log.error('startup_failed', {
+      context: 'database_init',
+      ...errorFields(err),
+      reason: 'Check DATABASE_URL (host, database, user, password) and that PostgreSQL is reachable from this ' +
+        'container. Inside Docker, `localhost` means the container itself — use the Compose service name. ' +
+        'Run `npm run check:env` to verify config.',
+    });
+    process.exit(1);
+  }
+
+  // The server never migrates its own schema (scripts/db.mjs does). It does
+  // refuse to serve a database that lacks what this release needs: a deploy
+  // that skipped migration 0004 then fails its health check instead of
+  // failing enquiries.
+  try {
+    const missing = await missingLeadSchema(pool);
+    if (missing.length) {
+      log.error('startup_failed', {
+        context: 'schema_behind',
+        migration: migrationsFor(missing).join(','),
+        missing,
+        reason: 'Apply it with: node scripts/db.mjs migrate --target <development|production> — see docs/DATABASE_MIGRATIONS.md.',
+      });
+      process.exit(1);
+    }
+  } catch (err) {
+    log.error('startup_failed', { context: 'schema_check', ...errorFields(err) });
     process.exit(1);
   }
 
   const server = app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+    log.info('startup', { port: Number(port), node: process.version, env: process.env.NODE_ENV || 'development' });
   });
 
   // Without this the container is SIGKILLed after Docker's 10s grace period on
   // every deploy, cutting in-flight requests. tini forwards the signal (see
   // the Dockerfile); this is the half that acts on it.
   const shutdown = (signal) => {
-    console.log(`${signal} received — shutting down.`);
+    log.info('shutdown', { signal });
     server.close(() => {
       pool.end().finally(() => process.exit(0));
     });

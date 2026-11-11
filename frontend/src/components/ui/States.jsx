@@ -35,6 +35,7 @@ export function EmptyState({
   title = 'Nothing here yet.',
   description,
   action,
+  secondaryAction,
   className = '',
 }) {
   return (
@@ -43,10 +44,19 @@ export function EmptyState({
     >
       <p className="text-base font-semibold text-zinc-900 dark:text-zinc-50">{title}</p>
       {description && <p className="mt-1.5 text-sm text-zinc-600 dark:text-zinc-300 max-w-md mx-auto">{description}</p>}
-      {action && (
-        <Button variant="secondary" size="md" to={action.to} className="mt-5">
-          {action.label}
-        </Button>
+      {(action || secondaryAction) && (
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+          {action && (
+            <Button variant="secondary" size="md" to={action.to}>
+              {action.label}
+            </Button>
+          )}
+          {secondaryAction && (
+            <Button variant="accent" size="md" to={secondaryAction.to}>
+              {secondaryAction.label}
+            </Button>
+          )}
+        </div>
       )}
     </div>
   );

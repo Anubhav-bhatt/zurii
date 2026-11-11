@@ -163,9 +163,31 @@ function isUnverifiedTls(config) {
 let pool = null;
 
 /** Lazily created singleton pool, so importing this module never connects. */
+/**
+ * Bounds for the application's own pool (scripts and the CLI build their own
+ * clients): a runaway query, or a transaction left open by a bug, cannot hold
+ * one of the ten connections the enquiry forms need. Every query the API runs
+ * finishes in milliseconds, so 15 s is a fault, not a slow page.
+ */
+const APP_POOL_TIMEOUTS = Object.freeze({
+  statement_timeout: 15000,
+  idle_in_transaction_session_timeout: 30000,
+});
+
 function getPool() {
-  if (!pool) pool = new Pool(buildConfig());
+  if (!pool) {
+    pool = new Pool({ ...buildConfig(), ...APP_POOL_TIMEOUTS });
+    // An idle client whose connection drops (PostgreSQL restarts, a network
+    // blip, the provider failing over) is reported as an 'error' event on the
+    // pool. With no listener Node treats it as unhandled and kills the process,
+    // turning a few seconds of database trouble into an API outage. The broken
+    // client is already discarded by pg; requests made meanwhile fail on their
+    // own and are answered 503 where it matters (auth refresh, requireAuth).
+    pool.on('error', (err) => {
+      require('../lib/logger').log.error('db_idle_client_error', require('../lib/logger').errorFields(err));
+    });
+  }
   return pool;
 }
 
-module.exports = { buildConfig, getPool, resolveSsl, isUnverifiedTls, LOCAL_HOSTS };
+module.exports = { buildConfig, getPool, resolveSsl, isUnverifiedTls, LOCAL_HOSTS, APP_POOL_TIMEOUTS };

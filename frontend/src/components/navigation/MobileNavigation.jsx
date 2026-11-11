@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import Button from '../ui/Button';
 import ThemeToggle from '../ui/ThemeToggle';
 import { SITE } from '../../config/site';
+import BrandLogo from '../ui/BrandLogo';
 
 const PRIMARY_LINKS = [
   { label: 'All Packages', to: '/packages' },
@@ -99,7 +100,7 @@ export default function MobileNavigation({ open, onClose, destinations = [], tri
           <Link to="/" onClick={onClose} className="flex items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 dark:focus-visible:ring-zinc-100">
             {/* The drawer renders nothing until opened, so this is never on the
                 initial paint path. */}
-            <img src="/zurii-logo.png" alt="Zurii" loading="lazy" decoding="async" className="h-8 w-auto dark:brightness-110" />
+            <BrandLogo className="h-8 w-auto dark:brightness-110" />
           </Link>
 
           <div className="flex items-center gap-2">

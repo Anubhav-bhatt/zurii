@@ -1,0 +1,3 @@
+# Downloaded masters (re-creatable from the manifest) and local installs
+.cache/
+node_modules/

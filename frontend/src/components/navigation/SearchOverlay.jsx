@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { searchPackages, getPackageBySlug } from '../../services/packagesApi';
+import { searchPackages, getPackagesBySlugs } from '../../services/packagesApi';
 import { getDestinationsCached } from '../../services/destinationsApi';
 import { useRecentlyViewed } from '../../hooks/useRecentlyViewed';
 import { useAsyncData } from '../../hooks/useAsyncData';
 import { trackSearch } from '../../services/analytics';
+import ResponsiveImage from '../ui/ResponsiveImage';
 
 const RECENT_KEY = 'zurii_recent_searches';
 const MIN_QUERY = 2;
@@ -72,11 +73,9 @@ export default function SearchOverlay({ open, onClose }) {
   const { data: recentlyViewedPkgs } = useAsyncData(
     async ({ signal }) => {
       if (!open || recentSlugs.length === 0) return [];
-      const promises = recentSlugs.slice(0, 3).map((slug) =>
-        getPackageBySlug(slug, { signal }).catch(() => null)
-      );
-      const res = await Promise.all(promises);
-      return res.filter(Boolean);
+      // One request for the three most recent, in order (was one each).
+      const { packages } = await getPackagesBySlugs(recentSlugs.slice(0, 3), { signal }).catch(() => ({ packages: [] }));
+      return packages;
     },
     ['spotlight-recently-viewed', open, recentSlugs.join(',')]
   );
@@ -415,11 +414,10 @@ export default function SearchOverlay({ open, onClose }) {
                             }`}
                           >
                             <div className="flex items-center gap-3 min-w-0">
-                              <img
+                              <ResponsiveImage
                                 src={pkg.heroImage}
                                 alt=""
-                                loading="lazy"
-                                decoding="async"
+                                sizes="40px"
                                 className="h-10 w-10 shrink-0 rounded-lg bg-zinc-100 dark:bg-zinc-800 object-cover"
                               />
                               <div className="min-w-0">
@@ -584,11 +582,10 @@ export default function SearchOverlay({ open, onClose }) {
                           className="flex w-full items-center justify-between gap-3 rounded-xl p-2 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800/60 transition-colors"
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <img
+                            <ResponsiveImage
                               src={pkg.heroImage}
                               alt=""
-                              loading="lazy"
-                              decoding="async"
+                              sizes="36px"
                               className="h-9 w-9 shrink-0 rounded-lg bg-zinc-100 dark:bg-zinc-800 object-cover"
                             />
                             <span className="truncate text-xs font-semibold text-zinc-900 dark:text-zinc-100">{pkg.title}</span>

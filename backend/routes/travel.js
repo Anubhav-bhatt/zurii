@@ -4,7 +4,13 @@
  *   GET /api/destinations         list active destinations (+ package counts)
  *   GET /api/destinations/:slug   one destination with its published packages
  *   GET /api/packages             list published packages, filterable
+ *                                 (?slugs=a,b,c returns exactly those cards)
  *   GET /api/packages/:slug       one package with its destination
+ *
+ * Successful responses are cacheable for a minute (see PUBLIC_CACHE); errors
+ * and everything else under /api are `no-store` (server.js). A database
+ * outage is a 503 with Retry-After, any other failure a 500 — both with a
+ * plain sentence, never the database's message (lib/httpErrors.js).
  *
  * Conventions follow the existing routes in server.js: `{ success, data }` on
  * success, `{ success: false, error }` on failure, and never a raw database
@@ -14,10 +20,51 @@
  * Every value reaching SQL is a bound parameter.
  */
 const express = require('express');
+const { sendServerError } = require('../lib/httpErrors');
+
+// What a visitor reads when the catalogue cannot be loaded. Never the
+// database's own wording, and never "0 trips" — the frontend shows a retry.
+const CATALOGUE_UNAVAILABLE = 'Trips are temporarily unavailable. Please try again in a moment.';
+const CATALOGUE_FAILED = 'We could not load trips just now. Please try again.';
+const catalogueError = (req, res, err, context) =>
+  sendServerError(req, res, err, { context, message: CATALOGUE_FAILED, unavailableMessage: CATALOGUE_UNAVAILABLE });
 
 const PUBLIC_PACKAGE_STATUS = 'PUBLISHED';
 const DEFAULT_LIMIT = 60;
 const MAX_LIMIT = 100;
+const MAX_OFFSET = 10000;
+
+/**
+ * Public catalogue data is the same for every visitor and changes rarely, so
+ * browsers may reuse it for 60 s and show a stale copy for up to 5 more
+ * minutes while they revalidate in the background (ETags make that a 304).
+ * Invalidation is time-based: a catalogue edit is visible to a fresh page
+ * load within 60 s, and to a page that was already open within ~6 minutes.
+ * `public` is safe because nothing here depends on who is asking — admin and
+ * lead routes are `no-store` (server.js).
+ */
+const PUBLIC_CACHE = 'public, max-age=60, stale-while-revalidate=300';
+
+/** Search: words of 2+ letters or digits, up to 6, from at most 100 characters. */
+const SEARCH_MAX = 100;
+const SEARCH_MAX_TERMS = 6;
+const SLUGS_MAX = 50;
+const SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{0,119}$/i;
+
+/**
+ * Split a search into words. Case, spacing and punctuation do not matter
+ * ("Kashmir's", "  KERALA ", "new-york"), and since a word is letters and
+ * digits only it can never carry a LIKE wildcard. Single letters are dropped:
+ * they match nearly everything.
+ */
+function searchTerms(q) {
+  const text = String(q ?? '').normalize('NFKC').slice(0, SEARCH_MAX).toLowerCase();
+  const terms = text.split(/[^\p{L}\p{N}]+/u).filter((term) => term.length >= 2);
+  return [...new Set(terms)].slice(0, SEARCH_MAX_TERMS);
+}
+
+/** Belt and braces: a term is alphanumeric already, but escape LIKE syntax anyway. */
+const likeContains = (term) => `%${term.replace(/[\\%_]/g, (ch) => `\\${ch}`)}%`;
 
 /** NUMERIC arrives from pg as a string; the UI needs real numbers. */
 const num = (value) => (value === null || value === undefined ? null : Number(value));
@@ -214,10 +261,10 @@ module.exports = function createTravelRouter(pool) {
         values
       );
 
+      res.set('Cache-Control', PUBLIC_CACHE);
       res.status(200).json({ success: true, data: rows.map(serializeDestination) });
     } catch (err) {
-      console.error('Destinations Fetch Error:', err);
-      res.status(500).json({ success: false, error: 'Failed to fetch destinations' });
+      catalogueError(req, res, err, 'destinations_list');
     }
   });
 
@@ -244,6 +291,7 @@ module.exports = function createTravelRouter(pool) {
         [PUBLIC_PACKAGE_STATUS, req.params.slug]
       );
 
+      res.set('Cache-Control', PUBLIC_CACHE);
       res.status(200).json({
         success: true,
         data: {
@@ -252,8 +300,7 @@ module.exports = function createTravelRouter(pool) {
         },
       });
     } catch (err) {
-      console.error('Destination Fetch Error:', err);
-      res.status(500).json({ success: false, error: 'Failed to fetch destination' });
+      catalogueError(req, res, err, 'destination_detail');
     }
   });
 
@@ -262,91 +309,110 @@ module.exports = function createTravelRouter(pool) {
     try {
       const {
         destination, featured, popular, tripType, tag,
-        minPrice, maxPrice, duration, q, sort, limit, offset,
+        minPrice, maxPrice, duration, q, sort, limit, offset, slugs,
       } = req.query;
 
       const values = [PUBLIC_PACKAGE_STATUS];
       const where = ['p.status = $1'];
+      const add = (value) => {
+        values.push(value);
+        return `$${values.length}`;
+      };
 
-      if (destination) {
-        values.push(destination);
-        where.push(`d.slug = $${values.length}`);
+      // ?slugs=a,b,c — exactly these cards, in this order (wishlist, recently
+      // viewed). One request instead of one full-detail request per slug.
+      if (typeof slugs === 'string') {
+        const wanted = [...new Set(slugs.split(',').map((x) => x.trim()).filter((x) => SLUG_PATTERN.test(x)))].slice(0, SLUGS_MAX);
+        const list = add(wanted);
+        const { rows } = await pool.query(
+          `${PACKAGE_LIST_SELECT} WHERE p.status = $1 AND p.slug = ANY(${list}::text[])
+            ORDER BY array_position(${list}::text[], p.slug::text)`,
+          values
+        );
+        res.set('Cache-Control', PUBLIC_CACHE);
+        return res.status(200).json({
+          success: true,
+          data: rows.map(serializePackage),
+          meta: { total: rows.length, count: rows.length, requested: wanted.length },
+        });
       }
+
+      if (typeof destination === 'string' && destination) where.push(`d.slug = ${add(destination)}`);
       if (isTrue(featured)) where.push('p.featured = true');
       if (isTrue(popular)) where.push('p.popular = true');
-      if (tripType) {
-        values.push(tripType);
-        where.push(`lower(p.trip_type) = lower($${values.length})`);
-      }
-      if (tag) {
-        values.push(JSON.stringify([String(tag).toLowerCase()]));
-        where.push(`p.tags @> $${values.length}::jsonb`);
-      }
+      if (typeof tripType === 'string' && tripType) where.push(`lower(p.trip_type) = lower(${add(tripType)})`);
+      if (typeof tag === 'string' && tag) where.push(`p.tags @> ${add(JSON.stringify([tag.toLowerCase()]))}::jsonb`);
 
       const min = Number.parseFloat(minPrice);
-      if (Number.isFinite(min)) {
-        values.push(min);
-        where.push(`p.price >= $${values.length}`);
-      }
+      if (Number.isFinite(min)) where.push(`p.price >= ${add(min)}`);
       const max = Number.parseFloat(maxPrice);
-      if (Number.isFinite(max)) {
-        values.push(max);
-        where.push(`p.price <= $${values.length}`);
-      }
+      if (Number.isFinite(max)) where.push(`p.price <= ${add(max)}`);
 
       const bucket = DURATION_BUCKETS[duration];
       if (bucket) {
         const [low, high] = bucket;
-        values.push(low);
-        where.push(`p.duration_days >= $${values.length}`);
-        if (high !== null) {
-          values.push(high);
-          where.push(`p.duration_days <= $${values.length}`);
+        where.push(`p.duration_days >= ${add(low)}`);
+        if (high !== null) where.push(`p.duration_days <= ${add(high)}`);
+      }
+
+      // Every word must match somewhere (title, subtitle, descriptions, or the
+      // destination's name, country or region). Matches in the title or the
+      // destination name rank first unless the visitor chose another sort.
+      let relevance = null;
+      if (typeof q === 'string' && q.trim()) {
+        const terms = searchTerms(q);
+        if (terms.length === 0) {
+          where.push('FALSE'); // punctuation or single letters: nothing to match, nothing returned
+        } else {
+          const strong = [];
+          for (const term of terms) {
+            const like = add(likeContains(term));
+            where.push(
+              `(p.title ILIKE ${like} OR p.subtitle ILIKE ${like} OR p.short_description ILIKE ${like}
+                OR p.description ILIKE ${like} OR d.name ILIKE ${like} OR d.country ILIKE ${like} OR d.region ILIKE ${like})`
+            );
+            strong.push(`(CASE WHEN p.title ILIKE ${like} OR d.name ILIKE ${like} THEN 1 ELSE 0 END)`);
+          }
+          relevance = strong.join(' + ');
         }
       }
 
-      if (q && String(q).trim().length > 0) {
-        values.push(`%${String(q).trim()}%`);
-        const i = values.length;
-        where.push(
-          `(p.title ILIKE $${i} OR p.subtitle ILIKE $${i} OR p.short_description ILIKE $${i}
-            OR p.description ILIKE $${i} OR d.name ILIKE $${i})`
-        );
-      }
+      const chosen = SORTS[sort] && sort !== 'recommended' ? SORTS[sort] : null;
+      const orderBy = chosen ?? (relevance ? `${relevance} DESC, ${SORTS.recommended}` : SORTS.recommended);
 
-      const orderBy = SORTS[sort] || SORTS.recommended;
+      const take = clampLimit(limit);
+      const skip = Math.min(Math.max(0, Number.parseInt(offset, 10) || 0), MAX_OFFSET);
+      const limitPlaceholder = add(take);
+      const offsetPlaceholder = add(skip);
 
-      values.push(clampLimit(limit));
-      const limitPlaceholder = `$${values.length}`;
-      values.push(Math.max(0, Number.parseInt(offset, 10) || 0));
-      const offsetPlaceholder = `$${values.length}`;
-
+      // The total rides on every row (one round trip instead of two).
       const { rows } = await pool.query(
-        `${PACKAGE_LIST_SELECT}
+        `SELECT ${PACKAGE_CARD_COLUMNS}, ${DESTINATION_JOIN_COLUMNS}, COUNT(*) OVER () AS total_count
+           ${PACKAGE_FROM}
           WHERE ${where.join(' AND ')}
           ORDER BY ${orderBy}
           LIMIT ${limitPlaceholder} OFFSET ${offsetPlaceholder}`,
         values
       );
 
-      // Total ignores limit/offset so the UI can show a result count.
-      const countValues = values.slice(0, values.length - 2);
-      const { rows: countRows } = await pool.query(
-        `SELECT COUNT(*)::int AS total
-           FROM packages p
-           LEFT JOIN destinations d ON d.id = p.destination_id
-          WHERE ${where.join(' AND ')}`,
-        countValues
-      );
+      let total = rows.length ? Number(rows[0].total_count) : 0;
+      if (!rows.length && skip > 0) {
+        // A page past the end still reports the true total for "Showing …".
+        const { rows: countRows } = await pool.query(
+          `SELECT COUNT(*)::int AS total ${PACKAGE_FROM} WHERE ${where.join(' AND ')}`,
+          values.slice(0, values.length - 2)
+        );
+        total = countRows[0].total;
+      }
 
+      res.set('Cache-Control', PUBLIC_CACHE);
       res.status(200).json({
         success: true,
         data: rows.map(serializePackage),
-        meta: { total: countRows[0].total, count: rows.length },
+        meta: { total, count: rows.length, offset: skip, limit: take },
       });
     } catch (err) {
-      console.error('Packages Fetch Error:', err);
-      res.status(500).json({ success: false, error: 'Failed to fetch packages' });
+      catalogueError(req, res, err, 'packages_list');
     }
   });
 
@@ -362,10 +428,10 @@ module.exports = function createTravelRouter(pool) {
         return res.status(404).json({ success: false, error: 'Package not found' });
       }
 
+      res.set('Cache-Control', PUBLIC_CACHE);
       res.status(200).json({ success: true, data: serializePackage(rows[0]) });
     } catch (err) {
-      console.error('Package Fetch Error:', err);
-      res.status(500).json({ success: false, error: 'Failed to fetch package' });
+      catalogueError(req, res, err, 'package_detail');
     }
   });
 

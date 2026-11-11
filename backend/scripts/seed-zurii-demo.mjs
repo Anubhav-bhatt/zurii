@@ -6,6 +6,7 @@
  *   SEED_DEMO_BOOKINGS=true node scripts/seed-zurii-demo.mjs  # Also seed optional demo enquiries
  */
 import pkg from '../db/pool.js';
+import safetyModule from '../db/safety.js';
 const { getPool } = pkg;
 
 const isDryRun = process.argv.includes('--dry-run');
@@ -560,6 +561,14 @@ export async function seedDemoData(pool) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
+  // Writes data: refuses unless DATABASE_URL is a verified local zurii_dev/zurii_test
+  // database, or a remote database named explicitly in ZURII_CONFIRM_REMOTE_DATABASE.
+  try {
+    await safetyModule.guardManualDataScript('scripts/seed-zurii-demo.mjs');
+  } catch (err) {
+    console.error(`✗ ${err.message}`);
+    process.exit(1);
+  }
   const pool = getPool();
   try {
     console.log(`── Demo Data Seed (Zurii V1) ${isDryRun ? '[DRY RUN]' : ''} ──`);

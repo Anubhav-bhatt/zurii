@@ -1,8 +1,11 @@
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { guides } from '../data';
+import ResponsiveImage from '../components/ui/ResponsiveImage';
 
+// Each card is a real link (ZT-34): its title is an <a> stretched over the whole
+// card, so it is reachable by keyboard, announced as a link, and opens in a new
+// tab on middle-click — the cards used to be clickable <div>s.
 const Blogs = () => {
-  const navigate = useNavigate();
   const featured = guides.find(g => g.featured);
   const rest = guides.filter(g => !g.featured);
 
@@ -23,12 +26,11 @@ const Blogs = () => {
 
         {/* Featured Post */}
         {featured && (
-          <div
-            onClick={() => navigate(`/blog/${featured.slug}`)}
-            className="group relative rounded-3xl overflow-hidden cursor-pointer mb-12 shadow-xl hover:shadow-2xl transition-all duration-500"
+          <article
+            className="group relative rounded-3xl overflow-hidden mb-12 shadow-xl hover:shadow-2xl transition-all duration-500 focus-within:ring-2 focus-within:ring-violet-500 focus-within:ring-offset-2 dark:focus-within:ring-offset-zinc-950"
           >
             <div className="relative h-[380px] md:h-[440px]">
-              <img src={featured.image} alt={featured.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-1000" />
+              <ResponsiveImage src={featured.image} alt={featured.title} priority sizes="(min-width: 1280px) 1200px, 100vw" className="w-full h-full object-cover group-hover:scale-105 transition duration-1000" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
               <div className="absolute top-5 left-5 flex items-center gap-2">
                 <span className="px-3 py-1 bg-violet-600 text-white text-[10px] font-bold uppercase tracking-wider rounded-full">Featured</span>
@@ -42,7 +44,9 @@ const Blogs = () => {
                   <span className="w-1 h-1 bg-white/50 rounded-full" />
                   <span>{featured.time}</span>
                 </div>
-                <h2 className="text-2xl md:text-3xl font-black text-white leading-tight max-w-2xl">{featured.title}</h2>
+                <h2 className="text-2xl md:text-3xl font-black text-white leading-tight max-w-2xl">
+                  <Link to={`/blog/${featured.slug}`} className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none">{featured.title}</Link>
+                </h2>
                 <p className="text-white/70 mt-3 text-sm max-w-xl leading-relaxed line-clamp-2">{featured.subtitle}</p>
                 <div className="flex items-center gap-3 mt-5">
                   {featured.tags?.slice(0, 3).map(tag => (
@@ -51,21 +55,20 @@ const Blogs = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </article>
         )}
 
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {rest.map(blog => (
-            <div
+            <article
               key={blog.slug}
-              onClick={() => navigate(`/blog/${blog.slug}`)}
-              className="group bg-white dark:bg-zinc-900 rounded-[28px] overflow-hidden border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer h-full flex flex-col"
+              className="group relative bg-white dark:bg-zinc-900 rounded-[28px] overflow-hidden border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-xl transition-all duration-500 h-full flex flex-col focus-within:ring-2 focus-within:ring-violet-500 focus-within:ring-offset-2 dark:focus-within:ring-offset-zinc-950"
             >
               <div className="relative h-52 overflow-hidden">
                 {/* Grid below the featured card. The featured image above stays
                     eager because it is this page's LCP element. */}
-                <img src={blog.image} alt={blog.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-110 transition duration-1000" />
+                <ResponsiveImage src={blog.image} alt={blog.title} sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw" className="w-full h-full object-cover group-hover:scale-110 transition duration-1000" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                 <div className="absolute top-4 left-4">
                   <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-[10px] font-bold uppercase tracking-wider text-gray-800 rounded-full">{blog.category}</span>
@@ -80,7 +83,9 @@ const Blogs = () => {
                   <span className="w-1 h-1 bg-gray-300 dark:bg-zinc-700 rounded-full" />
                   <span>{blog.date}</span>
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-zinc-50 leading-snug group-hover:text-violet-600 transition">{blog.title}</h3>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-zinc-50 leading-snug group-hover:text-violet-600 transition">
+                  <Link to={`/blog/${blog.slug}`} className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none">{blog.title}</Link>
+                </h3>
                 <p className="text-sm text-gray-500 dark:text-zinc-400 mt-2 leading-relaxed line-clamp-2 flex-1">{blog.subtitle}</p>
                 {blog.tags && (
                   <div className="flex flex-wrap gap-2 mt-4">
@@ -90,13 +95,13 @@ const Blogs = () => {
                   </div>
                 )}
                 <div className="mt-4 pt-4 border-t border-gray-100 dark:border-zinc-800 flex items-center justify-between">
-                  <span className="text-sm font-bold text-gray-900 dark:text-zinc-50 group-hover:text-violet-600 transition">Read Article</span>
-                  <span className="w-8 h-8 bg-gray-100 dark:bg-zinc-800 group-hover:bg-violet-600 rounded-full flex items-center justify-center transition">
+                  <span className="text-sm font-bold text-gray-900 dark:text-zinc-50 group-hover:text-violet-600 transition" aria-hidden="true">Read Article</span>
+                  <span className="w-8 h-8 bg-gray-100 dark:bg-zinc-800 group-hover:bg-violet-600 rounded-full flex items-center justify-center transition" aria-hidden="true">
                     <span className="text-gray-400 dark:text-zinc-500 group-hover:text-white text-sm transition">→</span>
                   </span>
                 </div>
               </div>
-            </div>
+            </article>
           ))}
         </div>
       </div>

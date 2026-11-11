@@ -4,8 +4,11 @@ import Container from '../components/ui/Container';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Button from '../components/ui/Button';
 import { API_BASE_URL } from '../config/api';
+import { API_TIMEOUT_MS } from '../services/apiClient';
 import { SITE, whatsappLink } from '../config/site';
 import { attribution, track } from '../services/analytics';
+import { createSubmissionKeys } from '../services/submissionKey';
+import { LEAD_FORMS, trackLead, trackWhatsAppClick } from '../services/marketing';
 
 /**
  * Contact page.
@@ -56,6 +59,9 @@ export default function ContactUs() {
   const [form, setForm] = useState(EMPTY);
   const [callback, setCallback] = useState('');
   const [errors, setErrors] = useState({});
+  // The server's own message when it gives one (a 429 names WhatsApp, a 400
+  // names the problem), instead of one generic sentence for every failure.
+  const [submitError, setSubmitError] = useState('');
   const [status, setStatus] = useState('idle'); // idle | submitting | success | error
 
   /**
@@ -77,6 +83,8 @@ export default function ContactUs() {
    * retryable, and the success screen's "Send another" button returns here.
    */
   const submittingRef = useRef(false);
+  // One idempotency key per submission attempt (services/submissionKey.js).
+  const [submissionKeys] = useState(createSubmissionKeys);
 
   const update = (event) => {
     const { name, value } = event.target;
@@ -102,25 +110,54 @@ export default function ContactUs() {
     // submission never started, so it must not lock the form.
     submittingRef.current = true;
     setStatus('submitting');
+    setSubmitError('');
     try {
       // The anonymous visitor/session ids ride along on the contact itself so
       // the admin can see the journey behind the lead; the server silently
       // drops a malformed id rather than failing the submission.
+      const payload = { ...form, callback, submissionSource: 'contact_page' };
       const response = await fetch(`${API_BASE_URL}/api/contact`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, callback, ...attribution() }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': submissionKeys.keyFor(payload),
+        },
+        body: JSON.stringify({ ...payload, ...attribution() }),
+        // ZT-30: the request used to wait for ever on a stalled connection.
+        signal: AbortSignal.timeout(API_TIMEOUT_MS),
       });
 
-      if (!response.ok) throw new Error('Request failed');
+      // Saved only when the API says so: a 2xx without `success` is not a lead.
+      const body = await response.json().catch(() => null);
+      if (!response.ok || !body?.success) {
+        // ZT-30: a 400 carries per-field messages — show them where they belong.
+        const fields = body?.fields && typeof body.fields === 'object' ? body.fields : null;
+        const known = fields ? Object.keys(fields).filter((key) => key in EMPTY) : [];
+        if (response.status === 400 && known.length) {
+          setErrors((prev) => ({ ...prev, ...Object.fromEntries(known.map((key) => [key, fields[key]])) }));
+          setStatus('idle');
+          document.getElementById(`${uid}-${known[0]}`)?.focus();
+          return;
+        }
+        const error = new Error(typeof body?.error === 'string' ? body.error : 'Request failed');
+        error.serverMessage = typeof body?.error === 'string' && response.status < 500 ? body.error : '';
+        throw error;
+      }
 
       // After the contact resolved, fire-and-forget — no personal data on it.
+      submissionKeys.succeeded();
       track('contact_submitted');
+      trackLead(LEAD_FORMS.contact);
 
       setStatus('success');
       setForm(EMPTY);
       setCallback('');
-    } catch {
+    } catch (err) {
+      setSubmitError(
+        err?.name === 'TimeoutError'
+          ? 'That took too long — it may not have been sent.'
+          : err?.serverMessage || ''
+      );
       setStatus('error');
     } finally {
       submittingRef.current = false;
@@ -300,7 +337,8 @@ export default function ContactUs() {
                     role="alert"
                     className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/30 px-4 py-3 text-sm text-rose-800 dark:text-rose-300"
                   >
-                    We couldn't send that just now. Please try again, or reach us on WhatsApp.
+                    {submitError || "We couldn't send that just now."}
+                    {/whatsapp/i.test(submitError) ? null : ' Please try again, or reach us on WhatsApp.'}
                   </p>
                 )}
 
@@ -318,6 +356,7 @@ export default function ContactUs() {
                     href={whatsappLink()}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => trackWhatsAppClick('contact_page')}
                     variant="whatsapp"
                     size="lg"
                     className="w-full sm:w-auto"

@@ -3,13 +3,24 @@
 # ─────────────────────────────────────────────────────────────
 # Stage 1: build the static bundle
 # ─────────────────────────────────────────────────────────────
-FROM node:20-alpine AS build
+# Pinned to the same Node 24 LTS minor as backend/Dockerfile; a floating tag
+# would let two builds of one commit use different toolchains.
+FROM node:24.19-alpine AS build
 WORKDIR /app
 
 COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY . .
+
+# scripts/prerender.mjs (run by `npm run build`) reads the approved catalogue
+# from ../backend/db/catalogue/catalogue.v2.json, which is outside this build
+# context. It arrives through the named build context `catalogue`, which
+# docker-compose.yml supplies (additional_contexts). A bare docker build needs
+# it too:
+#   docker build --build-context catalogue=backend/db/catalogue frontend
+# Without it the build stops here instead of shipping pages without a catalogue.
+COPY --from=catalogue catalogue.v2.json /backend/db/catalogue/catalogue.v2.json
 
 # Vite inlines env vars at BUILD time — they cannot be changed later without
 # rebuilding. Empty (the default) makes the app call same-origin relative
@@ -19,6 +30,13 @@ COPY . .
 # backend on a different origin.
 ARG VITE_API_URL=""
 ENV VITE_API_URL=$VITE_API_URL
+
+# Prerendered pages (scripts/prerender.mjs): the canonical origin for
+# canonical links, link previews and sitemap.xml, and SITE_NOINDEX=true for a
+# staging image. Both public; both baked in at build time. docs/SEO.md.
+ARG VITE_SITE_URL=""
+ARG SITE_NOINDEX=""
+ENV VITE_SITE_URL=$VITE_SITE_URL SITE_NOINDEX=$SITE_NOINDEX
 
 RUN npm run build
 

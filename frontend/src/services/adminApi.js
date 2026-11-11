@@ -19,10 +19,12 @@ import { API_BASE_URL } from '../config/api';
  */
 
 export class AdminApiError extends Error {
-  constructor(message, { status = 0, code = null, cause } = {}) {
+  constructor(message, { status = 0, code = null, cause, body = null } = {}) {
     super(message);
     this.name = 'AdminApiError';
     this.status = status;
+    /** The server's error body, for responses that carry more than a message (409 currentStatus). */
+    this.body = body;
     /**
      * The server's machine-readable reason, when it sends one. Currently only
      * `PASSWORD_CHANGE_REQUIRED` (403), which an authenticated page can receive
@@ -44,12 +46,34 @@ export class AdminAuthError extends AdminApiError {
 }
 
 let accessToken = null;
+/**
+ * The session could not be checked right now — the API answered 503 (its
+ * database is unreachable), 429 or another 5xx, or the network failed. Unlike
+ * AdminAuthError this says nothing about the session: the refresh cookie is
+ * still in place, so the page offers a retry instead of the login form (ZT-07).
+ */
+export class AdminUnavailableError extends AdminApiError {
+  constructor(message, { status = 0, cause } = {}) {
+    super(
+      message ||
+        (status
+          ? 'The admin service is temporarily unavailable. Please try again in a moment.'
+          : 'Unable to reach the server. Please check your connection.'),
+      { status, code: 'SERVICE_UNAVAILABLE', cause }
+    );
+    this.name = 'AdminUnavailableError';
+  }
+}
+
 let refreshPromise = null;
 
 /**
  * Exchange the httpOnly refresh cookie for a new access token.
  * Deduplicated: concurrent 401s share one refresh request.
- * Resolves to the token string, or null when the session is gone.
+ * Resolves to the token string, or null when the server says the session is
+ * gone (401/403). Rejects with AdminUnavailableError when the answer is "not
+ * now" (429, 5xx, no network), because treating an outage as a logout would
+ * send every signed-in admin back to the login form.
  */
 function refreshAccessToken() {
   if (!refreshPromise) {
@@ -57,12 +81,19 @@ function refreshAccessToken() {
       method: 'POST',
       credentials: 'include',
     })
-      .then(async (res) => {
-        if (!res.ok) return null;
-        const body = await res.json().catch(() => null);
-        return body?.accessToken || null;
-      })
-      .catch(() => null)
+      .then(
+        async (res) => {
+          const body = await res.json().catch(() => null);
+          if (res.ok) return body?.accessToken || null;
+          if (res.status === 429 || res.status >= 500) {
+            throw new AdminUnavailableError(body?.error, { status: res.status });
+          }
+          return null;
+        },
+        (err) => {
+          throw new AdminUnavailableError(undefined, { cause: err });
+        }
+      )
       .finally(() => {
         refreshPromise = null;
       });
@@ -72,8 +103,9 @@ function refreshAccessToken() {
 
 /**
  * Try to establish a session from the refresh cookie alone (the "already
- * logged into the CRM" path). Returns true when a token was obtained.
- * Never throws.
+ * logged into the CRM" path). Returns true when a token was obtained, false
+ * when there is no valid session. Throws AdminUnavailableError when the server
+ * cannot answer right now — callers show a retry, not the login form.
  */
 export async function bootstrapSession() {
   if (accessToken) return true;
@@ -190,7 +222,7 @@ export async function adminLogout() {
  * `AdminAuthError` when auth is truly gone, `AdminApiError` otherwise.
  * An abort is rethrown untouched so `useAsyncData` can ignore it.
  */
-export async function adminFetch(path, { signal, headers, ...options } = {}) {
+export async function adminFetch(path, { signal, headers, envelope = false, ...options } = {}) {
   if (!accessToken) {
     const token = await refreshAccessToken();
     if (!token) throw new AdminAuthError();
@@ -234,10 +266,12 @@ export async function adminFetch(path, { signal, headers, ...options } = {}) {
     throw new AdminApiError(body?.error || `Request failed (${res.status})`, {
       status: res.status,
       code: body?.code ?? null,
+      body,
     });
   }
   if (!body?.success) {
     throw new AdminApiError(body?.error || 'Unexpected response from the server.', { status: res.status });
   }
-  return body.data;
+  // `envelope` keeps `meta` (pagination totals) for the callers that need it.
+  return envelope ? { data: body.data, meta: body.meta ?? null } : body.data;
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { SITE } from '../config/site';
 
 const copied = (text, setCopied) => {
   navigator.clipboard.writeText(text).catch(() => {});
@@ -46,22 +47,15 @@ const PaymentPolicy = () => (
         <span className="inline-block text-xs font-semibold uppercase tracking-widest text-violet-500 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 px-3 py-1 rounded-full mb-3">Payments</span>
         <h1 className="text-4xl font-black text-gray-900 dark:text-zinc-50 mb-3">Payment Details</h1>
         <p className="text-gray-500 dark:text-zinc-400 text-lg max-w-xl mx-auto leading-relaxed">
-          Secure &amp; convenient payment options. Find all the information you need to make payments for your dream vacation with complete security.
+          How payments for a Zurii trip are scheduled. Our team confirms the payment details for your booking directly.
         </p>
 
-        {/* Stats */}
-        <div className="flex items-center justify-center gap-8 mt-8">
-          {[
-            { value: '3', label: 'Methods' },
-            { value: '24/7', label: 'Support' },
-            { value: '100%', label: 'Secure' },
-          ].map((s, i) => (
-            <div key={i} className="text-center">
-              <p className="text-3xl font-black bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">{s.value}</p>
-              <p className="text-xs text-gray-400 dark:text-zinc-500 font-semibold uppercase tracking-widest mt-1">{s.label}</p>
-            </div>
-          ))}
-        </div>
+        {/* ZT-34: this row claimed "3 Methods" (none are listed), "24/7 Support"
+            (the published hours say otherwise) and "100% Secure". It now states
+            only the published support hours, from config/site.js. */}
+        <p className="mt-6 text-sm text-gray-500 dark:text-zinc-400">
+          <span className="font-semibold text-gray-700 dark:text-zinc-300">Support hours:</span> {SITE.hours.join(' · ')}
+        </p>
       </div>
 
 
@@ -130,9 +124,18 @@ const PaymentPolicy = () => (
           <div>
             <h2 className="text-lg font-bold text-gray-900 dark:text-zinc-50 mb-2">Important Security Notice</h2>
             <ul className="space-y-2 text-sm text-gray-700 dark:text-zinc-300 leading-relaxed">
-              <li>• For secure transactions, please make payments <strong>exclusively to the official bank details listed on our website</strong>.</li>
+              <li>• For secure transactions, please make payments <strong>only to the account details our team gives you directly</strong>, and confirm them with us by phone before you pay.</li>
               <li>• Payments made to any other account will not be our responsibility, and we cannot compensate for any losses incurred from such transactions.</li>
-              <li>• For any questions or concerns, please contact us at <a href="tel:+919906892984" className="text-violet-600 dark:text-violet-400 font-semibold hover:underline">+91 99068 92984</a> or <a href="tel:+919929618966" className="text-violet-600 dark:text-violet-400 font-semibold hover:underline">+91 99296 18966</a>.</li>
+              <li>
+                • For any questions or concerns, please contact us at{' '}
+                {SITE.phones.map((phone, i) => (
+                  <span key={phone.href}>
+                    {i > 0 && ' or '}
+                    <a href={phone.href} className="text-violet-600 dark:text-violet-400 font-semibold hover:underline">{phone.label}</a>
+                  </span>
+                ))}
+                .
+              </li>
             </ul>
           </div>
         </div>
@@ -155,9 +158,14 @@ const PaymentPolicy = () => (
           ))}
           <li className="flex items-start gap-3 text-sm text-gray-600 dark:text-zinc-300">
             <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-violet-500 shrink-0" />
-            Do check our{' '}
-            <Link to="/cancellation-policy" className="text-violet-600 dark:text-violet-400 hover:underline font-semibold mx-0.5">Cancellation Policy</Link>,{' '}
-            <Link to="/privacy-policy" className="text-violet-600 dark:text-violet-400 hover:underline font-semibold mx-0.5">Privacy Policy</Link> and Disclaimer on our website for related details.
+            {/* One flex item: loose text and links would each become a separate,
+                non-wrapping flex item and push the sentence off a phone screen. */}
+            <span>
+              Do check our{' '}
+              <Link to="/cancellation-policy" className="text-violet-600 dark:text-violet-400 hover:underline font-semibold mx-0.5">Cancellation Policy</Link>,{' '}
+              <Link to="/privacy-policy" className="text-violet-600 dark:text-violet-400 hover:underline font-semibold mx-0.5">Privacy Policy</Link> and{' '}
+              <Link to="/terms-conditions" className="text-violet-600 dark:text-violet-400 hover:underline font-semibold mx-0.5">Terms &amp; Conditions</Link> for related details.
+            </span>
           </li>
         </ul>
       </div>

@@ -47,11 +47,21 @@ const {
 } = require('./lib/validateAdminPassword');
 const { AUDIT_EVENTS, recordAuditEvent } = require('./lib/adminAudit');
 
-const config = require('pg-connection-string').parse(process.env.DATABASE_URL);
-if (config.host !== 'localhost' && config.host !== '127.0.0.1') {
-  config.ssl = { rejectUnauthorized: false };
+// The server's own connection settings (db/pool.js), so this tool honours
+// DATABASE_SSL exactly as the API does: `verify` checks the certificate chain,
+// with DATABASE_CA_CERT for a provider's private CA. It used to build a private
+// config with rejectUnauthorized:false for every non-local host, which sent
+// admin password hashes over a connection that would accept any certificate.
+const { buildConfig, isUnverifiedTls } = require('./db/pool');
+
+const dbConfig = buildConfig();
+if (isUnverifiedTls(dbConfig)) {
+  console.warn(
+    '⚠ TLS certificate verification is OFF for this connection. Set DATABASE_SSL=verify ' +
+      '(and DATABASE_CA_CERT if your provider uses a private CA) for any remote database.'
+  );
 }
-const pool = new Pool(config);
+const pool = new Pool(dbConfig);
 
 const [, , action, username, passwordArg] = process.argv;
 

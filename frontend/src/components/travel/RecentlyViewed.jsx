@@ -4,7 +4,7 @@ import SectionHeader from '../ui/SectionHeader';
 import { PackageCardSkeleton } from '../ui/Skeleton';
 import CardRail from '../ui/CardRail';
 import PackageCard from './PackageCard';
-import { getPackageBySlug } from '../../services/packagesApi';
+import { getPackagesBySlugs } from '../../services/packagesApi';
 import { useAsyncData } from '../../hooks/useAsyncData';
 import { useRecentlyViewed } from '../../hooks/useRecentlyViewed';
 
@@ -41,8 +41,9 @@ export default function RecentlyViewed({ excludeSlug, title = 'Recently Viewed',
   const { data, loading } = useAsyncData(
     async ({ signal }) => {
       if (wanted.length === 0) return [];
-      const results = await Promise.allSettled(wanted.map((slug) => getPackageBySlug(slug, { signal })));
-      return results.filter((r) => r.status === 'fulfilled' && r.value).map((r) => r.value);
+      // One request for all of them, in the order they were viewed.
+      const { packages } = await getPackagesBySlugs(wanted, { signal });
+      return packages;
     },
     ['recently-viewed', key]
   );

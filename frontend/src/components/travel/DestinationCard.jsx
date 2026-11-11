@@ -35,7 +35,14 @@ export default function DestinationCard({ destination, size = 'md', priority = f
         alt={`Travel to ${name}`}
         ratio={`${ratio} h-full`}
         priority={priority}
-        sizes={size === 'lg' ? '(min-width: 1024px) 50vw, 100vw' : '(min-width: 1024px) 25vw, 50vw'}
+        /* Drawn width after the crop, not the box width: a rail slide is 80% of
+           a phone screen, and the tall `lg` box scales a landscape photo to its
+           height (about 1200–1400 px wide on a desktop, twice the screen on a tablet). */
+        sizes={
+          size === 'lg'
+            ? '(min-width: 1024px) 1200px, (min-width: 640px) 200vw, 85vw'
+            : '(min-width: 1024px) 400px, (min-width: 640px) 50vw, 85vw'
+        }
         imgClassName="transition-transform duration-[600ms] ease-out group-hover:scale-105"
       >
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent transition-opacity duration-300 group-hover:from-black/85" />

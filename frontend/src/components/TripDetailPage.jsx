@@ -16,8 +16,13 @@ import { useAsyncData } from '../hooks/useAsyncData';
 import { recordPackageView } from '../hooks/useRecentlyViewed';
 import { getPackageBySlug } from '../services/packagesApi';
 import { track } from '../services/analytics';
+import { trackViewContent, trackWhatsAppClick } from '../services/marketing';
 import { titleCase } from '../utils/format';
+import { upcomingBatches } from '../utils/departures';
 import { whatsappLink } from '../config/site';
+import ResponsiveImage from './ui/ResponsiveImage';
+import { useSeo } from '../seo/useSeo';
+import { notFoundMeta, packageMeta } from '../seo/meta';
 
 /**
  * Package detail page, read from `GET /api/packages/:slug`.
@@ -55,6 +60,13 @@ const WhatsAppIcon = ({ className = 'h-4 w-4' }) => (
   </svg>
 );
 
+/**
+ * The mobile strip and the desktop grid are both in the document (one is
+ * display:none) and each marks its first image eager. Sharing one `sizes`
+ * string makes both pick the same file, so the lead photo downloads once.
+ */
+const GALLERY_LEAD_SIZES = '(min-width: 1280px) 820px, (min-width: 640px) 64vw, 85vw';
+
 /** Desktop: one large image with a stacked pair beside it. Mobile: a swipeable strip. */
 function Gallery({ pkg, onOpen }) {
   const images = [pkg.heroImage, ...(pkg.gallery || [])].filter(Boolean);
@@ -82,6 +94,7 @@ function Gallery({ pkg, onOpen }) {
               alt={`${pkg.title} — photo ${index + 1}`}
               ratio="aspect-[4/3]"
               className="rounded-2xl"
+              sizes={index === 0 ? GALLERY_LEAD_SIZES : '85vw'}
               priority={index === 0}
             />
           </button>
@@ -100,6 +113,7 @@ function Gallery({ pkg, onOpen }) {
             alt={`${pkg.title} — main photo`}
             ratio="aspect-[4/3] h-full"
             className="h-full rounded-2xl"
+            sizes={GALLERY_LEAD_SIZES}
             priority
             imgClassName="transition-transform duration-500 hover:scale-[1.02]"
           />
@@ -117,6 +131,7 @@ function Gallery({ pkg, onOpen }) {
               alt={`${pkg.title} — photo ${index + 2}`}
               ratio="aspect-[4/3] h-full"
               className="h-full rounded-2xl"
+              sizes="(min-width: 1280px) 410px, 32vw"
               imgClassName="transition-transform duration-500 hover:scale-[1.03]"
             >
               {index === 1 && rest.length > 2 && (
@@ -246,9 +261,13 @@ function Lightbox({ images, index, onClose, onStep }) {
         </>
       )}
 
-      <img
+      <ResponsiveImage
         src={images[index]}
         alt=""
+        /* Sized by max-width/max-height alone, so no fixed width/height. */
+        intrinsic={false}
+        sizes="(min-width: 1440px) 1280px, 90vw"
+        loading="eager"
         onClick={(e) => e.stopPropagation()}
         className="max-h-[82vh] max-w-[90vw] rounded-2xl object-contain animate-fade-slide-up"
       />
@@ -292,6 +311,14 @@ export default function TripDetailPage() {
     ['package', slug]
   );
 
+  // Search and link-preview metadata (ZT-17). Only a real 404 is marked
+  // noindex — a failed or slow request keeps the neutral route default.
+  useSeo(
+    pkg
+      ? packageMeta({ slug: pkg.slug, title: pkg.title, summary: pkg.tagline, description: pkg.overview, image: pkg.image, durationText: pkg.duration, destinationName: pkg.location })
+      : error?.status === 404 ? notFoundMeta(`/trip/${slug}`, 'Trip not available') : null
+  );
+
   // Recorded once per trip that actually loaded — `pkg` is null while the
   // request is in flight and stays null on a 404, so a mistyped URL never
   // enters the visitor's history. Keyed on the loaded slug rather than the route
@@ -304,6 +331,7 @@ export default function TripDetailPage() {
     if (loadedSlug) {
       recordPackageView(loadedSlug);
       track('package_view', { entityType: 'package', entityId: loadedId, entitySlug: loadedSlug });
+      trackViewContent('package', loadedSlug);
     }
   }, [loadedSlug, loadedId]);
 
@@ -313,7 +341,10 @@ export default function TripDetailPage() {
 
   if (loading) {
     return (
-      <div className="pt-16 sm:pt-[68px]">
+      // At least a screen tall, so the footer stays below the fold until the
+      // trip arrives. The skeleton alone is shorter than a phone screen: the
+      // footer showed under it and was pushed away (layout shift 0.12).
+      <div className="min-h-screen pt-16 sm:pt-[68px]">
         <DetailSkeleton />
       </div>
     );
@@ -518,10 +549,12 @@ export default function TripDetailPage() {
                 </Section>
               )}
 
-              {pkg.batches?.length > 0 && (
+              {/* Only departures that have not started yet (utils/departures.js):
+                  past dates used to be listed here as "Available". */}
+              {upcomingBatches(pkg.batches).length > 0 && (
                 <Section title="Upcoming departures">
                   <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                    {pkg.batches.map((batch, index) => (
+                    {upcomingBatches(pkg.batches).map((batch, index) => (
                       <li
                         key={batch.id ?? `${batch.date}-${index}`}
                         className={`rounded-xl border p-3.5 text-center ${
@@ -584,11 +617,11 @@ export default function TripDetailPage() {
                   className="w-full"
                   onClick={() =>
                     // keepalive inside track() lets this survive the tab opening.
-                    track('whatsapp_click', {
+                    trackWhatsAppClick('trip_sidebar', {
+                      context: 'package',
                       entityType: 'package',
                       entityId: pkg.dbId,
                       entitySlug: pkg.slug,
-                      meta: { context: 'package' },
                     })
                   }
                 >
@@ -636,11 +669,11 @@ export default function TripDetailPage() {
             rel="noopener noreferrer"
             aria-label="Chat with a travel expert on WhatsApp"
             onClick={() =>
-              track('whatsapp_click', {
+              trackWhatsAppClick('trip_mobile_bar', {
+                context: 'package',
                 entityType: 'package',
                 entityId: pkg.dbId,
                 entitySlug: pkg.slug,
-                meta: { context: 'package' },
               })
             }
             className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#25D366] text-white shadow-sm transition-colors hover:bg-[#1fbf5b]"

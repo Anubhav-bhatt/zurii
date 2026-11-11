@@ -137,39 +137,10 @@ html.dark select:-webkit-autofill {
   scrollbar-width: none;
 }
 
-/* ── Apple-Style Spring Easing Transitions ── */
-.transition-premium {
-  transition-property: transform, opacity, box-shadow, background-color, border-color, color;
-  transition-duration: 400ms;
-  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.transition-premium-fast {
-  transition-property: transform, opacity, box-shadow, background-color, border-color, color;
-  transition-duration: 220ms;
-  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.transition-premium-slow {
-  transition-property: transform, opacity, box-shadow, background-color, border-color, color;
-  transition-duration: 600ms;
-  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-}
-
 /* ── Keyframe Animations ── */
-@keyframes fadeSlideIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
 @keyframes fadeSlideUp {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes pulseSubtle {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.01); }
 }
 
 @keyframes slideInRight {
@@ -185,10 +156,6 @@ html.dark select:-webkit-autofill {
 @keyframes backdropFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
-}
-
-.animate-pulse-subtle {
-  animation: pulseSubtle 3s ease-in-out infinite;
 }
 
 .animate-fade-slide-up {
@@ -261,37 +228,4 @@ html.dark *:focus-visible {
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
   }
-  .pt-safe {
-    padding-top: env(safe-area-inset-top);
-  }
-}
-
-/* ── Responsive Card Grid System ── */
-.card-grid {
-  display: grid;
-  gap: clamp(1rem, 2vw, 1.5rem);
-  grid-template-columns: repeat(1, 1fr);
-}
-
-@media (min-width: 480px) {
-  .card-grid { grid-template-columns: repeat(2, 1fr); }
-}
-
-@media (min-width: 768px) {
-  .card-grid { grid-template-columns: repeat(2, 1fr); }
-}
-
-@media (min-width: 1024px) {
-  .card-grid { grid-template-columns: repeat(3, 1fr); }
-}
-
-@media (min-width: 1280px) {
-  .card-grid { grid-template-columns: repeat(4, 1fr); }
-}
-
-/* ── Max Content Width for Ultra-Wide ── */
-.max-content {
-  max-width: 1440px;
-  margin-left: auto;
-  margin-right: auto;
 }

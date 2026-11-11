@@ -56,6 +56,7 @@ export default function WeekendTrips() {
           }}
           skeleton={<SkeletonGrid count={6} className={GRID} Item={PackageCardSkeleton} />}
         >
+          <h2 className="sr-only">Weekend trips</h2>
           <ul className={GRID}>
             {trips.map((pkg, index) => (
               <li key={pkg.slug} className="h-full">

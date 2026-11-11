@@ -8,11 +8,14 @@
  */
 
 const rateLimit = require('express-rate-limit');
-// Normalizes an IPv6 address to its /64 subnet. Keying on the raw address would
-// let one IPv6 client rotate through billions of addresses in its own prefix and
-// walk straight past a per-IP limit; express-rate-limit refuses to start with a
-// custom keyGenerator that ignores this.
+// Normalizes an IPv6 address to its /56 prefix (the library default — a typical
+// residential delegation). Keying on the raw address would let one IPv6 client
+// rotate through billions of addresses in its own prefix and walk straight past
+// a per-IP limit; express-rate-limit refuses to start with a custom
+// keyGenerator that ignores this. IPv4 addresses are used as they are.
 const { ipKeyGenerator } = require('express-rate-limit');
+const { log } = require('../lib/logger');
+const { routeOf } = require('./requestLog');
 
 // ── CORS ────────────────────────────────────────────────────────────
 //
@@ -111,7 +114,9 @@ function corsOrigin(origin, callback) {
 const corsOptions = {
   origin: corsOrigin,
   methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  // Idempotency-Key: duplicate-submission protection on the public lead forms
+  // (lib/idempotency.js), needed when the frontend calls the API cross-origin.
+  allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key'],
   credentials: true,
   maxAge: 600,
 };
@@ -152,48 +157,114 @@ const helmetOptions = {
 // express-rate-limit's in-memory store is the right size for a single-process
 // V1: no Redis, and a restart clearing the counters is acceptable for these
 // thresholds. If the app is ever scaled to multiple backend replicas these
-// become per-replica, which is documented in the security report.
+// become per-replica, which is documented in DEPLOYMENT.md.
+//
+// Every limiter keys on clientKey(req). req.ip honours X-Forwarded-For only for
+// the number of proxy hops TRUST_PROXY declares (server.js), so a header a
+// visitor sends cannot choose their bucket; whether that hop count is right for
+// a deployment is a production check (DEPLOYMENT.md, "Client IP and rate
+// limits"). If it is wrong, unrelated visitors share the proxy's bucket.
 
-const limitJson = (message) => ({
+/** Bucket key for a client: its IPv4 address, or its IPv6 /56 prefix. */
+const clientKey = (req) => (req.ip ? ipKeyGenerator(req.ip) : 'unknown');
+
+/** Refusals per limiter since this process started (reported in each log line). */
+const rateLimitCounts = new Map();
+
+/**
+ * One 429 shape for every limiter: JSON body, Retry-After and RateLimit
+ * headers — and one structured `rate_limited` log line per refusal, so a
+ * refused login or enquiry is never silent to the operator. A burst of lead
+ * refusals during a campaign means visitors share an address (carrier NAT, or
+ * a proxy that hides client IPs — see DEPLOYMENT.md). No IP, username or form
+ * data is logged.
+ */
+const limitJson = (message, limiter) => ({
   standardHeaders: 'draft-7',
   legacyHeaders: false,
-  handler: (req, res) => res.status(429).json({ success: false, error: message }),
-});
-
-/**
- * Admin login. Verified vulnerable before this: eight consecutive failed
- * logins all returned 401 with no throttling, so an offline-speed online
- * guessing attack was possible against a known username.
- *
- * Keyed on IP + username so one attacker cannot lock out every admin by
- * hammering a single IP, and a distributed attack on one account still hits
- * the per-account ceiling. Successful logins are not counted, so an admin who
- * signs in normally is never throttled.
- */
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 10,
-  skipSuccessfulRequests: true,
-  keyGenerator: (req) => {
-    const username = typeof req.body?.username === 'string' ? req.body.username.toLowerCase().slice(0, 64) : '';
-    return `${ipKeyGenerator(req.ip)}|${username}`;
+  handler: (req, res) => {
+    const count = (rateLimitCounts.get(limiter) ?? 0) + 1;
+    rateLimitCounts.set(limiter, count);
+    log.warn('rate_limited', { reqId: req.id, limiter, route: routeOf(req), count });
+    return res.status(429).json({ success: false, error: message, code: 'RATE_LIMITED' });
   },
-  ...limitJson('Too many failed login attempts. Please try again in a few minutes.'),
 });
 
 /**
- * Public lead forms (enquiries + contact). Verified unprotected before this:
- * twelve rapid submissions were all accepted with 201.
+ * Sign-in policy (ZT-08 / ZT-09). Every attempt costs one bcrypt-12 comparison
+ * (~0.2 s of CPU, measured locally), whether or not the username exists.
  *
- * The ceiling is deliberately generous — a real household comparing trips may
- * legitimately send several enquiries, and a false 429 costs a real lead. It
- * only stops scripted flooding.
+ *   lockThreshold / lockMinutes   the account lock in PostgreSQL (server.js):
+ *                                 5 consecutive failures lock the account for
+ *                                 15 minutes, from any number of networks.
+ *   perAccountPerClient           failures one client may make against one
+ *                                 username per window. Deliberately BELOW
+ *                                 lockThreshold: a single client cannot trip
+ *                                 the account lock on its own, so keeping an
+ *                                 admin locked out now needs several networks
+ *                                 rather than five requests every 15 minutes.
+ *   perClient                     failures one client may make across ALL
+ *                                 usernames per window, so rotating usernames
+ *                                 no longer buys unlimited bcrypt work.
+ *
+ * Only failures count (skipSuccessfulRequests), so an admin who signs in
+ * normally never approaches either ceiling.
  */
-const leadLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000,
-  limit: 20,
-  ...limitJson('Too many submissions from this network. Please try again shortly, or reach us on WhatsApp.'),
+const LOGIN_POLICY = Object.freeze({
+  windowMinutes: 15,
+  perAccountPerClient: 4,
+  perClient: 20,
+  lockThreshold: 5,
+  lockMinutes: 15,
 });
+
+/** Public enquiry forms: submissions per client per window (bookings + contact). */
+const LEAD_POLICY = Object.freeze({ windowMinutes: 10, perClient: 30 });
+
+const normalizedUsername = (req) =>
+  typeof req.body?.username === 'string' ? req.body.username.trim().toLowerCase().slice(0, 64) : '';
+
+function createLoginClientLimiter() {
+  return rateLimit({
+    windowMs: LOGIN_POLICY.windowMinutes * 60 * 1000,
+    limit: LOGIN_POLICY.perClient,
+    skipSuccessfulRequests: true,
+    keyGenerator: clientKey,
+    ...limitJson('Too many failed login attempts. Please try again in a few minutes.', 'login_client'),
+  });
+}
+
+function createLoginAccountLimiter() {
+  return rateLimit({
+    windowMs: LOGIN_POLICY.windowMinutes * 60 * 1000,
+    limit: LOGIN_POLICY.perAccountPerClient,
+    skipSuccessfulRequests: true,
+    keyGenerator: (req) => `${clientKey(req)}|${normalizedUsername(req)}`,
+    ...limitJson('Too many failed login attempts. Please try again in a few minutes.', 'login_account'),
+  });
+}
+
+/**
+ * Public lead forms (enquiries + contact), one shared bucket per client.
+ *
+ * Sized for advertising traffic rather than for a single household: mobile
+ * carriers put many unrelated visitors behind one IPv4 address (carrier-grade
+ * NAT), and a false 429 costs a real lead. 30 per 10 minutes still stops
+ * scripted flooding, and the 429 message points to WhatsApp so a blocked
+ * visitor is never left without a way to reach the team.
+ */
+function createLeadLimiter() {
+  return rateLimit({
+    windowMs: LEAD_POLICY.windowMinutes * 60 * 1000,
+    limit: LEAD_POLICY.perClient,
+    keyGenerator: clientKey,
+    ...limitJson('Too many submissions from this network. Please try again shortly, or reach us on WhatsApp.', 'lead'),
+  });
+}
+
+const loginClientLimiter = createLoginClientLimiter();
+const loginLimiter = createLoginAccountLimiter();
+const leadLimiter = createLeadLimiter();
 
 /**
  * Token refresh. Cheap, but it mints access tokens, so it should not be an
@@ -202,13 +273,21 @@ const leadLimiter = rateLimit({
 const refreshLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 60,
-  ...limitJson('Too many refresh attempts. Please log in again.'),
+  keyGenerator: clientKey,
+  ...limitJson('Too many refresh attempts. Please log in again.', 'refresh'),
 });
 
 module.exports = {
   corsOptions,
   corsOrigin,
   helmetOptions,
+  clientKey,
+  LOGIN_POLICY,
+  LEAD_POLICY,
+  createLoginClientLimiter,
+  createLoginAccountLimiter,
+  createLeadLimiter,
+  loginClientLimiter,
   loginLimiter,
   leadLimiter,
   refreshLimiter,

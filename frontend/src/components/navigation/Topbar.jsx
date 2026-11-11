@@ -23,6 +23,7 @@ import Container from '../ui/Container';
 const SearchOverlay = lazy(() => import('./SearchOverlay'));
 import { useAsyncData } from '../../hooks/useAsyncData';
 import { getDestinationsCached } from '../../services/destinationsApi';
+import BrandLogo from '../ui/BrandLogo';
 
 /**
  * Header shell.
@@ -107,16 +108,8 @@ export default function Topbar() {
             className="shrink-0 rounded-lg"
             aria-label="Zurii — home"
           >
-            <img
-              src="/zurii-logo.png"
-              alt="Zurii"
-              width="112"
-              height="36"
-              /* No invert: this asset is a coloured mark on an opaque white
-                 background, so inverting it produced a featureless white box
-                 and the brand disappeared over the hero. */
-              className="h-8 w-auto rounded-md sm:h-9"
-            />
+            {/* In the header on first paint, so not lazy. No invert: see BrandLogo. */}
+            <BrandLogo priority className="h-8 w-auto rounded-md sm:h-9" />
           </Link>
 
           <DesktopNavigation

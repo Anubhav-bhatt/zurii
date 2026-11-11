@@ -30,6 +30,15 @@
 
 Zurii Travels is a curated travel platform offering domestic and international tour packages. Users can browse destinations, view detailed itineraries, read travel blogs, and submit trip inquiries. An admin dashboard provides insights into customer submissions.
 
+> **Developing locally?** Read **[docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md)** — an
+> isolated PostgreSQL 16 with separate dev/test databases, guarded tests, and the
+> versioned migrations described in [docs/DATABASE_MIGRATIONS.md](docs/DATABASE_MIGRATIONS.md).
+>
+> **More in [docs/](docs/):** [SEO](docs/SEO.md) · [marketing attribution](docs/MARKETING_ATTRIBUTION.md) ·
+> [logging and monitoring](docs/OBSERVABILITY.md) · [privacy and retention (draft)](docs/PRIVACY_AND_RETENTION.md) ·
+> [CI](docs/CI.md) · [travel discovery](docs/TRAVEL_DISCOVERY.md) · [leads](docs/LEAD_MANAGEMENT.md) ·
+> [migrations](docs/DATABASE_MIGRATIONS.md) · [operator actions](docs/OPERATOR_ACTIONS.md).
+>
 > **Deploying this?** Read **[DEPLOYMENT.md](DEPLOYMENT.md)** instead of this file.
 > It covers environment variables, secret generation, database topologies, admin
 > bootstrap, verification and troubleshooting. This README covers local development.

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import Container from '../components/ui/Container';
@@ -13,7 +13,11 @@ import { useAsyncData } from '../hooks/useAsyncData';
 import { getPackages } from '../services/packagesApi';
 import { getDestinationsCached } from '../services/destinationsApi';
 import { track, trackSearch } from '../services/analytics';
+import { trackSearchPerformed } from '../services/marketing';
 import { formatCurrency, titleCase } from '../utils/format';
+import { planFromSearchParams, planToQuery, saveTripPlan, travellersLabel } from '../services/tripPlan';
+import { useSeo } from '../seo/useSeo';
+import { SITE_NAME, staticPageMeta } from '../seo/meta';
 
 /**
  * Package listing.
@@ -31,13 +35,17 @@ import { formatCurrency, titleCase } from '../utils/format';
 const GRID = 'grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3';
 
 /**
- * GET /api/packages defaults to 60 rows and caps at 100. The default sits below
- * the 68 published packages, so an unfiltered listing would quietly show 60 of
- * them under a heading claiming 68. Asking for the cap keeps the grid and the
- * count in agreement without pagination the catalogue does not need yet; the
- * count line below still reports a shortfall if one ever appears.
+ * Server-side pages of 24 (Phase 5): the listing used to fetch every package —
+ * 68 cards and their JSON — to show the first few rows. 24 fills 8 rows of
+ * three on desktop and stays a short scroll on a phone. `?page=` is in the URL,
+ * so a page survives refresh and Back/Forward, and the total is the server's.
  */
-const LISTING_LIMIT = 100;
+const PAGE_SIZE = 24;
+
+function readPage(searchParams) {
+  const raw = searchParams.get('page');
+  return raw && /^\d{1,4}$/.test(raw) && Number(raw) >= 1 ? Number(raw) : 1;
+}
 
 /** Query parameters the API understands; anything else in the URL is ignored. */
 const API_PARAMS = ['destination', 'tag', 'tripType', 'minPrice', 'maxPrice', 'duration', 'q', 'popular', 'featured', 'sort'];
@@ -134,13 +142,24 @@ export default function PackagesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const filters = readFilters(searchParams);
   const activeCount = countFilters(filters);
+  const page = readPage(searchParams);
+  const resultsRef = useRef(null);
+
+  // Planning preferences from the home search (never filters — see
+  // services/tripPlan.js). Kept for the enquiry form wherever the visitor goes.
+  const plan = planFromSearchParams(searchParams);
+  const planKey = `${plan.month ?? ''}|${plan.travellers ?? ''}`;
+  useEffect(() => {
+    const [month, travellers] = planKey.split('|');
+    if (month || travellers) saveTripPlan({ month: month || null, travellers: travellers || null });
+  }, [planKey]);
 
   // `filters` is rebuilt from API_PARAMS in a fixed order, so this key changes
   // exactly when a filter or the sort changes — which is what makes
   // useAsyncData abort the request it supersedes.
   const { data, loading, error, reload } = useAsyncData(
-    ({ signal }) => getPackages({ ...filters, limit: LISTING_LIMIT }, { signal }),
-    ['packages', filters]
+    ({ signal }) => getPackages({ ...filters, limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE }, { signal }),
+    ['packages', filters, page]
   );
 
   // Shared with the navigation and homepage, so this is normally already resolved.
@@ -173,7 +192,13 @@ export default function PackagesPage() {
   const resolvedQuery = filters.q && data ? filters.q : null;
   const resolvedTotal = data ? total : null;
   useEffect(() => {
-    if (resolvedQuery) trackSearch(resolvedQuery, resolvedTotal);
+    if (resolvedQuery) {
+      trackSearch(resolvedQuery, resolvedTotal);
+      // Meta Search for a committed text search (the search overlay's Enter
+      // lands here too). The text is only a de-duplication key: Meta receives
+      // no search terms, since visitors can type anything into the box.
+      trackSearchPerformed(`q:${resolvedQuery.trim().toLowerCase()}`);
+    }
   }, [resolvedQuery, resolvedTotal]);
 
   const chips = buildChips(filters, destinationLabel);
@@ -182,22 +207,28 @@ export default function PackagesPage() {
   const headline = chips.find((chip) => chip.headline)?.label;
   const heading = filters.q ? `Results for “${filters.q}”` : headline ? `${headline} Trips` : 'All Trips';
 
+  // One canonical listing (/packages) whatever the filters; search results are
+  // never indexed (robots.txt also keeps crawlers off ?q=).
+  // The unfiltered listing keeps the prerendered title, so crawlers and the app agree.
+  const listingMeta = staticPageMeta('/packages');
+  useSeo({ ...listingMeta, title: heading === 'All Trips' ? listingMeta.title : `${heading} | ${SITE_NAME}`, noindex: Boolean(filters.q) });
+
   /**
    * How the current result set reads, decided once so the page header and the
    * mobile filter sheet can never disagree about it.
    *
    * A failed request is not "0 trips" — that is a real result — so it gets its
-   * own line and leaves the detail to the retry panel. A shortfall is impossible
-   * at 68 packages and LISTING_LIMIT 100, but "68 trips" over a grid of 60 is
-   * exactly the bug that limit exists to prevent, so the count reports what is
-   * actually on screen whenever the two diverge.
+   * own line and leaves the detail to the retry panel. With more than one page
+   * the line says which slice is on screen.
    */
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const first = (page - 1) * PAGE_SIZE + 1;
   const resultLabel = loading
     ? 'Finding trips…'
     : error
       ? 'Trips are unavailable right now.'
-      : packages.length < total
-        ? `Showing ${packages.length} of ${total} trips`
+      : total > PAGE_SIZE && packages.length > 0
+        ? `Showing ${first}–${first + packages.length - 1} of ${total} trips`
         : `${total} ${total === 1 ? 'trip' : 'trips'}`;
 
   // The filters that produced it, appended for the page header only.
@@ -220,9 +251,11 @@ export default function PackagesPage() {
       if (value === null || value === undefined || value === '') next.delete(key);
       else next.set(key, String(value));
     }
+    // Any other change starts again from the first page.
+    if (!('page' in patch)) next.delete('page');
     setSearchParams(next);
 
-    const keys = Object.keys(patch).filter((key) => key !== 'sort');
+    const keys = Object.keys(patch).filter((key) => key !== 'sort' && key !== 'page' && key !== 'month' && key !== 'travellers');
     if (keys.length === 0) return;
     if (keys.includes('minPrice') || keys.includes('maxPrice')) {
       const min = patch.minPrice ?? '';
@@ -248,8 +281,28 @@ export default function PackagesPage() {
   // asked to filter by — see the note at the top of TravelSearch.jsx.
   const clearedParams = new URLSearchParams(searchParams);
   for (const key of FILTER_PARAMS) clearedParams.delete(key);
+  clearedParams.delete('page');
   const clearedPath = `/packages${clearedParams.toString() ? `?${clearedParams}` : ''}`;
   const clearAll = () => setSearchParams(clearedParams);
+
+  const goToPage = (target) => {
+    setParams({ page: target === 1 ? null : target });
+    // Same page, new query: the router does not scroll, so bring the results up.
+    resultsRef.current?.scrollIntoView({ block: 'start' });
+  };
+
+  const clearPlan = () => {
+    saveTripPlan({ month: null, travellers: null });
+    setParams({ month: null, travellers: null, page: page === 1 ? null : page });
+  };
+
+  // A custom trip carries what the visitor already told us.
+  const customTripPath = `/plan-my-trip${planToQuery({
+    ...plan,
+    destination: selectedDestination ? filters.destination : undefined,
+    budget: undefined,
+  })}`;
+  const pastTheEnd = !loading && !error && packages.length === 0 && total > 0;
 
   return (
     <div className="pt-16 sm:pt-[68px]">
@@ -288,32 +341,98 @@ export default function PackagesPage() {
           canClear={activeCount > 0}
           className="mt-3"
         />
+
+        {(plan.month || plan.travellers) && (
+          <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-zinc-600 dark:text-zinc-300">
+            <span>
+              Your plan: {[plan.month && `travelling in ${plan.month}`, plan.travellers && travellersLabel(plan.travellers)].filter(Boolean).join(' · ')}.
+              {' '}It is added to any enquiry you send — it does not filter trips.
+            </span>
+            <button
+              type="button"
+              onClick={clearPlan}
+              className="touch-target rounded px-1 text-sm font-semibold text-zinc-900 underline underline-offset-2 hover:text-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/20 dark:text-zinc-100 dark:hover:text-zinc-300"
+            >
+              Clear plan
+            </button>
+          </p>
+        )}
       </Container>
 
       {/* Results */}
       <Container className="pb-16 sm:pb-20">
+        <div ref={resultsRef} className="scroll-mt-24" />
         <DataBoundary
           loading={loading}
           error={error}
           onRetry={reload}
           isEmpty={packages.length === 0}
-          empty={{
-            title: activeCount > 0 ? 'No trips match those filters.' : 'No trips to show yet.',
-            description:
-              activeCount > 0
-                ? 'Try removing one — a wider budget or a longer duration usually brings results back.'
-                : 'Please check back shortly, or talk to us about a custom itinerary.',
-            action: activeCount > 0 ? { label: 'Clear all filters', to: clearedPath } : undefined,
-          }}
+          empty={
+            pastTheEnd
+              ? {
+                  title: 'That page is empty.',
+                  description: `There are ${total} ${total === 1 ? 'trip' : 'trips'} on ${totalPages} ${totalPages === 1 ? 'page' : 'pages'}.`,
+                  action: { label: 'Go to the first page', to: `/packages${(() => { const p = new URLSearchParams(searchParams); p.delete('page'); return p.toString() ? `?${p}` : ''; })()}` },
+                }
+              : {
+                  title: activeCount > 0 ? 'No trips match those filters.' : 'No trips to show yet.',
+                  description:
+                    activeCount > 0
+                      ? 'Try removing one — a wider budget or a longer duration usually brings results back — or tell us what you have in mind.'
+                      : 'Please check back shortly, or talk to us about a custom itinerary.',
+                  action: activeCount > 0 ? { label: 'Clear all filters', to: clearedPath } : undefined,
+                  secondaryAction: { label: 'Plan a custom trip', to: customTripPath },
+                }
+          }
           skeleton={<SkeletonGrid count={6} className={GRID} Item={PackageCardSkeleton} />}
         >
+          {/* The cards' titles are h3; this keeps the outline h1 → h2 → h3 for
+              screen readers without changing what is on screen. */}
+          <h2 className="sr-only">Trips</h2>
           <ul className={GRID}>
             {packages.map((pkg, index) => (
               <li key={pkg.slug} className="h-full">
-                <PackageCard pkg={pkg} priority={index < 3} className="h-full" />
+                <PackageCard pkg={pkg} priority={index < 3 && page === 1} className="h-full" />
               </li>
             ))}
           </ul>
+
+          {totalPages > 1 && (
+            <nav aria-label="Trip pages" className="mt-10 flex flex-wrap items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => goToPage(page - 1)}
+                disabled={page <= 1}
+                className="touch-target rounded-xl border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-900 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+              >
+                Previous
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => goToPage(n)}
+                  aria-current={n === page ? 'page' : undefined}
+                  aria-label={`Page ${n}`}
+                  className={`touch-target min-w-11 rounded-xl border px-3 text-sm font-semibold ${
+                    n === page
+                      ? 'border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900'
+                      : 'border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800'
+                  }`}
+                >
+                  {n}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => goToPage(page + 1)}
+                disabled={page >= totalPages}
+                className="touch-target rounded-xl border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-900 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+              >
+                Next
+              </button>
+            </nav>
+          )}
         </DataBoundary>
       </Container>
     </div>

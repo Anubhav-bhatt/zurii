@@ -7,8 +7,10 @@ import {
   bootstrapSession,
   getAdminSession,
   AdminAuthError,
+  AdminUnavailableError,
 } from '../services/adminApi';
 import ChangePasswordForm from '../components/admin/ChangePasswordForm';
+import CampaignReport from '../components/admin/CampaignReport';
 import StatCard from '../components/admin/StatCard';
 import RankedList from '../components/admin/RankedList';
 import FunnelBar from '../components/admin/FunnelBar';
@@ -439,8 +441,16 @@ function Dashboard({ username, onAuthLost, onPasswordChangeRequired }) {
     ({ signal }) => adminFetch('/api/admin/bookings', { signal }),
     ['admin-bookings']
   );
+  // Campaign reporting (ZT-16): same window, campaigns paginated on the server.
+  const CAMPAIGN_PAGE = 10;
+  const [campaignPage, setCampaignPage] = useState({ days, page: 0 });
+  const campaignPageNow = campaignPage.days === days ? campaignPage.page : 0;
+  const campaigns = useAsyncData(
+    ({ signal }) => adminFetch(`/api/admin/analytics/campaigns?days=${days}&limit=${CAMPAIGN_PAGE}&offset=${campaignPageNow * CAMPAIGN_PAGE}`, { signal }),
+    ['analytics-campaigns', days, campaignPageNow]
+  );
 
-  const results = [overview, searches, destinations, packages, funnel, bookings];
+  const results = [overview, searches, destinations, packages, funnel, bookings, campaigns];
 
   // If any request discovers the session is truly gone, fall back to login.
   const authLost = results.some((result) => result.error instanceof AdminAuthError);
@@ -504,6 +514,7 @@ function Dashboard({ username, onAuthLost, onPasswordChangeRequired }) {
     overview: true,
     leaderboard: true,
     enquiries: true,
+    campaigns: true,
     // Collapsed by default: useful when something looks wrong, noise otherwise.
     security: false,
   });
@@ -716,6 +727,22 @@ function Dashboard({ username, onAuthLost, onPasswordChangeRequired }) {
         </section>
       </div>
 
+      {/* Campaigns & sources */}
+      <section>
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-50">Campaigns &amp; sources</h2>
+          <CollapseChevron open={openCards.campaigns} onClick={() => toggleCard('campaigns')} label="Campaigns and sources" />
+        </div>
+        {openCards.campaigns && (
+          <CampaignReport
+            report={campaigns}
+            page={campaignPageNow}
+            pageSize={CAMPAIGN_PAGE}
+            onPage={(page) => setCampaignPage({ days, page })}
+          />
+        )}
+      </section>
+
       {/* Funnel */}
       <FunnelBar
         title="Enquiry funnel"
@@ -781,8 +808,9 @@ function Dashboard({ username, onAuthLost, onPasswordChangeRequired }) {
 // ── Page shell: silent bootstrap → dashboard, or login gate ────────────────
 
 export default function AdminAnalyticsPage() {
-  // 'checking' | 'ready' | 'login' | 'mustChangePassword'
+  // 'checking' | 'ready' | 'login' | 'mustChangePassword' | 'unavailable'
   const [auth, setAuth] = useState('checking');
+  const [unavailableMessage, setUnavailableMessage] = useState('');
   const [sessionUser, setSessionUser] = useState(null);
 
   useEffect(() => {
@@ -794,7 +822,17 @@ export default function AdminAnalyticsPage() {
     // the session endpoint is consulted rather than assuming a token means
     // dashboard access. It is one of the two routes such an account can reach.
     (async () => {
-      const ok = await bootstrapSession();
+      let ok;
+      try {
+        ok = await bootstrapSession();
+      } catch (err) {
+        // ZT-07: the service could not answer, which is not a sign-out. The
+        // refresh cookie is intact, so offer a retry rather than the login form.
+        if (cancelled) return;
+        setUnavailableMessage(err instanceof AdminUnavailableError ? err.message : '');
+        setAuth('unavailable');
+        return;
+      }
       if (cancelled) return;
       if (!ok) {
         setAuth('login');
@@ -842,6 +880,16 @@ export default function AdminAnalyticsPage() {
             Restoring session…
           </span>
         </div>
+      </div>
+    );
+  } else if (auth === 'unavailable') {
+    content = (
+      <div className="mx-auto w-full max-w-md px-4 py-16">
+        <ErrorState
+          title="Can't reach the admin service"
+          description={`${unavailableMessage || 'Please try again in a moment.'} You have not been signed out.`}
+          onRetry={() => setAuth('checking')}
+        />
       </div>
     );
   } else if (auth === 'login') {

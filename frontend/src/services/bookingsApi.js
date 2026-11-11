@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../config/api';
-import { ApiError, API_TIMEOUT_MS } from './apiClient';
+import { ApiError, API_TIMEOUT_MS, fallbackMessage } from './apiClient';
 import { attribution } from './analytics';
 
 /**
@@ -37,7 +37,7 @@ function toFieldErrors(fields) {
  * @param {object} options { signal, timeoutMs }
  * @returns {Promise<{ id: number|string, status: string }>}
  */
-export async function createBooking(payload, { signal, timeoutMs = API_TIMEOUT_MS } = {}) {
+export async function createBooking(payload, { signal, timeoutMs = API_TIMEOUT_MS, idempotencyKey } = {}) {
   const controller = new AbortController();
 
   // A caller abort (unmount) and our own timeout both surface as AbortError, but
@@ -57,7 +57,13 @@ export async function createBooking(payload, { signal, timeoutMs = API_TIMEOUT_M
     const response = await fetch(`${API_BASE_URL}/api/bookings`, {
       method: 'POST',
       signal: controller.signal,
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        // Retries of one submission share this key, so the server stores the
+        // enquiry once (backend/lib/idempotency.js).
+        ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
+      },
       // The anonymous visitor/session ids ride along on the enquiry itself so
       // the admin can later see the journey that preceded the lead. They are
       // attribution metadata, not form fields: the server drops a malformed id
@@ -78,7 +84,7 @@ export async function createBooking(payload, { signal, timeoutMs = API_TIMEOUT_M
       throw error;
     }
     if (!response.ok) {
-      throw new ApiError(body?.error || `Request failed (${response.status})`, { status: response.status });
+      throw new ApiError(body?.error || fallbackMessage(response.status), { status: response.status });
     }
     if (!body?.success) {
       throw new ApiError(body?.error || 'Unexpected response from the server.', { status: response.status });

@@ -16,6 +16,8 @@
  */
 
 /** The events this pass records. Kept as a closed set so typos are visible. */
+const { log, errorFields } = require('./logger');
+
 const AUDIT_EVENTS = {
   LOGIN_SUCCESS: 'LOGIN_SUCCESS',
   LOGIN_FAILURE: 'LOGIN_FAILURE',
@@ -159,7 +161,7 @@ async function recordAuditEvent(pool, { adminId = null, eventType, success = tru
     );
   } catch (err) {
     // Never rethrow: auditing is observability, not a precondition for auth.
-    console.error('Audit log write failed:', err.message);
+    log.error('audit_write_failed', errorFields(err));
   }
 }
 

@@ -2,7 +2,7 @@ import { useLocation } from 'react-router-dom';
 
 import { whatsappLink } from '../../config/site';
 import { titleCase } from '../../utils/format';
-import { track } from '../../services/analytics';
+import { trackWhatsAppClick } from '../../services/marketing';
 
 /**
  * The persistent WhatsApp shortcut — one global instance, mounted once in
@@ -109,7 +109,7 @@ export default function FloatingWhatsApp() {
         onClick={() =>
           // Fire-and-forget; track() sends with keepalive so the event
           // survives the WhatsApp tab opening. Never blocks the navigation.
-          track('whatsapp_click', { meta: { context: contextFor(pathname) } })
+          trackWhatsAppClick('floating_button', { context: contextFor(pathname) })
         }
         className="pointer-events-auto flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#25D366] shadow-[0_6px_20px_-4px_rgba(37,211,102,0.5)] transition-[translate,scale,box-shadow,background-color] duration-200 animate-fade-slide-up hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-[#1fbf5b] active:scale-[0.98] motion-reduce:animate-none motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/20 dark:focus-visible:ring-zinc-100/20 dark:shadow-[0_6px_22px_-4px_rgba(37,211,102,0.35)] sm:h-14 sm:w-14"
       >

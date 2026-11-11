@@ -36,7 +36,7 @@ export default function TrendingTrips({ packages = [], loading, error, onRetry }
           isEmpty={!lead}
           empty={{ title: 'Nothing trending right now.', action: { label: 'Browse all trips', to: '/packages' } }}
           skeleton={
-            <div className="grid gap-5 lg:grid-cols-[1.35fr_1fr]" role="status" aria-label="Loading trips">
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.35fr_1fr]" role="status" aria-label="Loading trips">
               <Skeleton className="h-72 rounded-2xl lg:h-[26rem]" />
               <div className="space-y-3">
                 {Array.from({ length: 4 }, (_, i) => (
@@ -52,7 +52,7 @@ export default function TrendingTrips({ packages = [], loading, error, onRetry }
               render it. Dereferencing `lead` here while packages are still
               loading threw and blanked the whole homepage. */}
           {lead && (
-          <div className="grid gap-5 lg:grid-cols-[1.35fr_1fr]">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.35fr_1fr]">
             {/* Lead trip */}
             {/* This section is bg-zinc-950 in BOTH themes, so the focus ring
                 keeps the light-on-dark shade unconditionally — the neutral
@@ -62,6 +62,7 @@ export default function TrendingTrips({ packages = [], loading, error, onRetry }
                 src={lead.heroImage}
                 alt={lead.title}
                 ratio="aspect-[4/3] lg:aspect-[16/11]"
+                sizes="(min-width: 1280px) 720px, (min-width: 1024px) 57vw, 100vw"
                 imgClassName="transition-transform duration-[600ms] ease-out group-hover:scale-[1.03]"
               >
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
@@ -118,6 +119,7 @@ export default function TrendingTrips({ packages = [], loading, error, onRetry }
                       alt=""
                       ratio="aspect-square"
                       className="w-16 shrink-0 rounded-lg sm:w-20"
+                      sizes="80px"
                       imgClassName="transition-transform duration-500 group-hover:scale-105"
                     />
 

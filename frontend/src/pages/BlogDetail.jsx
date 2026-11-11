@@ -1,5 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { getGuideBySlug, guides } from '../data';
+import ResponsiveImage from '../components/ui/ResponsiveImage';
+import { useSeo } from '../seo/useSeo';
+import { guideMeta, notFoundMeta } from '../seo/meta';
 
 /**
  * Render `**bold**` as <strong>, and nothing else, as HTML.
@@ -21,6 +24,7 @@ const BlogDetail = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const blog = getGuideBySlug(slug);
+  useSeo(blog ? guideMeta(blog) : notFoundMeta(`/blog/${slug}`, 'Guide not found'));
 
   if (!blog) {
     return (
@@ -44,7 +48,7 @@ const BlogDetail = () => {
     <article className="min-h-screen bg-gray-50 dark:bg-zinc-950">
       {/* Hero */}
       <div className="relative h-[55vh] overflow-hidden">
-        <img src={blog.image} alt={blog.title} className="w-full h-full object-cover" />
+        <ResponsiveImage src={blog.image} alt={blog.title} priority sizes="100vw" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
         <button
           onClick={() => navigate(-1)}
@@ -145,7 +149,7 @@ const BlogDetail = () => {
                 >
                   {/* "Related posts", at the very bottom of the article. The hero
                       above stays eager as this page's LCP element. */}
-                  <img src={post.image} alt={post.title} loading="lazy" decoding="async" className="h-40 w-full object-cover group-hover:scale-105 transition duration-500" />
+                  <ResponsiveImage src={post.image} alt={post.title} sizes="(min-width: 768px) 280px, 100vw" className="h-40 w-full object-cover group-hover:scale-105 transition duration-500" />
                   <div className="p-5">
                     <span className="text-[10px] font-bold text-violet-500 dark:text-violet-400 uppercase tracking-wider">{post.category}</span>
                     <h3 className="text-sm font-bold text-gray-900 dark:text-zinc-50 mt-1 line-clamp-2 group-hover:text-violet-600 transition">{post.title}</h3>

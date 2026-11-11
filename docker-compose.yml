@@ -95,10 +95,15 @@ services:
       # Set to production only once you terminate TLS in front of the stack.
       NODE_ENV: ${NODE_ENV:-development}
 
-      # The only route in is nginx, so without this every visitor arrives as the
-      # nginx container's IP and the analytics rate limiter (120 events/min per
-      # IP) throttles the whole site as if it were one caller. 1 = trust one hop.
-      TRUST_PROXY: 1
+      # Number of proxy hops in front of the API whose X-Forwarded-For entries
+      # are trusted. Without it every visitor arrives as the nginx container's
+      # IP and the rate limiters treat the whole site as one caller; set too
+      # HIGH, a visitor could pick their own address by sending the header.
+      #   1  this stack alone: browser → bundled nginx → backend (default)
+      #   2  a TLS proxy in front (Caddy, host nginx, a load balancer) → nginx
+      #      → backend; docker-compose.prod.yml defaults to this
+      # See DEPLOYMENT.md, "Client IP and rate limits".
+      TRUST_PROXY: ${TRUST_PROXY:-1}
     depends_on:
       db:
         condition: service_healthy
@@ -110,12 +115,19 @@ services:
   frontend:
     build:
       context: ./frontend
+      # The prerender step reads the approved catalogue artifact, which lives
+      # in the backend tree (frontend/Dockerfile, COPY --from=catalogue).
+      additional_contexts:
+        catalogue: ./backend/db/catalogue
       args:
         # Empty → same-origin /api/* calls, proxied by nginx. Baked in at BUILD
         # time by Vite, so changing it requires `docker compose build frontend`.
         # Never put a secret in a VITE_* variable: it ends up in the browser
         # bundle, readable by anyone who loads the page.
         VITE_API_URL: ${VITE_API_URL-}
+        # Canonical origin and indexing for the prerendered pages (docs/SEO.md).
+        VITE_SITE_URL: ${VITE_SITE_URL-}
+        SITE_NOINDEX: ${SITE_NOINDEX-}
     environment:
       BACKEND_URL: http://backend:5001
     ports:

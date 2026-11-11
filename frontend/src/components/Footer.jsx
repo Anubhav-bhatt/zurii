@@ -2,6 +2,10 @@ import { Link } from 'react-router-dom';
 
 import Container from './ui/Container';
 import { SITE, whatsappLink } from './../config/site';
+import { META_PIXEL_ID } from '../config/marketing';
+import { openConsentPreferences } from '../services/consent';
+import { trackWhatsAppClick } from '../services/marketing';
+import BrandLogo from './ui/BrandLogo';
 
 /**
  * Site footer.
@@ -72,7 +76,7 @@ export default function Footer() {
               className="inline-block rounded focus-visible:ring-2 focus-visible:ring-zinc-100/20"
             >
               {/* Always below the fold — the footer is the last thing on every page. */}
-              <img src="/zurii-logo.png" alt="Zurii" loading="lazy" decoding="async" className="h-9 w-auto rounded-md" />
+              <BrandLogo className="h-9 w-auto rounded-md" />
             </Link>
 
             <p className="mt-4 max-w-xs text-sm leading-relaxed">
@@ -172,11 +176,24 @@ export default function Footer() {
         <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-zinc-800/80 pt-6 sm:flex-row">
           <p className="text-xs text-zinc-500">
             © {new Date().getFullYear()} {SITE.legalName}. All rights reserved.
+            {META_PIXEL_ID && (
+              <>
+                {' · '}
+                <button
+                  type="button"
+                  onClick={openConsentPreferences}
+                  className="rounded underline-offset-2 transition-colors hover:text-zinc-300 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500"
+                >
+                  Cookie preferences
+                </button>
+              </>
+            )}
           </p>
           <a
             href={whatsappLink()}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackWhatsAppClick('footer')}
             className="rounded text-xs font-semibold text-emerald-400 transition-colors hover:text-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
           >
             Chat with a travel expert on WhatsApp →

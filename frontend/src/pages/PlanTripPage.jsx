@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 import Container from '../components/ui/Container';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
@@ -7,6 +7,8 @@ import Button from '../components/ui/Button';
 import EnquiryForm from '../components/travel/EnquiryForm';
 import { SITE, whatsappLink } from '../config/site';
 import { track } from '../services/analytics';
+import { trackWhatsAppClick } from '../services/marketing';
+import { planFromSearchParams, readTripPlan } from '../services/tripPlan';
 
 /**
  * "Plan My Trip" — a travel enquiry that does not start from a package.
@@ -22,6 +24,12 @@ import { track } from '../services/analytics';
  * form in the codebase rather than one per entry point.
  */
 export default function PlanTripPage() {
+  // ZT-38: a destination page links here as /plan-my-trip?destination=kerala,
+  // and the home search's month/travellers/budget come along the same way. The
+  // URL wins (it survives a refresh and can be shared); this tab's saved plan
+  // fills anything the URL does not say.
+  const [searchParams] = useSearchParams();
+  const plan = { ...readTripPlan(), ...planFromSearchParams(searchParams) };
   // The modal fires enquiry_form_opened when it opens; this page IS the open
   // form, so the equivalent moment is the page render. Without it, the
   // funnel's "started" stage could exceed "opened". `track` is not setState.
@@ -44,7 +52,7 @@ export default function PlanTripPage() {
         </div>
 
         <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-14">
-          <EnquiryForm tripContext />
+          <EnquiryForm key={searchParams.toString()} tripContext plan={plan} />
 
           <aside className="lg:pt-1">
             <div className="rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-900/60 p-6">
@@ -71,6 +79,7 @@ export default function PlanTripPage() {
                 href={whatsappLink()}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackWhatsAppClick('plan_trip_sidebar')}
                 variant="whatsapp"
                 size="md"
                 className="mt-5 w-full"

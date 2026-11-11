@@ -5,7 +5,7 @@
  *                                browser client, fire-and-forget)
  *
  * Conventions follow routes/bookings.js and server.js: `{ success, data }` /
- * `{ success: false, error }`, console.error for the operator, a generic
+ * `{ success: false, error }`, a structured log line for the operator, a generic
  * sentence for the client, and every value reaching SQL is a bound parameter.
  * A database error message can name tables and columns, so it never crosses
  * the wire.
@@ -22,7 +22,21 @@
  * send 120 requests.
  */
 const express = require('express');
+const { log, errorFields } = require('../lib/logger');
 const { validateEvent } = require('../lib/validateEvent');
+// Same client key as every other limiter: the trusted-proxy-aware req.ip,
+// with IPv6 reduced to its prefix so one client cannot rotate addresses.
+const { clientKey } = require('../middleware/security');
+const { createWorkGate, WorkGateBusyError } = require('../lib/workGate');
+
+/**
+ * Analytics shares the connection pool with the enquiry forms, and leads come
+ * first. At most 3 event inserts run at once (50 more may wait); beyond that an
+ * event is dropped with a quick 503 instead of queueing for a connection — so
+ * a burst of page views can never occupy the pool a lead needs. Events are
+ * fire-and-forget on the client, so nothing visible changes.
+ */
+const ANALYTICS_GATE = Object.freeze({ concurrency: 3, maxQueue: 50 });
 
 const DEFAULT_LIMIT = 120; // events per IP per window
 const DEFAULT_WINDOW_MS = 60_000; // one minute
@@ -30,6 +44,7 @@ const SWEEP_THRESHOLD = 5_000; // prune expired buckets once the map grows past 
 const HARD_CAP = 50_000; // absolute bucket ceiling — new IPs are refused beyond this
 
 module.exports = function createAnalyticsRouter(pool, options = {}) {
+  const gate = createWorkGate(options.gate ?? ANALYTICS_GATE);
   const limit = Number.isInteger(options.rateLimit) && options.rateLimit > 0
     ? options.rateLimit
     : DEFAULT_LIMIT;
@@ -69,14 +84,22 @@ module.exports = function createAnalyticsRouter(pool, options = {}) {
     return bucket.count > limit;
   }
 
+  /** Seconds until the caller's window resets, for Retry-After. */
+  function retryAfterSeconds(key) {
+    const bucket = buckets.get(key);
+    return Math.max(1, Math.ceil(((bucket?.resetAt ?? Date.now() + windowMs) - Date.now()) / 1000));
+  }
+
   const router = express.Router();
 
   // ── POST /events (mounted at /api/analytics) ─────────────────────
   router.post('/events', async (req, res) => {
     // The IP is used ONLY as a transient rate-limit bucket key and is never
     // written to the database — IP-as-identity is a locked-out design here.
-    if (overLimit(req.ip || 'unknown')) {
-      return res.status(429).json({ success: false, error: 'Too many events. Please slow down.' });
+    const key = clientKey(req);
+    if (overLimit(key)) {
+      res.set('Retry-After', String(retryAfterSeconds(key)));
+      return res.status(429).json({ success: false, error: 'Too many events. Please slow down.', code: 'RATE_LIMITED' });
     }
 
     const { valid, error, value } = validateEvent(req.body);
@@ -85,7 +108,7 @@ module.exports = function createAnalyticsRouter(pool, options = {}) {
     }
 
     try {
-      await pool.query(
+      await gate.run(() => pool.query(
         `INSERT INTO analytics_events
            (visitor_id, session_id, event_type, entity_type, entity_id,
             entity_slug, page_path, referrer, utm, metadata)
@@ -102,11 +125,14 @@ module.exports = function createAnalyticsRouter(pool, options = {}) {
           value.utm === null ? null : JSON.stringify(value.utm),
           JSON.stringify(value.meta),
         ]
-      );
+      ));
 
       res.status(202).json({ success: true });
     } catch (err) {
-      console.error('Analytics Insert Error:', err);
+      if (err instanceof WorkGateBusyError) {
+        return res.status(503).json({ success: false, error: 'Busy — event not recorded.', code: 'ANALYTICS_BUSY' });
+      }
+      log.error('handler_error', { reqId: req.id, context: 'analytics_insert', ...errorFields(err) });
       res.status(500).json({ success: false, error: 'Failed to record the event.' });
     }
   });

@@ -14,6 +14,7 @@
  * Nothing is deleted, and `contacts` / `admins` are never referenced.
  */
 import poolModule from '../db/pool.js';
+import safetyModule from '../db/safety.js';
 import { extractStaticData } from './extractStaticData.mjs';
 
 const { getPool } = poolModule;
@@ -154,6 +155,15 @@ export async function migrateData(pool) {
 
 // node scripts/migrateTravelData.mjs
 if (import.meta.url === `file://${process.argv[1]}`) {
+  // Overwrites catalogue rows: refuses unless DATABASE_URL is a verified local zurii_dev/zurii_test
+  // database, or a remote database named explicitly in ZURII_CONFIRM_REMOTE_DATABASE.
+  // Superseded for new environments by `node scripts/db.mjs seed-catalogue`, which never overwrites edits.
+  try {
+    await safetyModule.guardManualDataScript('scripts/migrateTravelData.mjs');
+  } catch (err) {
+    console.error(`✗ ${err.message}`);
+    process.exit(1);
+  }
   const pool = getPool();
   try {
     const { counts, report } = await migrateData(pool);

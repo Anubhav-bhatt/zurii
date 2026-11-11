@@ -39,11 +39,3 @@ export async function getDestinationBySlug(slug, options = {}) {
   const { data } = await apiGet(`/api/destinations/${encodeURIComponent(slug)}`, options);
   return adaptDestination(data);
 }
-
-export function getDomesticDestinations(options = {}) {
-  return getDestinations({ kind: 'domestic' }, options);
-}
-
-export function getInternationalDestinations(options = {}) {
-  return getDestinations({ kind: 'international' }, options);
-}

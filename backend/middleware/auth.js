@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { log, errorFields } = require('../lib/logger');
 
 const { getPool } = require('../db/pool');
 const { AUDIT_EVENTS, FAILURE_REASONS, recordAuditEvent } = require('../lib/adminAudit');
@@ -189,9 +190,17 @@ function createRequireAuth(pool, options = {}) {
       };
       return next();
     } catch (err) {
-      // A database outage must not be mistaken for a valid session: fail closed.
-      console.error('Auth lookup failed:', err.message);
-      return res.status(401).json({ success: false, error: GENERIC_REJECTION });
+      // A database outage must not be mistaken for a valid session, so access
+      // is still refused (fail closed) — but with 503, not 401 (ZT-07). A 401
+      // tells the client its credentials are dead, and it would discard a
+      // session that is perfectly valid once PostgreSQL answers again.
+      log.error('handler_error', { reqId: req.id, context: 'auth_lookup', ...errorFields(err) });
+      res.set('Retry-After', '5');
+      return res.status(503).json({
+        success: false,
+        error: 'Service temporarily unavailable. Please try again shortly.',
+        code: 'SERVICE_UNAVAILABLE',
+      });
     }
   };
 }

@@ -11,7 +11,11 @@ import { ErrorState, EmptyState } from './ui/States';
 import { useAsyncData } from '../hooks/useAsyncData';
 import { getDestinationBySlug } from '../services/destinationsApi';
 import { track } from '../services/analytics';
+import { trackViewContent, trackWhatsAppClick } from '../services/marketing';
 import { whatsappLink } from '../config/site';
+import ResponsiveImage from './ui/ResponsiveImage';
+import { useSeo } from '../seo/useSeo';
+import { destinationMeta, notFoundMeta } from '../seo/meta';
 
 /**
  * Destination page, read from `GET /api/destinations/:slug` — which returns the
@@ -33,6 +37,13 @@ export default function DestinationPage() {
     ['destination', slug]
   );
 
+  // Search and link-preview metadata (ZT-17); noindex only on a real 404.
+  useSeo(
+    destination
+      ? destinationMeta({ slug: destination.slug, name: destination.name, country: destination.country, summary: destination.highlight, description: destination.about, image: destination.image })
+      : error?.status === 404 ? notFoundMeta(`/destination/${slug}`, 'Destination not found') : null
+  );
+
   // Recorded once per destination that actually loaded — same pattern as the
   // trip page: `destination` stays null on a 404, so mistyped URLs are never
   // counted, and keying on the loaded slug makes the effect the dedup.
@@ -42,6 +53,7 @@ export default function DestinationPage() {
   useEffect(() => {
     if (loadedSlug) {
       track('destination_view', { entityType: 'destination', entityId: loadedId, entitySlug: loadedSlug });
+      trackViewContent('destination', loadedSlug);
     }
   }, [loadedSlug, loadedId]);
 
@@ -131,10 +143,12 @@ export default function DestinationPage() {
       {/* Hero */}
       <header className="relative isolate flex min-h-[42vh] items-end overflow-hidden bg-zinc-900 pb-8 pt-28 sm:min-h-[50vh] sm:pb-12">
         {destination.thumbnail && (
-          <img
+          <ResponsiveImage
             src={destination.thumbnail}
             alt=""
             aria-hidden="true"
+            sizes="100vw"
+            priority
             className="absolute inset-0 -z-10 h-full w-full object-cover"
           />
         )}
@@ -214,7 +228,7 @@ export default function DestinationPage() {
           <EmptyState
             title={`No ${destination.name} trips are listed right now.`}
             description="Tell us what you have in mind and we'll put an itinerary together."
-            action={{ label: 'Plan a custom trip', to: '/plan-my-trip' }}
+            action={{ label: 'Plan a custom trip', to: `/plan-my-trip?destination=${encodeURIComponent(destination.slug)}` }}
           />
         ) : (
           <ul className={GRID}>
@@ -237,13 +251,15 @@ export default function DestinationPage() {
             Different dates, a longer stay, or a specific pace — we'll build the itinerary around you.
           </p>
           <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Button to="/plan-my-trip" variant="accent" size="md" className="w-full sm:w-auto">
+            {/* ZT-38: the destination goes with the visitor to Plan My Trip. */}
+            <Button to={`/plan-my-trip?destination=${encodeURIComponent(destination.slug)}`} variant="accent" size="md" className="w-full sm:w-auto">
               Plan My Trip
             </Button>
             <Button
-              href={whatsappLink(`${destination.name} trip`)}
+              href={whatsappLink(destination.name, 'destination')}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackWhatsAppClick('destination_page', { context: 'destination' })}
               variant="whatsapp"
               size="md"
               className="w-full sm:w-auto"

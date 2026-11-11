@@ -10,6 +10,12 @@ services:
   backend:
     environment:
       NODE_ENV: production
+      # Two trusted hops: the TLS proxy in front, then the bundled nginx. With
+      # 1, every visitor would share the TLS proxy's address in the rate
+      # limiters. Only correct when that proxy appends or replaces
+      # X-Forwarded-For (Caddy, nginx with $proxy_add_x_forwarded_for, and AWS
+      # ALBs do) — see DEPLOYMENT.md, "Client IP and rate limits".
+      TRUST_PROXY: ${TRUST_PROXY:-2}
     # Point at a managed Postgres (Aiven/Neon/Supabase/RDS) by setting
     # DATABASE_URL in .env; it overrides the value composed from POSTGRES_*.
     # Then start without the bundled db:

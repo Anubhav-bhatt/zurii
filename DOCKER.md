@@ -5,8 +5,8 @@ Docker 29.6 / Compose v5.3.
 
 | Service    | Image           | Base                | Size   | Exposed |
 | ---------- | --------------- | ------------------- | ------ | ------- |
-| `frontend` | `zurii-frontend`| `nginx:1.27-alpine` | 78 MB  | `80` → host |
-| `backend`  | `zurii-backend` | `node:20-alpine`    | 204 MB | internal only |
+| `frontend` | `zurii-frontend`| `nginx:1.27-alpine` | 290 MB (includes the local trip images) | `80` → host |
+| `backend`  | `zurii-backend` | `node:24.19-alpine` | 254 MB | internal only |
 | `db`       | `zurii-db`      | `postgres:16-alpine`| 411 MB | internal only |
 
 ## Architecture
@@ -54,9 +54,23 @@ openssl rand -hex 48
 #    Leave ADMIN_SEED EMPTY. Create the first admin once the stack is up (step 4
 #    below), which prompts without echo instead of putting the password in a file.
 
-# 3. Build and start
+# 3. Build and start. On a NEW database the backend then waits (it exits,
+#    naming migrations 0004/0005) until the versioned migrations are applied.
 docker compose up -d --build
+
+# 3b. New database only: adopt the baseline the entrypoint just built, apply
+#     0002–0005, import the catalogue (otherwise the site has 0 trips), verify,
+#     and start everything. Details: DEPLOYMENT.md → Quick start.
+docker compose run --rm -e ZURII_PRODUCTION_DB_APPROVED=yes backend \
+  node scripts/db.mjs migrate --target production --confirm-database zurii --adopt-baseline
+docker compose run --rm -e ZURII_PRODUCTION_DB_APPROVED=yes backend \
+  node scripts/db.mjs seed-catalogue --target production --confirm-database zurii
+docker compose run --rm -e ZURII_PRODUCTION_DB_APPROVED=yes backend \
+  node scripts/db.mjs verify --target production --confirm-database zurii
+docker compose up -d --wait
 ```
+
+(`zurii` is the default `POSTGRES_DB`; use yours if you changed it.)
 
 ```bash
 # 4. Create the first admin. Prompts for the password with echo disabled, so it
@@ -77,11 +91,9 @@ Verify it came up:
 
 ```bash
 docker compose ps                      # all services running/healthy
-docker compose logs -f backend         # expect "Server is running on port 5001"
-curl -i -X POST localhost:8080/api/contact \
-  -H 'Content-Type: application/json' \
-  -d '{"name":"T","email":"t@t.com","phone":"1","interest":"Goa","message":"hi","callback":"am"}'
-# → 201 Created
+docker compose logs -f backend         # expect a JSON line with "event":"startup"
+curl -s localhost:8080/api/ready       # → {"status":"ready"}
+curl -s 'localhost:8080/api/packages?limit=1' | grep -o '"total":[0-9]*'   # → "total":68
 ```
 
 ### Everyday commands

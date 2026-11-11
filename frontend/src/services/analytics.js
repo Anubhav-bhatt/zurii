@@ -1,3 +1,4 @@
+import { leadAttribution } from './leadAttribution';
 import { API_BASE_URL } from '../config/api';
 
 /**
@@ -226,13 +227,14 @@ export function ensureSession() {
 }
 
 /**
- * `{ visitorId, sessionId }` for lead form payloads, so the admin can later
- * see the journey that preceded an enquiry or contact. Never throws — a lead
- * submission must not fail because analytics ids were unavailable.
+ * `{ visitorId, sessionId, attribution }` for lead form payloads, so the admin
+ * can later see the journey that preceded an enquiry or contact and where it
+ * came from (services/leadAttribution.js). Never throws — a lead submission
+ * must not fail because analytics ids or attribution were unavailable.
  */
 export function attribution() {
   try {
-    return { visitorId: getVisitorId(), sessionId: getSessionId() };
+    return { visitorId: getVisitorId(), sessionId: getSessionId(), ...leadAttribution() };
   } catch {
     return {};
   }

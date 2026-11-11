@@ -3601,7 +3601,7 @@ export const testimonials = [
     city: "Delhi",
     rating: 5,
     text: "Zurii made our Bali honeymoon absolutely magical! From the sunrise at Mount Batur to the Uluwatu sunset — every moment was curated to perfection. The team even arranged a surprise dinner on the beach. We'll be coming back for our anniversary!",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yash",
+    image: "/assets/travel/v1/avatar-yash-jain-f8fade58/avatar.svg",
     trip: "Bali, Indonesia"
   },
   {
@@ -3610,7 +3610,7 @@ export const testimonials = [
     city: "Gurgaon",
     rating: 5,
     text: "The Spiti Valley expedition was a life-changing experience. The landscapes were surreal — Chandratal Lake under a blanket of stars is something I'll never forget. Made lifelong friends on this trip. Zurii's planning was flawless.",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Anubhav",
+    image: "/assets/travel/v1/avatar-anubhav-bhatt-24939f6c/avatar.svg",
     trip: "Spiti Valley"
   },
   {
@@ -3619,7 +3619,7 @@ export const testimonials = [
     city: "Mumbai",
     rating: 5,
     text: "Took my parents on the Kashmir Family Grandeur tour. Everything from the shikara ride on Dal Lake to the Gondola in Gulmarg was perfect. Mom said it was the best trip of her life! 10/10 would recommend Zurii to every family.",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sanya",
+    image: "/assets/travel/v1/avatar-sanya-arora-54c4c07a/avatar.svg",
     trip: "Kashmir"
   },
   {
@@ -3628,7 +3628,7 @@ export const testimonials = [
     city: "Bangalore",
     rating: 5,
     text: "The Kerala backwaters houseboat experience was beyond anything I imagined. Waking up to the sound of water, fresh Kerala meals onboard, and the tea plantation visit in Munnar — it was the perfect digital detox our family needed.",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rohit",
+    image: "/assets/travel/v1/avatar-rohit-sharma-5befc736/avatar.svg",
     trip: "Kerala Backwaters"
   },
   {
@@ -3637,7 +3637,7 @@ export const testimonials = [
     city: "Pune",
     rating: 5,
     text: "Singapore with two kids under 10 sounded daunting, but Zurii made it effortless. Universal Studios, the Night Safari, and Gardens by the Bay — the kids are STILL talking about it. The family-friendly itinerary was spot-on.",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Priya",
+    image: "/assets/travel/v1/avatar-priya-kapoor-cfccd2cc/avatar.svg",
     trip: "Singapore Family Fun"
   },
   {
@@ -3646,7 +3646,7 @@ export const testimonials = [
     city: "Chandigarh",
     rating: 5,
     text: "Ladakh was on my bucket list for years. The Pangong Lake sunrise, Khardung La pass, and the serenity of Nubra Valley — Zurii handled everything including permits and oxygen. A truly once-in-a-lifetime adventure.",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Arjun",
+    image: "/assets/travel/v1/avatar-arjun-mehta-16e67564/avatar.svg",
     trip: "Ladakh Explorer"
   }
 ];
@@ -3657,7 +3657,7 @@ export const guides = [
     id: 1,
     title: 'The Ultimate Rishikesh & Mussoorie Travel Guide',
     subtitle: 'From the holy Ganges to the Queen of Hills — everything you need to plan a perfect family getaway to Uttarakhand, covering Ganga Aarti, Kempty Falls, Mall Road and more.',
-    image: 'https://images.unsplash.com/photo-1592639296346-560c37a0f711?w=800',
+    image: '/assets/travel/v1/trip-rishikesh-mussoorie-family-g1-b0742667/1280.jpg',
     date: 'Apr 15, 2026',
     time: '8 min read',
     slug: 'rishikesh-mussoorie-guide',
@@ -3671,7 +3671,7 @@ export const guides = [
     id: 2,
     title: 'Shimla & Manali: Your Complete Family Holiday Planner',
     subtitle: 'Snow-capped peaks, colonial architecture, and adventure sports — a comprehensive guide to planning the perfect Himachal Pradesh family trip.',
-    image: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800',
+    image: '/assets/travel/v1/dest-sikkim-5025946c/1280.jpg',
     date: 'Apr 10, 2026',
     time: '10 min read',
     slug: 'shimla-manali-guide',
@@ -3684,7 +3684,7 @@ export const guides = [
     id: 3,
     title: 'Udaipur & Mount Abu: A Royal Rajasthan Family Guide',
     subtitle: 'Explore the Venice of the East and Rajasthan\'s only hill station — from City Palace to Dilwara Temples, here is everything you need to know.',
-    image: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800',
+    image: '/assets/travel/v1/trip-udaipur-lakes-palaces-735cb94a/1280.jpg',
     date: 'Apr 05, 2026',
     time: '7 min read',
     slug: 'udaipur-mountabu-guide',
@@ -3697,7 +3697,7 @@ export const guides = [
     id: 4,
     title: 'Top 10 Tips for Traveling with Kids in India',
     subtitle: 'From packing essentials to choosing kid-friendly destinations — expert advice for stress-free family travel across India.',
-    image: 'https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?w=800',
+    image: '/assets/travel/v1/dest-kashmir-1fd81702/1280.jpg',
     date: 'Mar 28, 2026',
     time: '6 min read',
     slug: 'traveling-with-kids-india',
@@ -3710,7 +3710,7 @@ export const guides = [
     id: 5,
     title: 'Nainital: The Lake District of India',
     subtitle: 'A complete guide to Nainital\'s enchanting lakes, scenic viewpoints, and family-friendly attractions in the Kumaon hills.',
-    image: 'https://images.unsplash.com/photo-1571536802807-30451e3955d8?w=800',
+    image: '/assets/travel/v1/trip-varanasi-heritage-58742c66/1280.jpg',
     date: 'Mar 20, 2026',
     time: '5 min read',
     slug: 'nainital-lake-guide',
@@ -3723,7 +3723,7 @@ export const guides = [
     id: 6,
     title: 'How to Plan a Budget Hill Station Trip from Delhi',
     subtitle: 'Smart strategies to explore Mussoorie, Rishikesh, Nainital, and more without breaking the bank — perfect for young families.',
-    image: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800',
+    image: '/assets/travel/v1/trip-kasol-kheerganga-766946c4/1280.jpg',
     date: 'Mar 15, 2026',
     time: '6 min read',
     slug: 'budget-hill-station-trip',

@@ -1,12 +1,53 @@
 {
-  "rewrites": [
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "headers": [
     {
-      "source": "/api/:path*",
-      "destination": "https://zurii-alt4.onrender.com/api/:path*"
+      "source": "/((?!api/).*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://connect.facebook.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://zurii-alt4.onrender.com https://www.facebook.com https://connect.facebook.net; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+        },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(), payment=()" }
+      ]
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "source": "/((?!assets/|api/).*)",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "source": "/(admin|dashboard)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/admin/(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/spa-fallback.html",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }]
     }
+  ],
+  "redirects": [
+    { "source": "/international", "destination": "/packages?tag=international", "permanent": true },
+    { "source": "/best-sellers", "destination": "/packages?popular=true", "permanent": true },
+    { "source": "/all-domestic-destinations", "destination": "/packages?tag=domestic", "permanent": true },
+    { "source": "/explore/(international|domestic|adventure|beach|heritage)", "destination": "/packages?tag=$1", "permanent": true },
+    { "source": "/explore/european-tours", "destination": "/packages?tag=international&q=europe", "permanent": true },
+    { "source": "/explore/budget-tours", "destination": "/packages?maxPrice=25000&sort=price_asc", "permanent": true },
+    { "source": "/explore/:slug", "destination": "/packages", "permanent": true }
+  ],
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://zurii-alt4.onrender.com/api/:path*" },
+    { "source": "/(trip|destination|blog)/:slug", "destination": "/spa-fallback.html" },
+    { "source": "/(admin|dashboard)", "destination": "/spa-fallback.html" },
+    { "source": "/admin/:path*", "destination": "/spa-fallback.html" }
   ]
 }

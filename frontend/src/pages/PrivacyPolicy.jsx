@@ -1,3 +1,6 @@
+import { META_PIXEL_ID } from '../config/marketing';
+import { openConsentPreferences } from '../services/consent';
+
 const sections = [
   {
     icon: "📋",
@@ -74,6 +77,56 @@ const PrivacyPolicy = () => (
         </p>
       </div>
     </div>
+
+    {/* Cookies and ads measurement — Phase 3 draft: needs legal review before
+        it is deployed. Describes what the code does; promises nothing more. */}
+    <section
+      id="cookies"
+      className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-6 mb-5 flex gap-5"
+    >
+      <span className="text-3xl shrink-0">🍪</span>
+      <div className="space-y-2 text-sm text-gray-600 dark:text-zinc-300 leading-relaxed">
+        <h2 className="text-base font-bold text-gray-900 dark:text-zinc-50">Cookies and ads measurement</h2>
+        <p>
+          To run the site we keep a few items in your browser: your theme and wishlist, and a random visitor ID and
+          session ID that let us see how the site is used — which pages are viewed and which enquiry forms are used.
+          These stay with Zurii and are not shared with advertisers.
+        </p>
+        {/* Phase 6 (ZT-16) — same legal review as this section. */}
+        <p>
+          When you arrive from an ad, an email or another website, we note where you came from — the campaign tags in
+          the link, the referring site&apos;s name and the first page you opened — and attach it to an enquiry if you
+          send one, so we can tell which campaigns work. It stays in your browser for that visit; only if you allow
+          marketing cookies is it kept for up to 30 days, and withdrawing that permission deletes it. It is not shared
+          with advertisers.
+        </p>
+        <p>
+          Only if you allow it, we use the Meta Pixel to measure our Facebook and Instagram ads. Meta then receives the
+          pages you visit here, the trips and destinations you view, and the fact that a search, an enquiry or a
+          WhatsApp click happened, together with what your browser sends with any web request (such as your IP address
+          and browser details) and Meta&apos;s own cookies. We do not send Meta your name, phone number, email address,
+          messages or search terms. Meta handles this information under its own policies.
+        </p>
+        <p>
+          Declining changes nothing about browsing, enquiries or WhatsApp, and you can change your choice at any time
+          {META_PIXEL_ID ? (
+            <>
+              {' '}in{' '}
+              <button
+                type="button"
+                onClick={openConsentPreferences}
+                className="font-semibold text-violet-700 underline underline-offset-2 dark:text-violet-300"
+              >
+                Cookie preferences
+              </button>
+              .
+            </>
+          ) : (
+            '.'
+          )}
+        </p>
+      </div>
+    </section>
 
     {/* Security */}
     <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-6 mb-10 flex gap-5">

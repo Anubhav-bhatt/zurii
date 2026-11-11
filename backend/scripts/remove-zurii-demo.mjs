@@ -7,6 +7,7 @@
  * Never touches admins, contacts, or non-demo data.
  */
 import pkg from '../db/pool.js';
+import safetyModule from '../db/safety.js';
 const { getPool } = pkg;
 
 export async function removeDemoData(pool) {
@@ -45,6 +46,14 @@ export async function removeDemoData(pool) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
+  // Deletes data: refuses unless DATABASE_URL is a verified local zurii_dev/zurii_test
+  // database, or a remote database named explicitly in ZURII_CONFIRM_REMOTE_DATABASE.
+  try {
+    await safetyModule.guardManualDataScript('scripts/remove-zurii-demo.mjs');
+  } catch (err) {
+    console.error(`✗ ${err.message}`);
+    process.exit(1);
+  }
   const pool = getPool();
   try {
     console.log('── Removing Demo Seed Data ──');

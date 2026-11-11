@@ -7,7 +7,7 @@ import { DataBoundary } from '../components/ui/States';
 import { PackageCardSkeleton, SkeletonGrid } from '../components/ui/Skeleton';
 import { useAsyncData } from '../hooks/useAsyncData';
 import { useWishlist } from '../hooks/useWishlist';
-import { getPackageBySlug } from '../services/packagesApi';
+import { getPackagesBySlugs } from '../services/packagesApi';
 
 /**
  * Saved trips.
@@ -44,27 +44,11 @@ export default function WishlistPage() {
     async ({ signal }) => {
       if (slugs.length === 0) return { packages: [], missing: [] };
 
-      const results = await Promise.allSettled(slugs.map((slug) => getPackageBySlug(slug, { signal })));
-
-      const packages = [];
-      const missing = [];
-      let unreachable = null;
-
-      results.forEach((result, index) => {
-        if (result.status === 'fulfilled') {
-          if (result.value) packages.push(result.value);
-          return;
-        }
-        // Only a 404 means the trip is gone. A timeout or a 500 means we could
-        // not ask, which must never cost the visitor a saved trip.
-        if (result.reason?.status === 404) missing.push(slugs[index]);
-        else unreachable = result.reason;
-      });
-
-      // Nothing came back and the network was the reason: report it and offer a
-      // retry rather than showing an empty wishlist that is not empty. A partial
-      // failure keeps the trips that did load; the rest return on the next visit.
-      if (packages.length === 0 && unreachable) throw unreachable;
+      // One request for every saved trip (it used to be one full-detail request
+      // per slug). A failure throws — a timeout or a 500 means we could not ask,
+      // which must never cost the visitor a saved trip — and the page offers a
+      // retry. Only a successful answer that lacks a slug means the trip is gone.
+      const { packages, missing } = await getPackagesBySlugs(slugs, { signal });
 
       // Only prune when at least one trip resolved.
       //

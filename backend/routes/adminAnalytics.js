@@ -8,6 +8,7 @@
  *   GET /api/admin/analytics/destinations   per-destination engagement
  *   GET /api/admin/analytics/packages       most viewed/wishlisted/enquired
  *   GET /api/admin/analytics/funnel         package_view → … → enquiry counts
+ *   GET /api/admin/analytics/campaigns      leads by source, campaign, form and trip; daily trend
  *   GET /api/admin/bookings                 enquiry list (newest first)
  *   GET /api/admin/bookings/:id             one enquiry, full detail
  *   GET /api/admin/bookings/:id/journey     the anonymous journey behind a lead
@@ -23,6 +24,7 @@
  */
 const express = require('express');
 const { requireAuth } = require('../middleware/auth');
+const { sendServerError } = require('../lib/httpErrors');
 
 const DEFAULT_DAYS = 7;
 const MIN_DAYS = 1;
@@ -68,9 +70,6 @@ function clampDays(value) {
   if (!Number.isFinite(parsed)) return DEFAULT_DAYS;
   return Math.min(Math.max(parsed, MIN_DAYS), MAX_DAYS);
 }
-
-/** pg returns COUNT/AVG as strings; the dashboard needs real numbers. */
-const num = (value) => (value === null || value === undefined ? null : Number(value));
 
 /**
  * The list row for GET /bookings — no email, phone or message at list level.
@@ -207,13 +206,16 @@ module.exports = function createAdminAnalyticsRouter(pool) {
           [days]
         ),
         pool.query(
+          // Persisted leads only — soft-deleted ones (spam, duplicates) no longer
+          // count, as hard-deleted contacts never did. WhatsApp clicks are a
+          // separate, event-based figure and are never added to these.
           `SELECT COUNT(*)::int AS n FROM bookings
-            WHERE created_at >= NOW() - make_interval(days => $1)`,
+            WHERE created_at >= NOW() - make_interval(days => $1) AND deleted_at IS NULL`,
           [days]
         ),
         pool.query(
           `SELECT COUNT(*)::int AS n FROM contacts
-            WHERE created_at >= NOW() - make_interval(days => $1)`,
+            WHERE created_at >= NOW() - make_interval(days => $1) AND deleted_at IS NULL`,
           [days]
         ),
       ]);
@@ -237,8 +239,7 @@ module.exports = function createAdminAnalyticsRouter(pool) {
         },
       });
     } catch (err) {
-      console.error('Analytics Overview Error:', err);
-      res.status(500).json({ success: false, error: 'Failed to fetch the analytics overview' });
+      sendServerError(req, res, err, { context: 'analytics_overview', message: 'Failed to fetch the analytics overview' });
     }
   });
 
@@ -297,8 +298,7 @@ module.exports = function createAdminAnalyticsRouter(pool) {
         },
       });
     } catch (err) {
-      console.error('Analytics Searches Error:', err);
-      res.status(500).json({ success: false, error: 'Failed to fetch search analytics' });
+      sendServerError(req, res, err, { context: 'analytics_searches', message: 'Failed to fetch search analytics' });
     }
   });
 
@@ -327,6 +327,7 @@ module.exports = function createAdminAnalyticsRouter(pool) {
                 (SELECT COUNT(*)::int FROM bookings b
                    JOIN packages p ON p.id = b.package_id
                   WHERE p.destination_id = d.id
+                    AND b.deleted_at IS NULL
                     AND b.created_at >= NOW() - make_interval(days => $1)) AS enquiries
            FROM destinations d
           WHERE d.active = true
@@ -347,8 +348,7 @@ module.exports = function createAdminAnalyticsRouter(pool) {
         })),
       });
     } catch (err) {
-      console.error('Analytics Destinations Error:', err);
-      res.status(500).json({ success: false, error: 'Failed to fetch destination analytics' });
+      sendServerError(req, res, err, { context: 'analytics_destinations', message: 'Failed to fetch destination analytics' });
     }
   });
 
@@ -381,7 +381,7 @@ module.exports = function createAdminAnalyticsRouter(pool) {
           `SELECT p.slug, p.title, COUNT(*)::int AS count
              FROM bookings b
              JOIN packages p ON p.id = b.package_id
-            WHERE b.created_at >= NOW() - make_interval(days => $1)
+            WHERE b.created_at >= NOW() - make_interval(days => $1) AND b.deleted_at IS NULL
             GROUP BY p.slug, p.title
             ORDER BY count DESC, p.slug ASC
             LIMIT ${LIST_LIMIT}`,
@@ -402,8 +402,7 @@ module.exports = function createAdminAnalyticsRouter(pool) {
         },
       });
     } catch (err) {
-      console.error('Analytics Packages Error:', err);
-      res.status(500).json({ success: false, error: 'Failed to fetch package analytics' });
+      sendServerError(req, res, err, { context: 'analytics_packages', message: 'Failed to fetch package analytics' });
     }
   });
 
@@ -424,7 +423,7 @@ module.exports = function createAdminAnalyticsRouter(pool) {
         ),
         pool.query(
           `SELECT COUNT(*)::int AS n FROM bookings
-            WHERE created_at >= NOW() - make_interval(days => $1)`,
+            WHERE created_at >= NOW() - make_interval(days => $1) AND deleted_at IS NULL`,
           [days]
         ),
       ]);
@@ -441,8 +440,133 @@ module.exports = function createAdminAnalyticsRouter(pool) {
         ],
       });
     } catch (err) {
-      console.error('Analytics Funnel Error:', err);
-      res.status(500).json({ success: false, error: 'Failed to fetch funnel analytics' });
+      sendServerError(req, res, err, { context: 'analytics_funnel', message: 'Failed to fetch funnel analytics' });
+    }
+  });
+
+  // ── GET /analytics/campaigns ──────────────────────────────────────
+  // Campaign-to-lead reporting (ZT-16). Four different things, never added
+  // together and labelled apart in the dashboard:
+  //   sessions / events   anonymous analytics (page and interaction events)
+  //   whatsappClicks      taps on a WhatsApp button — an intention, not a lead
+  //   leads               enquiries and contact messages saved in the CRM
+  //                       (soft-deleted ones excluded)
+  //   confirmedLeads      leads staff have marked CONFIRMED — not a verified
+  //                       payment; sales and revenue are not tracked here
+  // Attribution exists only on leads saved after migration 0005; earlier
+  // leads are reported as "(not captured)", never guessed.
+  // ?days as everywhere else; campaigns are paginated with ?limit (≤50) & ?offset.
+  router.get('/analytics/campaigns', async (req, res) => {
+    try {
+      const days = clampDays(req.query.days);
+      const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 10, 1), 50);
+      const offset = Math.min(Math.max(Number.parseInt(req.query.offset, 10) || 0, 0), 10000);
+
+      const LEADS = `
+        WITH leads AS (
+          SELECT c.created_at, c.utm_source, c.utm_medium, c.utm_campaign, c.referrer_host, c.click_id_type,
+                 c.attribution_channel, c.submission_source,
+                 COALESCE(c.lead_status, CASE WHEN c.status = 'completed' THEN 'CLOSED' ELSE 'NEW' END) AS status,
+                 NULL::int AS package_id, NULL::int AS destination_id, 'contact'::text AS kind
+            FROM contacts c
+           WHERE c.deleted_at IS NULL AND c.created_at >= NOW() - make_interval(days => $1)
+          UNION ALL
+          SELECT b.created_at, b.utm_source, b.utm_medium, b.utm_campaign, b.referrer_host, b.click_id_type,
+                 b.attribution_channel, b.submission_source, b.status::text,
+                 b.package_id, b.destination_id, 'booking'::text
+            FROM bookings b
+           WHERE b.deleted_at IS NULL AND b.created_at >= NOW() - make_interval(days => $1)
+        )`;
+      // The source a person would name: the UTM source, else the ad platform a
+      // click id points to, else the referring site, else direct / not captured.
+      const SOURCE = `COALESCE(NULLIF(lower(utm_source), ''),
+                               CASE click_id_type WHEN 'gclid' THEN 'google' WHEN 'fbclid' THEN 'facebook' END,
+                               regexp_replace(referrer_host, '^(www|m|l|lm)\\.', ''),
+                               CASE WHEN attribution_channel = 'direct' THEN '(direct)' END,
+                               '(not captured)')`;
+      const CONFIRMED = `COUNT(*) FILTER (WHERE status = 'CONFIRMED')::int`;
+
+      const [totals, events, bySource, byChannel, byForm, byTrip, campaigns, trend] = await Promise.all([
+        pool.query(`${LEADS}
+          SELECT COUNT(*)::int AS leads, ${CONFIRMED} AS confirmed,
+                 COUNT(*) FILTER (WHERE attribution_channel IS NOT NULL)::int AS attributed
+            FROM leads`, [days]),
+        pool.query(
+          `SELECT COUNT(*)::int AS events, COUNT(DISTINCT session_id)::int AS sessions,
+                  COUNT(*) FILTER (WHERE event_type = 'whatsapp_click')::int AS whatsapp_clicks
+             FROM analytics_events WHERE created_at >= NOW() - make_interval(days => $1)`, [days]),
+        pool.query(`${LEADS}
+          SELECT ${SOURCE} AS source, COUNT(*)::int AS leads, ${CONFIRMED} AS confirmed
+            FROM leads GROUP BY 1 ORDER BY leads DESC, source LIMIT $2`, [days, LIST_LIMIT]),
+        pool.query(`${LEADS}
+          SELECT COALESCE(attribution_channel, 'not_captured') AS channel, COUNT(*)::int AS leads, ${CONFIRMED} AS confirmed
+            FROM leads GROUP BY 1 ORDER BY leads DESC, channel`, [days]),
+        pool.query(`${LEADS}
+          SELECT COALESCE(submission_source, 'not_captured') AS form, COUNT(*)::int AS leads, ${CONFIRMED} AS confirmed
+            FROM leads GROUP BY 1 ORDER BY leads DESC, form`, [days]),
+        pool.query(`${LEADS}
+          SELECT CASE WHEN l.package_id IS NOT NULL THEN 'package'
+                      WHEN l.destination_id IS NOT NULL THEN 'destination'
+                      WHEN l.kind = 'contact' THEN 'contact' ELSE 'custom' END AS kind,
+                 COALESCE(p.title, d.name) AS label, COALESCE(p.slug, d.slug) AS slug,
+                 COUNT(*)::int AS leads, COUNT(*) FILTER (WHERE l.status = 'CONFIRMED')::int AS confirmed
+            FROM leads l
+            LEFT JOIN packages p ON p.id = l.package_id
+            LEFT JOIN destinations d ON d.id = l.destination_id
+           GROUP BY 1, 2, 3 ORDER BY leads DESC, label NULLS LAST LIMIT $2`, [days, LIST_LIMIT]),
+        pool.query(`${LEADS}
+          SELECT lower(utm_campaign) AS campaign, lower(utm_source) AS source, lower(utm_medium) AS medium,
+                 COUNT(*)::int AS leads, ${CONFIRMED} AS confirmed,
+                 MIN(created_at) AS first_lead_at, MAX(created_at) AS last_lead_at,
+                 COUNT(*) OVER ()::int AS total
+            FROM leads WHERE utm_campaign IS NOT NULL
+           GROUP BY 1, 2, 3 ORDER BY leads DESC, campaign, source NULLS LAST, medium NULLS LAST
+           LIMIT $2 OFFSET $3`, [days, limit, offset]),
+        pool.query(`${LEADS},
+          span AS (SELECT generate_series((NOW() - make_interval(days => $1 - 1))::date, NOW()::date, interval '1 day')::date AS day),
+          ev AS (SELECT created_at::date AS day, COUNT(DISTINCT session_id)::int AS sessions,
+                        COUNT(*) FILTER (WHERE event_type = 'whatsapp_click')::int AS whatsapp_clicks
+                   FROM analytics_events WHERE created_at >= (NOW() - make_interval(days => $1 - 1))::date GROUP BY 1),
+          ld AS (SELECT created_at::date AS day, COUNT(*)::int AS leads, ${CONFIRMED} AS confirmed FROM leads GROUP BY 1)
+          SELECT to_char(span.day, 'YYYY-MM-DD') AS date, COALESCE(ev.sessions, 0) AS sessions,
+                 COALESCE(ev.whatsapp_clicks, 0) AS whatsapp_clicks, COALESCE(ld.leads, 0) AS leads,
+                 COALESCE(ld.confirmed, 0) AS confirmed
+            FROM span LEFT JOIN ev USING (day) LEFT JOIN ld USING (day) ORDER BY span.day`, [days]),
+      ]);
+
+      const e = events.rows[0];
+      const t = totals.rows[0];
+      res.status(200).json({
+        success: true,
+        data: {
+          days,
+          totals: {
+            sessions: e.sessions,
+            events: e.events,
+            whatsappClicks: e.whatsapp_clicks,
+            leads: t.leads,
+            attributedLeads: t.attributed,
+            confirmedLeads: t.confirmed,
+            salesTracked: false,
+          },
+          bySource: bySource.rows,
+          byChannel: byChannel.rows,
+          byForm: byForm.rows,
+          byTrip: byTrip.rows,
+          campaigns: {
+            rows: campaigns.rows.map(({ total, first_lead_at: firstLeadAt, last_lead_at: lastLeadAt, ...row }) => ({ ...row, firstLeadAt, lastLeadAt })),
+            total: campaigns.rows[0]?.total ?? (offset > 0
+              ? (await pool.query(`${LEADS} SELECT COUNT(*)::int AS n FROM (SELECT 1 FROM leads WHERE utm_campaign IS NOT NULL
+                   GROUP BY lower(utm_campaign), lower(utm_source), lower(utm_medium)) g`, [days])).rows[0].n
+              : 0),
+            limit,
+            offset,
+          },
+          trend: trend.rows,
+        },
+      });
+    } catch (err) {
+      sendServerError(req, res, err, { context: 'analytics_campaigns', message: 'Failed to fetch campaign analytics' });
     }
   });
 
@@ -456,7 +580,7 @@ module.exports = function createAdminAnalyticsRouter(pool) {
       let where = '';
       if (req.query.days !== undefined) {
         values.push(clampDays(req.query.days));
-        where = `WHERE b.created_at >= NOW() - make_interval(days => $1)`;
+        where = `AND b.created_at >= NOW() - make_interval(days => $1)`;
       }
 
       const { rows } = await pool.query(
@@ -466,7 +590,7 @@ module.exports = function createAdminAnalyticsRouter(pool) {
                 p.title AS package_title, p.slug AS package_slug
            FROM bookings b
            LEFT JOIN packages p ON p.id = b.package_id
-           ${where}
+          WHERE b.deleted_at IS NULL ${where}
           ORDER BY b.created_at DESC, b.id DESC
           LIMIT ${BOOKINGS_LIMIT}`,
         values
@@ -474,8 +598,7 @@ module.exports = function createAdminAnalyticsRouter(pool) {
 
       res.status(200).json({ success: true, data: rows.map(serializeBookingListRow) });
     } catch (err) {
-      console.error('Admin Bookings List Error:', err);
-      res.status(500).json({ success: false, error: 'Failed to fetch bookings' });
+      sendServerError(req, res, err, { context: 'admin_bookings_list', message: 'Failed to fetch bookings' });
     }
   });
 
@@ -530,8 +653,7 @@ module.exports = function createAdminAnalyticsRouter(pool) {
         },
       });
     } catch (err) {
-      console.error('Admin Booking Detail Error:', err);
-      res.status(500).json({ success: false, error: 'Failed to fetch the booking' });
+      sendServerError(req, res, err, { context: 'admin_booking_detail', message: 'Failed to fetch the booking' });
     }
   });
 
@@ -591,8 +713,7 @@ module.exports = function createAdminAnalyticsRouter(pool) {
         },
       });
     } catch (err) {
-      console.error('Admin Booking Journey Error:', err);
-      res.status(500).json({ success: false, error: 'Failed to fetch the journey' });
+      sendServerError(req, res, err, { context: 'admin_booking_journey', message: 'Failed to fetch the journey' });
     }
   });
 
@@ -637,8 +758,7 @@ module.exports = function createAdminAnalyticsRouter(pool) {
         meta: { limit, returned: rows.length },
       });
     } catch (err) {
-      console.error('Admin Security Audit Error:', err);
-      res.status(500).json({ success: false, error: 'Failed to fetch the security activity' });
+      sendServerError(req, res, err, { context: 'admin_security_audit', message: 'Failed to fetch the security activity' });
     }
   });
 

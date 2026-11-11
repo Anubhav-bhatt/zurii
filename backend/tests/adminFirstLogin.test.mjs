@@ -13,6 +13,8 @@
  * remain. Existing admin accounts are never touched, and no password or token
  * value is ever printed.
  */
+// First import: refuses to run unless started by `npm test` against the verified zurii_test database.
+import { assertTestDatabase } from './helpers/testDatabaseGuard.mjs';
 import { before, after, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
@@ -85,6 +87,8 @@ async function createAdmin(username, password, mustChange, active = true) {
 }
 
 before(async () => {
+  await assertTestDatabase(pool);
+
   // These fixtures are inserted BEFORE server.js boots, so its own call to
   // ensureBaseSchema has not run yet. Without this the INSERTs below would hit
   // a database missing the newest admins columns and fail with 42703 — the

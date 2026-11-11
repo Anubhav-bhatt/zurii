@@ -17,6 +17,8 @@
  *
  * No password, hash or token value is ever printed.
  */
+// First import: refuses to run unless started by `npm test` against the verified zurii_test database.
+import { assertTestDatabase } from './helpers/testDatabaseGuard.mjs';
 import { before, after, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
@@ -58,6 +60,7 @@ async function waitForServer(url, attempts = 60) {
 }
 
 before(async () => {
+  await assertTestDatabase(pool);
   const hash = await bcrypt.hash(TEST_PASSWORD, 12);
   const { rows } = await pool.query(
     'INSERT INTO admins (username, password_hash) VALUES ($1, $2) RETURNING id',
@@ -69,7 +72,9 @@ before(async () => {
   base = `http://127.0.0.1:${port}`;
   server = spawn('node', ['server.js'], {
     cwd: path.resolve(import.meta.dirname, '..'),
-    env: { ...process.env, PORT: String(port) },
+    // One trusted proxy hop, so login() can present each attempt as a
+    // different client (see below).
+    env: { ...process.env, PORT: String(port), TRUST_PROXY: '1' },
     stdio: 'ignore',
   });
   await waitForServer(`${base}/api/packages`);
@@ -101,10 +106,18 @@ after(async () => {
 
 // ── helpers ─────────────────────────────────────────────────────────
 
+// Each attempt arrives from its own documentation-range address. These tests
+// are about the account lock in PostgreSQL, which counts failures from every
+// network; one client is now stopped by the per-client limiter before it can
+// reach the lock threshold on its own (LOGIN_POLICY, tested in
+// rateLimits.test.mjs).
+let clientSeq = 0;
+const nextClient = () => `198.51.100.${(clientSeq++ % 254) + 1}`;
+
 const login = async (password = TEST_PASSWORD, username = TEST_ADMIN) => {
   const res = await fetch(`${base}/api/auth/login`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'X-Forwarded-For': nextClient() },
     body: JSON.stringify({ username, password }),
   });
   const body = await res.json().catch(() => ({}));
@@ -140,6 +153,21 @@ const auditRows = (eventType) =>
       [eventType ?? null, adminId, TEST_ADMIN]
     )
     .then((r) => r.rows);
+
+/**
+ * Audit rows are written fire-and-forget (lib/adminAudit.js), so an HTTP
+ * response can arrive a moment before its row commits. Poll briefly for the
+ * rows a test expects instead of racing that write — the assertions that
+ * follow are unchanged. (A one-in-several-runs failure, seen before release.)
+ */
+async function auditRowsUntil(eventType, done, timeoutMs = 2000) {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    const rows = await auditRows(eventType);
+    if (done(rows) || Date.now() > deadline) return rows;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+}
 
 const clearThrottle = () =>
   pool.query('UPDATE admins SET failed_login_attempts = 0, locked_until = NULL WHERE id = $1', [adminId]);
@@ -387,7 +415,7 @@ describe('database-backed login throttle', () => {
   });
 
   it('records the lock in the audit trail even though the response hides it', async () => {
-    const rows = await auditRows('LOGIN_FAILURE');
+    const rows = await auditRowsUntil('LOGIN_FAILURE', (all) => all.some((r) => r.metadata?.reason === 'account_locked'));
     const reasons = rows.map((r) => r.metadata?.reason);
     assert.ok(reasons.includes('account_locked'), 'the real reason belongs in the trail');
     assert.ok(reasons.includes('bad_password'));
@@ -443,7 +471,8 @@ describe('admin audit trail', () => {
     const session = await login();
     await postLogout(session.refresh);
 
-    const types = new Set((await auditRows()).map((r) => r.event_type));
+    const types = new Set((await auditRowsUntil(null, (all) => ['LOGIN_SUCCESS', 'LOGIN_FAILURE', 'LOGOUT']
+      .every((t) => all.some((r) => r.event_type === t)))).map((r) => r.event_type));
     for (const expected of ['LOGIN_SUCCESS', 'LOGIN_FAILURE', 'LOGOUT']) {
       assert.ok(types.has(expected), `${expected} must be recorded`);
     }

@@ -53,6 +53,8 @@ export function whatsappLink(context, kind = 'package') {
   let message = 'Hello Zurii Travels! I would like help planning a trip.';
   if (context && kind === 'package') {
     message = `Hello Zurii Travels! I am interested in the "${context}" package. Could you please share more details?`;
+  } else if (kind === 'corporate') {
+    message = 'Hello Zurii Travels! I would like to plan a corporate trip for my team. Could you please share more details?';
   } else if (context && kind === 'destination') {
     message = `Hello Zurii Travels! I am interested in planning a trip to ${context}. Could you please share more details?`;
   }

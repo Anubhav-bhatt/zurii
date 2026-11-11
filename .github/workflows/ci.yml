@@ -1,0 +1,139 @@
+# Continuous integration (ZT-13). It verifies; it never deploys, publishes or
+# writes to the repository. Render and Vercel deploy on their own triggers
+# (docs/CI.md) — nothing here starts them.
+#
+# A green run counts only once it has actually run on GitHub. Locally the same
+# steps were rehearsed against a fresh copy and a disposable PostgreSQL, which
+# is evidence, not a substitute.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, 'feature/**']
+  workflow_dispatch:
+
+# Read-only token: CI checks code; it needs nothing else from GitHub.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Frontend — lint, unit tests, production build, SEO output
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install (exactly the lockfile)
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Unit tests
+        run: npm test
+      - name: Production build, as an unconfigured deployment would make it
+        run: npm run build
+      - name: Build with a placeholder origin and check what crawlers receive
+        env:
+          # A reserved, non-routable name: CI never assumes the real domain.
+          VITE_SITE_URL: https://ci.example
+        run: |
+          npm run build
+          npm run check:seo -- https://ci.example
+
+  backend:
+    name: Backend — unit and PostgreSQL integration tests, migrations, catalogue
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      # Disposable: created for this job and destroyed with it. The only
+      # database CI ever reaches. The password exists only inside this run.
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci-disposable-postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Install (exactly the lockfile)
+        run: npm ci
+      - name: Create the test database exactly as infra/local-db does (role, owner, marker)
+        env:
+          PG_CONTAINER: ${{ job.services.postgres.id }}
+        run: |
+          db_password="$(openssl rand -hex 24)"
+          jwt_secret="$(openssl rand -hex 32)"
+          jwt_refresh_secret="$(openssl rand -hex 32)"
+          echo "::add-mask::$db_password"
+          echo "::add-mask::$jwt_secret"
+          echo "::add-mask::$jwt_refresh_secret"
+          docker exec -i "$PG_CONTAINER" psql -v ON_ERROR_STOP=1 -U postgres -d postgres -v pw="$db_password" <<'SQL'
+          CREATE ROLE zurii_test_app LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS PASSWORD :'pw';
+          CREATE DATABASE zurii_test OWNER zurii_test_app ENCODING 'UTF8' TEMPLATE template0;
+          ALTER DATABASE zurii_test SET zurii.environment = 'test';
+          SQL
+          {
+            echo "TEST_DATABASE_URL=postgres://zurii_test_app:${db_password}@127.0.0.1:5432/zurii_test"
+            echo "TEST_JWT_SECRET=${jwt_secret}"
+            echo "TEST_JWT_REFRESH_SECRET=${jwt_refresh_secret}"
+          } >> "$GITHUB_ENV"
+      - name: Unit and integration tests (rebuilds zurii_test, refuses any other database)
+        run: npm test
+      - name: Migrations — schema is the baseline plus documented changes, catalogue equals the artifact
+        run: npm run db:test:verify
+      - name: Catalogue artifacts are up to date
+        run: |
+          npm run catalogue:check
+          npm run catalogue:localize:check
+
+  images:
+    name: Image manifest integrity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: tools/images
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: tools/images/package-lock.json
+      - name: Install (exactly the lockfile)
+        run: npm ci
+      - name: Verify every published image and the manifest
+        run: npm run verify
