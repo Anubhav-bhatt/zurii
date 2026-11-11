@@ -34,6 +34,12 @@ lockfile and a disposable `postgres:16-alpine` set up by the workflow's SQL.
 Every step passed. That is evidence the workflow is correct, **not** a CI
 result: **CI is unverified until it has run on GitHub Actions.**
 
+**First run on GitHub (2026-11-11):** run `43009572524` for commit `2a17ebb`
+on `feature/zurii-production-hardening` — all three jobs green (backend
+349/349 on a disposable PostgreSQL 16, frontend 76/76 with lint, builds and
+SEO output, image manifest). Runners resolved `.nvmrc` to Node 24.22; the
+Docker images pin 24.19.
+
 Phase 7 (2026-11-11) repeated the rehearsal on a fresh copy of the final tree
 and confirmed that both pinned action SHAs are exactly the commits their tags
 name (`actions/checkout` v7.0.1, `actions/setup-node` v7.1.0, via

@@ -99,7 +99,8 @@ are in [RELEASE_RUNBOOK.md §10](RELEASE_RUNBOOK.md).
 
 Credential rotation for values exposed in Git history; verified production
 backup and restore; migration adoption through 0005; provider checks on a
-preview (routing, headers, client IP); the CI run on GitHub and branch
-protection on `main` (none exists today); paused auto-deploys; owner approvals
+preview (routing, headers, client IP); branch protection on `main` (none
+exists today — CI itself has run green on GitHub for this branch); paused
+auto-deploys; owner approvals
 (content, privacy and retention, canonical domain); Meta advanced matching off
 and real Test Events delivery. Details and status: [OPERATOR_ACTIONS.md](OPERATOR_ACTIONS.md).

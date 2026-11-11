@@ -28,7 +28,8 @@ sequence is in [RELEASE_RUNBOOK.md](RELEASE_RUNBOOK.md).
 | 11 | Payment / EMI content approval | OPEN | Owner | — | Section 2, "Owner approval of Phase 5 content". |
 | 12 | Canonical production domain (`VITE_SITE_URL`) | OPEN | Owner | — | Required before the production frontend build. |
 | 13 | Node 24 deployment verification | BLOCKED | Owner | — | Waits on the backend release. Both images build and run on `node:24.19-alpine` locally. |
-| 14 | GitHub CI run and branch protection | BLOCKED | Owner | — | Waits on authorisation to push. Workflow rehearsed locally; action SHAs match their tags. |
+| 14 | GitHub CI run | VERIFIED (for `2a17ebb`) | GitHub Actions, push by the release handoff | 2026-11-11 | Run `43009572524` on `feature/zurii-production-hardening`: all three jobs green (backend 349/349, frontend 76/76, SEO, migrations, catalogue, images). Re-check on every later commit and on the pull request. |
+| 14a | Branch protection on `main` | OPEN | Owner | — | `main` has no protection rule (GitHub API, 2026-11-11). Apply [CI.md → Recommended branch protection](CI.md#recommended-branch-protection). |
 | 15 | Search Console / sitemap submission | BLOCKED | Owner | — | Waits on 12 and the production release. |
 | 16 | Production monitoring | OPEN | Owner | — | [OBSERVABILITY.md](OBSERVABILITY.md); runbook §14. |
 | 17 | Catalogue image reconciliation | OPEN | Owner | — | Production rows keep their remote image URLs (the seeder never touches unmanaged rows), so local AVIF/WebP images do not reach production by deploying alone. |
