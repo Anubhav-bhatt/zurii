@@ -21,6 +21,33 @@
       }
     })();
   </script>
+  <!-- Meta Pixel Code (consent-gated). The official base code, wrapped so it
+       runs only when the app calls zuriiInitMetaPixel(id) after marketing
+       consent (src/services/metaPixel.js; the ID comes from
+       src/config/marketing.js, 4858424197723199 in production builds).
+       Nothing is defined on window.fbq, loaded or sent before that call.
+       Deliberately not here:
+         - fbq('track', 'PageView'): the React Router listener sends every
+           PageView, the first one included, only with consent.
+         - the noscript tracking image: it would track without consent. -->
+  <!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '4858424197723199');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=4858424197723199&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+  <!-- End Meta Pixel Code -->
 </head>
 
 <body>

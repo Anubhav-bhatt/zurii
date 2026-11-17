@@ -1,68 +1,51 @@
 /**
- * Meta Pixel loader: the approved base code, run only after marketing consent
- * (services/marketing.js decides when).
+ * Meta Pixel adapter: asks the base code in index.html <head> to start the
+ * Pixel, only after marketing consent (services/marketing.js decides when),
+ * then sends the approved events through its fbq.
  *
- * Deliberate differences from the pasted snippet:
- *   - Inserted into <head> on demand; never present in index.html.
- *   - fbq.disablePushState = true. fbevents.js otherwise sends its own
+ * index.html defines window.zuriiInitMetaPixel(id), the ONLY initialization
+ * path: the official base code wrapped in a function, so nothing is defined,
+ * loaded or sent until consent. On its first call it:
+ *   - installs the fbq queue stub and adds fbevents.js (id zurii-meta-pixel);
+ *   - sets fbq.disablePushState = true. fbevents.js otherwise sends its own
  *     PageView on every history.pushState, double-counting the React Router
- *     listener.
- *   - fbq.allowDuplicatePageViews = true. With pushState tracking off, the
+ *     listener;
+ *   - sets fbq.allowDuplicatePageViews = true. With pushState tracking off, the
  *     React Router listener sends each navigation's PageView itself, and
  *     fbevents.js silently drops every PageView after the first one of a page
- *     load unless this is set — so SPA navigations never reached Meta (found
- *     with the real library in the final audit; a recording stub cannot show
- *     it). marketingCore still sends one PageView per pathname, so this does
- *     not create duplicates.
- *   - autoConfig off: no automatic button-click or page-metadata collection,
- *     so form fields are never picked up automatically.
- *   - init() is called with the ID alone: no advanced matching, no user data.
- *   - No <noscript> image. The site needs JavaScript anyway, and that image
- *     would fire without consent.
+ *     load unless this is set (found with the real library in an audit).
+ *     marketingCore still sends one PageView per pathname, so this does not
+ *     create duplicates;
+ *   - turns autoConfig off (no automatic button-click or page-metadata
+ *     collection, so form fields are never picked up automatically);
+ *   - inits with the Pixel ID alone (no advanced matching, no user data).
+ * It sends no PageView itself and there is no noscript image: both would
+ * track without consent.
+ *
+ * The previous loader here installed that same base code itself. It is
+ * removed, so the Pixel can only be initialized from index.html.
  */
+/** What the index.html base code loads; kept here for tests and reference. */
 export const META_PIXEL_SCRIPT_SRC = 'https://connect.facebook.net/en_US/fbevents.js';
 export const META_PIXEL_SCRIPT_ID = 'zurii-meta-pixel';
+export const META_PIXEL_INIT_FUNCTION = 'zuriiInitMetaPixel';
 
 let initializedId = null;
 
-/** Install the base-code queue stub, init the Pixel and add fbevents.js — once. */
-export function loadMetaPixel(pixelId, { win = window, doc = document } = {}) {
+/**
+ * Start the Pixel through the index.html initializer — once per page. Returns
+ * false (nothing loaded, nothing sent) when there is no ID or the page has no
+ * initializer.
+ */
+export function loadMetaPixel(pixelId, { win = window } = {}) {
   if (!pixelId) return false;
   if (initializedId) return true;
-  // Survives a re-evaluated module (dev hot reload): init runs once per page.
-  if (win.__zuriiMetaPixelId === pixelId) {
-    initializedId = pixelId;
-    return true;
-  }
-
-  if (!win.fbq) {
-    // The base code's stub: calls queue up until fbevents.js replaces it.
-    const fbq = function (...args) {
-      if (fbq.callMethod) fbq.callMethod.apply(fbq, args);
-      else fbq.queue.push(args);
-    };
-    win.fbq = fbq;
-    if (!win._fbq) win._fbq = fbq;
-    fbq.push = fbq;
-    fbq.loaded = true;
-    fbq.version = '2.0';
-    fbq.queue = [];
-  }
-
-  win.fbq.disablePushState = true;
-  win.fbq.allowDuplicatePageViews = true;
-  win.fbq('set', 'autoConfig', false, pixelId);
-  win.fbq('init', pixelId);
-
-  if (!doc.getElementById(META_PIXEL_SCRIPT_ID)) {
-    const script = doc.createElement('script');
-    script.id = META_PIXEL_SCRIPT_ID;
-    script.async = true;
-    script.src = META_PIXEL_SCRIPT_SRC;
-    doc.head.appendChild(script);
-  }
+  const init = win[META_PIXEL_INIT_FUNCTION];
+  if (typeof init !== 'function') return false;
+  // The initializer itself refuses to init twice, so a re-evaluated module
+  // (dev hot reload) just picks up the Pixel that is already running.
+  if (!init(pixelId)) return false;
   initializedId = pixelId;
-  win.__zuriiMetaPixelId = pixelId;
   return true;
 }
 

@@ -1,10 +1,15 @@
 // Meta Pixel adapter, loader and consent store. Everything Meta-facing is a
-// recording fake: no script is loaded and nothing leaves the process.
+// recording fake: no script is loaded and nothing leaves the process. The
+// loader tests run the real initializer from index.html <head> in a vm.
 import { strict as assert } from 'node:assert';
+import fs from 'node:fs';
+import path from 'node:path';
 import { beforeEach, describe, it } from 'node:test';
+import vm from 'node:vm';
 
 import { LEAD_FORMS, createMarketingTracker, isAdminPath } from '../src/services/marketingCore.js';
 import {
+  META_PIXEL_INIT_FUNCTION,
   META_PIXEL_SCRIPT_ID,
   META_PIXEL_SCRIPT_SRC,
   clearMetaCookies,
@@ -256,19 +261,39 @@ describe('conversion events', () => {
 });
 
 describe('Meta Pixel loader', () => {
-  function fakeBrowser() {
-    const appended = [];
+  const FRONTEND = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+  const INDEX_HTML = fs.readFileSync(path.join(FRONTEND, 'index.html'), 'utf8');
+
+  /** The inline script between the Meta Pixel Code markers in index.html. */
+  function headPixelScript() {
+    const start = INDEX_HTML.indexOf('<!-- Meta Pixel Code');
+    const end = INDEX_HTML.indexOf('<!-- End Meta Pixel Code -->');
+    assert.ok(start >= 0 && end > start, 'index.html has the Meta Pixel block');
+    const match = INDEX_HTML.slice(start, end).match(/<script>([\s\S]*?)<\/script>/);
+    assert.ok(match, 'the Meta Pixel block has an inline script');
+    return match[1];
+  }
+
+  /** A fake page (window is the global, as in a browser); by default it has run the <head> script. */
+  function fakeBrowser({ withHeadScript = true } = {}) {
+    const inserted = [];
     const cookies = [];
+    const firstScript = { parentNode: { insertBefore: (el) => inserted.push(el) } };
     const doc = {
-      head: { appendChild: (el) => appended.push(el) },
       createElement: (tag) => ({ tag }),
-      getElementById: (id) => appended.find((el) => el.id === id) ?? null,
+      getElementsByTagName: (tag) => (tag === 'script' ? [firstScript, ...inserted] : []),
       set cookie(value) {
         cookies.push(value);
       },
     };
-    return { win: {}, doc, appended, cookies };
+    const win = vm.createContext({ document: doc });
+    win.window = win;
+    if (withHeadScript) vm.runInContext(headPixelScript(), win);
+    return { win, doc, inserted, cookies };
   }
+
+  // The base code queues `arguments` objects from the vm realm.
+  const queue = (win) => Array.from(win.fbq.queue, (call) => Array.from(call));
 
   beforeEach(() => resetMetaPixelForTests());
 
@@ -277,39 +302,82 @@ describe('Meta Pixel loader', () => {
     assert.equal(sendMetaPixelEvent('PageView', undefined, { win }), false);
   });
 
-  it('installs the base code once: autoConfig off, no advanced matching, no history auto-tracking', () => {
-    const { win, doc, appended } = fakeBrowser();
-    assert.equal(loadMetaPixel(PIXEL_ID, { win, doc }), true);
-    assert.equal(loadMetaPixel(PIXEL_ID, { win, doc }), true);
+  it('index.html only defines the initializer: no fbq, no library, no PageView, no noscript image', () => {
+    const { win, inserted } = fakeBrowser();
+    assert.equal(typeof win[META_PIXEL_INIT_FUNCTION], 'function');
+    assert.equal(win.fbq, undefined, 'fbq does not exist before consent');
+    assert.equal(inserted.length, 0, 'fbevents.js is not requested before consent');
+    assert.doesNotMatch(headPixelScript(), /['"]track['"]/, 'the base code sends no event itself');
+    assert.doesNotMatch(INDEX_HTML, /facebook\.com\/tr|<noscript/i, 'no tracking image');
+  });
 
-    assert.equal(appended.length, 1, 'one script element');
-    assert.equal(appended[0].src, META_PIXEL_SCRIPT_SRC);
-    assert.equal(appended[0].id, META_PIXEL_SCRIPT_ID);
-    assert.equal(appended[0].async, true);
+  it('is the only initialization path in the app', () => {
+    const files = [];
+    const walk = (dir) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) walk(full);
+        else if (/\.(js|jsx|mjs)$/.test(entry.name)) files.push(full);
+      }
+    };
+    walk(path.join(FRONTEND, 'src'));
+    for (const file of files) {
+      const source = fs.readFileSync(file, 'utf8');
+      const name = path.relative(FRONTEND, file);
+      assert.doesNotMatch(source, /fbq\(\s*['"]init['"]|\.fbq\s*=[^=]/, `${name} must not create or init the Pixel`);
+      if (name !== path.join('src', 'services', 'metaPixel.js')) {
+        assert.doesNotMatch(source, /fbevents|connect\.facebook\.net/, `${name} must not load the Meta library`);
+      }
+    }
+    // metaPixel.js keeps the library URL as a reference constant only.
+    const bridge = fs.readFileSync(path.join(FRONTEND, 'src', 'services', 'metaPixel.js'), 'utf8');
+    assert.doesNotMatch(bridge, /createElement|appendChild|insertBefore/, 'metaPixel.js must not add the library');
+    assert.equal(INDEX_HTML.split("fbq('init'").length - 1, 1, "one fbq('init') in index.html");
+  });
+
+  it('starts the Pixel through index.html once: autoConfig off, no advanced matching, no history auto-tracking', () => {
+    const { win, inserted } = fakeBrowser();
+    assert.equal(loadMetaPixel(PIXEL_ID, { win }), true);
+    assert.equal(loadMetaPixel(PIXEL_ID, { win }), true);
+    assert.equal(win[META_PIXEL_INIT_FUNCTION](PIXEL_ID), true, 'a direct second call is a no-op');
+    assert.equal(win[META_PIXEL_INIT_FUNCTION]('1234567890'), false, 'no second Pixel on the same page');
+
+    assert.equal(inserted.length, 1, 'one script element');
+    assert.equal(inserted[0].src, META_PIXEL_SCRIPT_SRC);
+    assert.equal(inserted[0].id, META_PIXEL_SCRIPT_ID);
+    assert.equal(inserted[0].async, true);
     assert.equal(win.fbq.disablePushState, true);
     // Without it fbevents.js drops every SPA PageView after the first (seen with the real library).
     assert.equal(win.fbq.allowDuplicatePageViews, true);
-    assert.deepEqual(win.fbq.queue, [
+    assert.deepEqual(queue(win), [
       ['set', 'autoConfig', false, PIXEL_ID],
       ['init', PIXEL_ID],
-    ], 'init exactly once, with the ID alone');
+    ], 'init exactly once, with the ID alone, and no PageView of its own');
   });
 
   it('survives a re-evaluated module without a second init', () => {
-    const { win, doc } = fakeBrowser();
-    loadMetaPixel(PIXEL_ID, { win, doc });
+    const { win, inserted } = fakeBrowser();
+    loadMetaPixel(PIXEL_ID, { win });
     resetMetaPixelForTests();
-    loadMetaPixel(PIXEL_ID, { win, doc });
-    assert.equal(win.fbq.queue.filter((call) => call[0] === 'init').length, 1);
+    assert.equal(loadMetaPixel(PIXEL_ID, { win }), true);
+    assert.equal(queue(win).filter((call) => call[0] === 'init').length, 1);
+    assert.equal(inserted.length, 1);
+  });
+
+  it('loads and sends nothing on a page without the index.html initializer', () => {
+    const { win } = fakeBrowser({ withHeadScript: false });
+    assert.equal(loadMetaPixel(PIXEL_ID, { win }), false);
+    assert.equal(win.fbq, undefined);
+    assert.equal(sendMetaPixelEvent('PageView', undefined, { win }), false);
   });
 
   it('queues events and consent changes through fbq', () => {
-    const { win, doc } = fakeBrowser();
-    loadMetaPixel(PIXEL_ID, { win, doc });
+    const { win } = fakeBrowser();
+    loadMetaPixel(PIXEL_ID, { win });
     sendMetaPixelEvent('PageView', undefined, { win });
     sendMetaPixelEvent('Lead', { content_category: 'contact' }, { win });
     setMetaPixelConsent(false, { win });
-    assert.deepEqual(win.fbq.queue.slice(2), [
+    assert.deepEqual(queue(win).slice(2), [
       ['track', 'PageView'],
       ['track', 'Lead', { content_category: 'contact' }],
       ['consent', 'revoke'],
@@ -317,9 +385,9 @@ describe('Meta Pixel loader', () => {
   });
 
   it('does nothing for an empty Pixel ID', () => {
-    const { win, doc, appended } = fakeBrowser();
-    assert.equal(loadMetaPixel('', { win, doc }), false);
-    assert.equal(appended.length, 0);
+    const { win, inserted } = fakeBrowser();
+    assert.equal(loadMetaPixel('', { win }), false);
+    assert.equal(inserted.length, 0);
     assert.equal(win.fbq, undefined);
   });
 
